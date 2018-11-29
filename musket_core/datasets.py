@@ -316,8 +316,6 @@ class SimplePNGMaskDataSet:
 
 AUGMENTER_QUEUE_LIMIT=10
 
-
-
 class KFoldedDataSet:
 
     def __init__(self,ds,indexes,aug,transforms,folds=5,rs=33,batchSize=16):

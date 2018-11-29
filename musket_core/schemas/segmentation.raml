@@ -1,0 +1,249 @@
+#%RAML 1.0 Library
+uses:
+  meta: meta.raml
+  aug: augmenters.raml
+  cb: callbacks.raml
+(meta.module):  segmentation_pipeline.segmentation
+types:
+  HasLoss:
+    type: object
+    (meta.abstract): true
+    properties:
+      loss?:
+        (meta.custom): true
+        type: string
+        (meta.suggestions):
+          - binary_crossentropy
+          - categorical_crossentropy
+          - dice_loss
+          - jaccard_loss
+          - focal_loss #This one is very unstable
+          - lovasz_loss
+  AugmenterConfig:
+      type: object
+      properties?:
+        name: string
+  PipelineConfig:
+    (meta.entry): true
+    type: HasLoss
+    discriminator: architecture
+    properties:
+      classifier:
+        type: string
+        (meta.custom): true
+        enum: [resnet50,densenet121,densenet169,densenet201]
+      classifier_lr:
+        type: number
+        (meta.custom): true
+      folds_count?:
+        type: integer
+        (meta.custom): true
+      random_state?:
+        type: integer
+        (meta.custom): true
+      extra_train_data?:
+        type: string
+        (meta.custom): true
+      dataset_augmenter?:
+        type: AugmenterConfig
+        (meta.custom): true
+      backbone?:
+        (meta.alias): backbone_name
+        type: string
+        enum: [vgg16, vgg19, resnet18, resnet34, resnet50 , resnet101, resnet152, resnext50, resnext101 , densenet121, densenet169, densenet201, inceptionv3 ,inceptionresnetv2]
+      encoder_weights?:
+        enum: [imagenet, imagenet11k-places365ch,imagenet11k]
+      classes:
+        type: integer
+        minimum: 1
+      crops?:
+        type: integer
+        (meta.custom): true
+      activation:
+        enum: [ sigmoid, softmax ]
+      architecture:
+        enum: [ Unet, FPN, Linknet, PSPNet, DeepLabV3]
+        (meta.custom): true
+      shape:
+        (meta.alias): input_shape
+        type: meta.image_shape
+      augmentation:
+        type: aug.Augmenter[]
+        (meta.custom): true
+      transforms:
+        type: aug.Augmenter[]
+        (meta.custom): true
+      ###Optimizer configuration
+      optimizer?:
+        type: string
+        enum: [SGD,Adam,RMSprop,Nadam]
+        (meta.custom): true
+      lr?:
+        type: number
+        (meta.custom): true
+      clipnorm?:
+        type: number
+        (meta.custom): true
+      clipvalue?:
+        type: number
+        (meta.custom): true
+      #####################################
+      loss?: #Remove it when we have better python loader
+        (meta.custom): true
+      batch?:
+        type: integer
+        (meta.custom): true
+        minimum: 1
+        default: 16
+      metrics:
+        type: string[]
+        (meta.custom): true
+        (meta.suggestions):
+          - binary_accuracy
+          - dice
+          - iou
+          - iot #at 0.5 treshold
+      primary_metric:
+        type: string
+        (meta.custom): true
+      primary_metric_mode?:
+        type: string
+        enum: [auto,min,max]
+        (meta.custom): true
+        default: auto
+      callbacks?:
+        type: cb.Callback[]
+        (meta.custom): true
+      stages  :
+        type: StageConfig[]
+        (meta.custom): true
+      freeze_encoder?: boolean
+  St:
+    type: string
+    enum: [ none  , real ]
+  StageConfig:
+    type: HasLoss
+    properties:
+      negatives?:
+        type: St | number
+      validation_negatives?:
+        type: St | number
+      initial_weights?: string
+      epochs?: number
+      unfreeze_encoder?: boolean
+      lr?: number
+      callbacks?: cb.Callback[]
+      extra_callbacks?: cb.Callback[]
+
+  DeepLabV3:
+      type: PipelineConfig
+      discriminatorValue: DeepLabV3
+      properties:
+        backbone?:
+          (meta.alias): backbone_name
+          type: string
+          enum: [mobilenetv2, xception]
+        encoder_weights?:
+          type: string
+          enum: [pascal_voc]
+        alpha?:
+          type: number
+          default: 1.0
+        OS?:
+          type: integer
+          default: 16
+        freeze_encoder?:
+          type: boolean
+          enum: [ false ]
+  Unet:
+      type: PipelineConfig
+      discriminatorValue: Unet
+      properties:
+        decoder_block_type?:
+          type: string
+          enum: [upsampling , transpose ]
+          default: upsampling
+        decoder_filters?:
+          type: integer[]
+          default: [256,128,64,32,16]
+        n_upsample_blocks:
+            type: integer
+            default: 5
+        upsample_rates:
+          type: integer[]
+          default: [2,2,2,2,2]
+        use_batchnorm:
+          (meta.alias): decoder_use_batchnorm
+          type: boolean
+          default: true
+  FPN:
+    type: PipelineConfig
+    discriminatorValue: FPN
+    properties:
+      pyramid_block_filters?:
+        type: integer
+        default: 256
+      segmentation_block_filters?:
+        type: integer
+        default: 128
+      upsample_rates?:
+        type: integer[]
+        default: [2,2,2]
+      last_upsample?:
+        type: integer
+        default: 4
+      interpolation:
+        type: string
+        enum: [bilinear,nearest]
+        default: bilinear
+      use_batchnorm?:
+        type: boolean
+        default: true
+      dropout?:
+        type: number
+        default: 0
+  Linknet:
+    type: PipelineConfig
+    properties:
+      decoder_filters?:
+        type: integer[]
+      use_batchnorm?:
+        (meta.alias): decoder_use_batchnorm
+        type: boolean
+        default: true
+      n_upsample_blocks?:
+        type: number
+        default: 5
+      upsample_layer:
+        type: string
+        enum: [ upsampling, transpose]
+        default: upsampling
+      upsample_kernel_size:
+        type: integer[]
+        minItems: 2
+        maxItems: 2
+        default: [3,3]
+  PSPNet:
+    type: PipelineConfig
+    discriminatorValue: PSPNet
+    properties:
+      downsample_factor?:
+        type: integer
+        default: 8
+      psp_conv_filters?:
+        type: integer
+        default: 512
+      psp_pooling_type?:
+        type: string
+        enum: [ avg , max ]
+        default: avg
+      use_batchnorm?:
+        type: boolean
+        default: true
+      dropout?:
+        type: number
+        default: 0
+      final_interpolation?:
+        type: string
+        default: bilinear
+        enum: [bilinear,nearest]

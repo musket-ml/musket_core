@@ -1,0 +1,127 @@
+#%RAML 1.0 Library
+uses:
+  meta: meta.raml
+  aug: augmenters.raml
+  cb: callbacks.raml
+(meta.module):  classification_pipeline.classification
+types:
+  HasLoss:
+    type: object
+    (meta.abstract): true
+    properties:
+      loss?:
+        (meta.custom): true
+        type: string
+        (meta.suggestions):
+          - binary_crossentropy
+          - categorical_crossentropy
+          - dice_loss
+          - jaccard_loss
+          - focal_loss #This one is very unstable
+          - lovasz_loss
+  AugmenterConfig:
+      type: object
+      properties?:
+        name: string
+  ClassificationPipeline:
+    (meta.entry): true
+    type: HasLoss
+    discriminator: architecture
+    properties:
+      classifier:
+        type: string
+        (meta.custom): true
+        enum: [resnet50,densenet121,densenet169,densenet201]
+      folds_count?:
+        type: integer
+        (meta.custom): true
+      random_state?:
+        type: integer
+        (meta.custom): true
+      extra_train_data?:
+        type: string
+        (meta.custom): true
+      dataset_augmenter?:
+        type: AugmenterConfig
+        (meta.custom): true
+      architecture?:
+        (meta.custom): true
+        type: string
+        enum: [vgg16, vgg19, resnet18, resnet34, resnet50 , resnet101, resnet152, resnext50, resnext101 , densenet121, densenet169, densenet201, inceptionv3 ,inceptionresnetv2]
+      weights?:
+        enum: [imagenet, imagenet11k-places365ch,imagenet11k]
+      classes:
+        type: integer
+        minimum: 1
+      crops?:
+        type: integer
+        (meta.custom): true
+      activation:
+        (meta.custom): true
+        enum: [ sigmoid, softmax ]
+      shape:
+        (meta.alias): input_shape
+        type: meta.image_shape
+      augmentation:
+        type: aug.Augmenter[]
+        (meta.custom): true
+      transforms:
+        type: aug.Augmenter[]
+        (meta.custom): true
+      ###Optimizer configuration
+      optimizer?:
+        type: string
+        enum: [SGD,Adam,RMSprop,Nadam]
+        (meta.custom): true
+      lr?:
+        type: number
+        (meta.custom): true
+      clipnorm?:
+        type: number
+        (meta.custom): true
+      clipvalue?:
+        type: number
+        (meta.custom): true
+      #####################################
+      loss?: #Remove it when we have better python loader
+        (meta.custom): true
+      batch?:
+        type: integer
+        (meta.custom): true
+        minimum: 1
+        default: 16
+      metrics:
+        type: string[]
+        (meta.custom): true
+        (meta.suggestions):
+          - binary_accuracy
+          - dice
+          - iou
+          - iot #at 0.5 treshold
+      primary_metric:
+        type: string
+        (meta.custom): true
+      primary_metric_mode?:
+        type: string
+        enum: [auto,min,max]
+        (meta.custom): true
+        default: auto
+      callbacks?:
+        type: cb.Callback[]
+        (meta.custom): true
+      stages  :
+        type: StageConfig[]
+        (meta.custom): true
+      freeze_encoder?: boolean
+  St:
+    type: string
+    enum: [ none  , real ]
+  StageConfig:
+    type: HasLoss
+    properties:
+      initial_weights?: string
+      epochs?: number
+      unfreeze_encoder?: boolean
+      lr?: number
+      callbacks?: cb.Callback[]
+      extra_callbacks?: cb.Callback[]
