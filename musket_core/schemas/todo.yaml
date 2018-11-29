@@ -2,7 +2,6 @@
 AddToHueAndSaturation:
   arguments: []
   name: AddToHueAndSaturation
-
 Affine:
   arguments: []
   name: Affine
@@ -48,9 +47,6 @@ Crop:
 CropAndPad:
   arguments: []
   name: CropAndPad
-CropToFixedSize:
-  arguments: []
-  name: CropToFixedSize
 FrequencyNoiseAlpha:
   arguments: []
   name: FrequencyNoiseAlpha
