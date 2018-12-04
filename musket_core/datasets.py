@@ -14,6 +14,9 @@ import traceback
 import random
 import cv2 as cv
 
+AUGMENTER_QUEUE_LIMIT=10
+USE_MULTIPROCESSING=False
+
 class PredictionItem:
     def __init__(self, path,x,y):
         self.x=x
@@ -81,8 +84,6 @@ class DataSetLoader:
 
             if len(bx)==self.batchSize:
                 return self.createBatch(bx,by,ids)
-                bx = [];
-                by = [];
 
     def proceed(self, i):
         id = ""
@@ -227,7 +228,9 @@ def batch_generator(ds, batchSize, maxItems=-1):
             yield imgaug.Batch(images=bx,data=ps)
         return
 
+
 class Backgrounds:
+
     def __init__(self,path,erosion=0,augmenters:imgaug.augmenters.Augmenter=None):
         self.path=path;
         self.rate=0.5
@@ -264,9 +267,6 @@ class Backgrounds:
                                 segmentation_maps=[imgaug.SegmentationMapOnImage(i.y, shape=i.y.shape)])
             for v in self.augs.augment_batches([b]):
                 bsa:imgaug.Batch=v
-                #print(bsa.images_aug)
-                #print(bsa.images_aug[0].shape)
-                #print(i.x.shape)
                 break
             xa=bsa.images_aug[0]
 
@@ -278,6 +278,7 @@ class Backgrounds:
         else:
             r=self.next(i.x,i.y)
             return PredictionItem(i.id,r,i.y)
+
 
 class WithBackgrounds:
     def __init__(self, ds,bg):
@@ -299,6 +300,8 @@ class WithBackgrounds:
         if random.random()>self.rate:
             return self.bg.augment_item(i)
         return i
+
+
 class SimplePNGMaskDataSet:
     def __init__(self, path, mask):
         self.path = path;
@@ -316,7 +319,6 @@ class SimplePNGMaskDataSet:
     def __len__(self):
         return len(self.ids)
 
-AUGMENTER_QUEUE_LIMIT=10
 
 class KFoldedDataSet:
 
@@ -367,41 +369,58 @@ class KFoldedDataSet:
         for v in self.augmentor(isTrain).augment_batches([samples]):
             return v
 
+    def _prepare_vals_from_batch(self, r):
+        return np.array(r.images_aug), np.array([x.arr for x in r.segmentation_maps_aug])
+
     def generator_from_indexes(self, indexes,isTrain=True,returnBatch=False):
         m = DataSetLoader(self.ds, indexes, self.batchSize,isTrain=isTrain).generator
         aug = self.augmentor(isTrain)
-        l = imgaug.imgaug.BatchLoader(m)
-        g = imgaug.imgaug.BackgroundAugmenter(l, augseq=aug,queue_size=AUGMENTER_QUEUE_LIMIT)
+        if USE_MULTIPROCESSING:
+            l = imgaug.imgaug.BatchLoader(m)
+            g = imgaug.imgaug.BackgroundAugmenter(l, augseq=aug,queue_size=AUGMENTER_QUEUE_LIMIT)
 
-        def r():
-            num = 0;
-            while True:
-                r = g.get_batch();
-                x,y= np.array(r.images_aug), np.array([x.arr for x in r.segmentation_maps_aug])
-                num=num+1
-                if returnBatch:
-                    yield x,y,r
-                else: yield x,y
+            def r():
+                num = 0;
+                while True:
+                    r = g.get_batch();
+                    x,y= self._prepare_vals_from_batch(r)
+                    num=num+1
+                    if returnBatch:
+                        yield x,y,r
+                    else: yield x,y
 
-        return l,g,r
+            return l,g,r
+        else:
+            def r():
+                num = 0;
+                while True:
+                    for batch in m():
+                        r = list(aug.augment_batches([batch], background=False))[0]
+                        x,y= self._prepare_vals_from_batch(r)
+                        num=num+1
+                        if returnBatch:
+                            yield x,y,r
+                        else: yield x,y
 
-    def positive_negative_classification_generator_from_indexes(self, indexes, isTrain=True):
-        m = DataSetLoader(self.ds, indexes, self.batchSize,isTrain=isTrain).generator
-        aug = self.augmentor(isTrain)
-        l = imgaug.imgaug.BatchLoader(m)
-        g = imgaug.imgaug.BackgroundAugmenter(l, augseq=aug,queue_size=AUGMENTER_QUEUE_LIMIT)
-        def r():
-            num = 0;
-            while True:
-                r = g.get_batch();
-                x,y= np.array(r.images_aug), np.array([x.arr for x in r.segmentation_maps_aug])
-                rs=np.zeros((len(y)))
-                for i in range(0,len(y)):
-                    if y[i].max()>0.5:
-                        rs[i]=1.0
-                num=num+1
-                yield x,rs
-        return l,g,r
+            return NullTerminatable(),NullTerminatable(),r
+
+    # def positive_negative_classification_generator_from_indexes(self, indexes, isTrain=True):
+    #     m = DataSetLoader(self.ds, indexes, self.batchSize,isTrain=isTrain).generator
+    #     aug = self.augmentor(isTrain)
+    #     l = imgaug.imgaug.BatchLoader(m)
+    #     g = imgaug.imgaug.BackgroundAugmenter(l, augseq=aug,queue_size=AUGMENTER_QUEUE_LIMIT)
+    #     def r():
+    #         num = 0;
+    #         while True:
+    #             r = g.get_batch();
+    #             x,y= np.array(r.images_aug), np.array([x.arr for x in r.segmentation_maps_aug])
+    #             rs=np.zeros((len(y)))
+    #             for i in range(0,len(y)):
+    #                 if y[i].max()>0.5:
+    #                     rs[i]=1.0
+    #             num=num+1
+    #             yield x,rs
+    #     return l,g,r
 
     def augmentor(self, isTrain)->imgaug.augmenters.Augmenter:
         allAug = [];
@@ -450,14 +469,12 @@ class KFoldedDataSet:
 
         tl,tg,train_g=self.generator_from_indexes(train_indexes)
         vl,vg,test_g = self.generator_from_indexes(test_indexes,isTrain=False)
-
         try:
             model.fit_generator(train_g(), len(train_indexes)//(round(subsample*self.batchSize)),
                              epochs=numEpochs,
                              validation_data=test_g(),
                              callbacks=callbacks,
                              validation_steps=len(test_indexes)//(round(subsample*self.batchSize)))
-
         finally:
             tl.terminate();
             tg.terminate();
@@ -466,23 +483,9 @@ class KFoldedDataSet:
 
 class KFoldedDataSetImageClassification(KFoldedDataSet):
 
-    def generator_from_indexes(self, indexes,isTrain=True,returnBatch=False):
-        m = DataSetLoader(self.ds, indexes, self.batchSize,isTrain=isTrain).generator
-        aug = self.augmentor(isTrain)
-        l = imgaug.imgaug.BatchLoader(m)
-        g = imgaug.imgaug.BackgroundAugmenter(l, augseq=aug,queue_size=AUGMENTER_QUEUE_LIMIT)
+    def _prepare_vals_from_batch(self, r):
+        return np.array(r.images_aug), np.array([x for x in r.data[1]])
 
-        def r():
-            num = 0;
-            while True:
-                r = g.get_batch();
-                x,y= np.array(r.images_aug), np.array([x for x in r.data[1]])
-                num=num+1
-                if returnBatch:
-                    yield x,y,r
-                else: yield x,y
-
-        return l,g,r
 
 class NullTerminatable:
 
@@ -494,6 +497,7 @@ class NoChangeDataSetImageClassification(KFoldedDataSet):
 
     def generator_from_indexes(self, indexes,isTrain=True,returnBatch=False):
         m = DataSetLoader(self.ds, indexes, self.batchSize,isTrain=isTrain).generator
+        #aug = self.augmentor(isTrain)
         def r():
             num = 0;
             while True:

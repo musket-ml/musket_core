@@ -119,6 +119,7 @@ class GenericConfig:
         self.batch = 8
         self.all = atrs
         self.copyWeights=False
+        self.saveLast=False
         self.augmentation = []
         self.transforms = []
         self.architecture=None
