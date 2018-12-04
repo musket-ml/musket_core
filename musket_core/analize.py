@@ -10,7 +10,6 @@ def is_simple(t:list):
         if not type(v) in [int,str,float,bool]: return False
     return True
 
-
 def flatten(c:dict):
     res={}
     for v in c:
@@ -110,7 +109,6 @@ def build_metrics(pattern):
                 val=cfg[k]
             r[k]=val
         r["path"]=p;
-
         if "loss" in r:
             r["loss_function"]=r["loss"]
         if p in metrics:

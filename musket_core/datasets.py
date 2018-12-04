@@ -181,7 +181,7 @@ class CompositeDataSet:
 
 class DirectoryDataSet:
 
-    def __init__(self,imgPath,batchSize=32):
+    def __init__(self,imgPath):
 
         if isinstance(imgPath,ConstrainedDirectory):
             self.imgPath=imgPath.path
@@ -189,7 +189,7 @@ class DirectoryDataSet:
         else:
             self.imgPath = imgPath;
             self.ids=os.listdir(imgPath)
-        self.batchSize=batchSize
+
         pass
 
     def __getitem__(self, item):
@@ -197,19 +197,20 @@ class DirectoryDataSet:
                               None)
 
     def __len__(self):
-        return len(self.masks)
+        return len(self.ids)
 
-    def generator(self, maxItems=-1):
+
+def batch_generator(ds, batchSize, maxItems=-1):
         i = 0;
         bx = []
         ps = []
-        im=len(self.ids)
+        im=len(ds)
         if maxItems!=-1:
             im=min(maxItems,im)
         for v in range(im):
 
             try:
-                item = self[i]
+                item = ds[i]
                 x, y = item.x, item.id
             except:
                 traceback.print_exc()
@@ -218,13 +219,14 @@ class DirectoryDataSet:
             i = i + 1
             bx.append(x)
             ps.append(y)
-            if len(bx) == self.batchSize:
+            if len(bx) == batchSize:
                 yield imgaug.Batch(images=bx,data=ps)
                 bx = []
                 ps = []
         if len(bx)>0:
             yield imgaug.Batch(images=bx,data=ps)
         return
+
 class Backgrounds:
     def __init__(self,path,erosion=0,augmenters:imgaug.augmenters.Augmenter=None):
         self.path=path;
@@ -427,8 +429,8 @@ class KFoldedDataSet:
                     sindexes.append(x)
                 else:
                     nindexes.append(x)
-
-            random.shuffle(nindexes,23232)
+            random.seed(23232)
+            random.shuffle(nindexes)
             nindexes = nindexes[ 0 : min(len(nindexes),round(len(sindexes)*negatives))]
             r=[]+sindexes+nindexes
             random.shuffle(r,232772)
@@ -455,12 +457,12 @@ class KFoldedDataSet:
                              validation_data=test_g(),
                              callbacks=callbacks,
                              validation_steps=len(test_indexes)//(round(subsample*self.batchSize)))
+
         finally:
             tl.terminate();
             tg.terminate();
             vl.terminate();
             vg.terminate();
-
 
 class KFoldedDataSetImageClassification(KFoldedDataSet):
 
@@ -535,3 +537,26 @@ class CropAndSplit:
 
     def __len__(self):
         return len(self.ds)*self.parts*self.parts
+
+
+class SubDataSet:
+
+    def __init__(self,orig,indexes):
+        self.ds=orig
+        self.indexes=indexes
+
+    def isPositive(self, item):
+        return self.ds.isPositive(self.indexes[item])
+
+    def __getitem__(self, item):
+        return self.ds[self.indexes[item]]
+
+    def __len__(self):
+        return len(self.indexes)
+
+def split(ds,testSplit,testSplitSeed):
+    rn=range(0,len(ds))
+    random.seed(testSplitSeed)
+    random.shuffle(rn)
+    dm=round(1-len(ds)*testSplit)
+    return SubDataSet(ds,rn[:dm]),SubDataSet(ds,rn[dm:])

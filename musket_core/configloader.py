@@ -86,12 +86,12 @@ def load(name: str)  -> Module:
     if name in loaded:
         return loaded[name]
     pth = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(pth,"..","schemas", name+".raml"), "r") as f:
+    with open(os.path.join(pth,"schemas", name+".raml"), "r") as f:
         cfg = yaml.load(f);
     loaded[name]=Module(cfg);
     return loaded[name]
 
-def parse(name:str,p)->object:
+def parse(name:str,p):
     m=load(name)
     if type(p)==str:
         with open(p, "r") as f:

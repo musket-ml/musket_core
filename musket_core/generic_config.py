@@ -17,8 +17,17 @@ from keras.callbacks import  LambdaCallback
 import keras.backend as K
 import imgaug
 import musket_core
-keras.callbacks.CyclicLR= musket_core.clr_callback.CyclicLR
-
+from musket_core.clr_callback import CyclicLR
+keras.callbacks.CyclicLR= CyclicLR
+keras.utils.get_custom_objects()["macro_f1"]= musket_core.losses.macro_f1
+keras.utils.get_custom_objects()["dice"]= musket_core.losses.dice
+keras.utils.get_custom_objects()["iou"]= musket_core.losses.iou_coef
+keras.utils.get_custom_objects()["iot"]= musket_core.losses.iot_coef
+keras.utils.get_custom_objects()["lovasz_loss"]= musket_core.losses.lovasz_loss
+keras.utils.get_custom_objects()["iou_loss"]= musket_core.losses.iou_coef_loss
+keras.utils.get_custom_objects()["dice_loss"]= musket_core.losses.dice_coef_loss
+keras.utils.get_custom_objects()["jaccard_loss"]= musket_core.losses.jaccard_distance_loss
+keras.utils.get_custom_objects()["focal_loss"]= musket_core.losses.focal_loss
 dataset_augmenters={
 
 }
@@ -77,8 +86,8 @@ def ansemblePredictions(sourceFolder, folders:[str], cb, data, weights=None):
             weights.append(1.0)
     for i in os.listdir(sourceFolder):
        a=None
-       num = 0;
-       sw = 0;
+       num = 0
+       sw = 0
        for f in folders:
            sw=sw+weights[num]
            if a is None:
@@ -89,7 +98,7 @@ def ansemblePredictions(sourceFolder, folders:[str], cb, data, weights=None):
        a=a/sw
        cb(i, a, data)
 
-def dir_list(self, spath):
+def dir_list(spath):
     if isinstance(spath, datasets.ConstrainedDirectory):
         return spath.filters
     return os.listdir(spath)
@@ -109,9 +118,12 @@ class GenericConfig:
     def __init__(self,**atrs):
         self.batch = 8
         self.all = atrs
+        self.copyWeights=False
         self.augmentation = []
         self.transforms = []
+        self.architecture=None
         self.folds_count = 5
+        self.encoder_weights=None
         self.random_state = 33
         self.stages = []
         self.gpus = 1
@@ -128,15 +140,21 @@ class GenericConfig:
         self.showDataExamples = False
         self.crops = None
         self.resume = False
+        self.weights=None
         self.flipPred=True
-
+        self.loss=None
+        self.testSplit=0
+        self.testSplitSeed=123
+        self.optimizer=None
+        self.shape=None
+        self.metrics=[]
         for v in atrs:
-            val = atrs[v];
+            val = atrs[v]
             if v == 'augmentation' and val is not None:
                 if "BackgroundReplacer" in val:
                     bgr=val["BackgroundReplacer"]
                     aug=None
-                    erosion=0;
+                    erosion=0
                     if "erosion" in bgr:
                         erosion=bgr["erosion"]
                     if "augmenters" in bgr:
@@ -173,16 +191,18 @@ class GenericConfig:
         model.load_weights(ec.weightsPath())
         return model
 
-    def predict_on_directory(self, path, fold=0, stage=0, limit=-1, batchSize=32,ttflips=False):
+    def predict_on_directory(self, path, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
+        self.predict_on_dataset(datasets.DirectoryDataSet(path), fold, stage, limit, batch_size, ttflips)
+
+    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
         mdl = self.load_model(fold, stage)
         if self.crops is not None:
             mdl=BatchCrop(self.crops,mdl)
         ta = self.transformAugmentor()
-        for v in datasets.DirectoryDataSet(path, batchSize).generator(limit):
+        for v in datasets.batch_generator(dataset, batch_size, limit):
             for z in ta.augment_batches([v]):
                 res = self.predict_on_batch(mdl, ttflips, z)
                 self.update(z,res)
-
                 yield z
 
     def fit(self, d, subsample=1.0, foldsToExecute=None, start_from_stage=0):
@@ -216,33 +236,33 @@ class GenericConfig:
 
     def createOptimizer(self, lr=None):
         r = getattr(opt, self.optimizer)
-        ds = create_with(["lr", "clipnorm", "clipvalue"], self.all);
+        ds = create_with(["lr", "clipnorm", "clipvalue"], self.all)
         if lr:
             ds["lr"] = lr
         return r(**ds)
 
     def predict_on_batch(self, mdl, ttflips, z):
-        o1 = np.array(z.images_aug);
+        o1 = np.array(z.images_aug)
         res = mdl.predict(o1)
         if ttflips == "Horizontal":
-            another = imgaug.augmenters.Fliplr(1.0).augment_images(z.images_aug);
+            another = imgaug.augmenters.Fliplr(1.0).augment_images(z.images_aug)
             res1 = mdl.predict(np.array(another))
             if self.flipPred:
                 res1 = imgaug.augmenters.Fliplr(1.0).augment_images(res1)
             res = (res + res1) / 2.0
         elif ttflips:
-            another = imgaug.augmenters.Fliplr(1.0).augment_images(z.images_aug);
+            another = imgaug.augmenters.Fliplr(1.0).augment_images(z.images_aug)
             res1 = mdl.predict(np.array(another))
             if self.flipPred:
                 res1 = imgaug.augmenters.Fliplr(1.0).augment_images(res1)
 
-            another1 = imgaug.augmenters.Flipud(1.0).augment_images(z.images_aug);
+            another1 = imgaug.augmenters.Flipud(1.0).augment_images(z.images_aug)
             res2 = mdl.predict(np.array(another1))
             if self.flipPred:
                 res2 = imgaug.augmenters.Flipud(1.0).augment_images(res2)
 
             seq = imgaug.augmenters.Sequential([imgaug.augmenters.Fliplr(1.0), imgaug.augmenters.Flipud(1.0)])
-            another2 = seq.augment_images(z.images_aug);
+            another2 = seq.augment_images(z.images_aug)
             res3 = mdl.predict(np.array(another2))
             if self.flipPred:
                 res3 = seq.augment_images(res3)
@@ -263,7 +283,10 @@ class GenericConfig:
         return net
 
     def kfold(self, ds, indeces=None,batch=None)-> datasets.KFoldedDataSet:
-        if batch==None:
+        if self.testSplit>0:
+            train,test=datasets.split(ds,self.testSplit,self.testSplitSeed)
+            pass
+        if batch is None:
             batch=self.batch
         if indeces is None: indeces=range(0,len(ds))
         transforms = [] + self.transforms
@@ -281,17 +304,21 @@ class GenericConfig:
             pass
         return kf
 
-    def createAndCompile(self, lr=None, loss=None)->keras.Model:
-        return self.compile(self.createNet(), self.createOptimizer(lr=lr), loss=loss);
+    def validation(self,ds,foldNum):
+        ids=self.kfold(ds).indexes(foldNum,False)
+        return datasets.SubDataSet(ds,ids)
 
-    def predict_on_directory_with_model(self, mdl,path, limit=-1, batchSize=32,ttflips=False):
+    def createAndCompile(self, lr=None, loss=None)->keras.Model:
+        return self.compile(self.createNet(), self.createOptimizer(lr=lr), loss=loss)
+
+    def predict_on_directory_with_model(self, mdl, path, limit=-1, batch_size=32, ttflips=False):
         ta = self.transformAugmentor()
         with tqdm.tqdm(total=len(dir_list(path)), unit="files", desc="classifying positive  images from " + path) as pbar:
-            for v in datasets.DirectoryDataSet(path, batchSize).generator(limit):
+            for v in datasets.batch_generator(datasets.DirectoryDataSet(path), batch_size, limit):
                 for z in ta.augment_batches([v]):
                     res = self.predict_on_batch(mdl,ttflips,z)
                     z.predictions = res;
-                    pbar.update(batchSize)
+                    pbar.update(batch_size)
                     yield z
 
     def transformAugmentor(self):
@@ -331,7 +358,8 @@ class GenericConfig:
         for i in range(0, len(model1.layers)):
             if isinstance(model.layers[i],keras.layers.Conv2D) and notUpdated:
                 val = model1.layers[i].get_weights()[0]
-                vvv = np.zeros(shape=(7, 7, 4, 64), dtype=np.float32)
+                #print(val.shape)
+                vvv = np.zeros(shape=(val.shape[0], val.shape[1], 4, val.shape[3]), dtype=np.float32)
                 vvv[:, :, 0:3, :] = val
                 if copy:
                     vvv[:, :, 3, :] = val[:, :, 2, :]
@@ -414,7 +442,7 @@ class Stage:
             cb = configloader.parse("callbacks", self.dict['callbacks'])
         if 'extra_callbacks' in self.dict:
             cb = configloader.parse("callbacks", self.dict['extra_callbacks'])
-        kepoch=-1;
+        kepoch=-1
         if self.cfg.resume:
             kepoch=maxEpoch(ec.metricsPath())
             if kepoch!=-1:
@@ -431,7 +459,7 @@ class Stage:
         md = self.cfg.primary_metric_mode
         if self.cfg.gpus>1:
             cb.append(
-                alt.AltModelCheckpoint(ec.weightsPath(), save_best_only=True, monitor=self.cfg.primary_metric,
+                alt.AltModelCheckpoint(ec.weightsPath(), model,save_best_only=True, monitor=self.cfg.primary_metric,
                                                 mode=md, verbose=1))
         else:
             cb.append(
@@ -440,7 +468,7 @@ class Stage:
 
         self.add_visualization_callbacks(cb, ec, kf)
         if self.epochs-kepoch==0:
-            return;
+            return
         if self.cfg.gpus>1:
             model=multi_gpu_model(model,self.cfg.gpus,True,True)
         kf.trainOnFold(ec.fold, model, cb, self.epochs-kepoch, self.negatives, subsample=ec.subsample,validation_negatives=self.validation_negatives)

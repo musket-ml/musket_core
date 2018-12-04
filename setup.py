@@ -1,7 +1,7 @@
 from setuptools import setup
 import setuptools
 setup(name='musket_core',
-      version='0.01',
+      version='0.02',
       description='Common parts of my pipelines',
       url='https://github.com/petrochenko-pavel-a/musket_core',
       author='Petrochenko Pavel',
@@ -13,6 +13,6 @@ setup(name='musket_core',
       install_requires=["numpy", "scipy","Pillow", "cython","pandas","matplotlib", "scikit-image","tensorflow>=1.3.0","keras>=2.2.4","imageio",
 "opencv-python",
 "h5py",
-"segmentation_models",
-"shapely"],
+"tqdm",
+"segmentation_models"],
       zip_safe=False)
