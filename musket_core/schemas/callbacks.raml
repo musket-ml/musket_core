@@ -19,6 +19,22 @@ types:
         type: string
         enum: [min,max,auto]
         default: auto
+  TensorBoard:
+    type: Callback
+    properties:
+       log_dir: string
+       histogram_freq?: integer
+       batch_size?: integer
+       write_graph: boolean
+       write_grads?: boolean
+       write_images?: boolean
+       embeddings_freq?: number
+       embeddings_layer_names?: string[]
+       embeddings_metadata?: object
+       embeddings_data?: object
+       update_freq?:
+         type: string
+         enum: ['epoch','batch']
   EarlyStopping:
     type: CallbackWithPatience
   ReduceLROnPlateau:
