@@ -66,6 +66,10 @@ class ExecutionConfig:
         ensure(os.path.join(self.dirName, "weights"))
         return os.path.join(self.dirName, "weights","best-" + str(self.fold) + "." + str(self.stage) + ".weights")
 
+    def last_weightsPath(self):
+        ensure(os.path.join(self.dirName, "weights"))
+        return os.path.join(self.dirName, "weights","last-" + str(self.fold) + "." + str(self.stage) + ".weights")
+
     def classifier_weightsPath(self):
         ensure(os.path.join(self.dirName, "classify_weights"))
         return os.path.join(self.dirName, "classify_weights","best-" + str(self.fold) + "." + str(self.stage) + ".weights")
@@ -193,7 +197,7 @@ class GenericConfig:
         return model
 
     def predict_on_directory(self, path, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
-        self.predict_on_dataset(datasets.DirectoryDataSet(path), fold, stage, limit, batch_size, ttflips)
+        return self.predict_on_dataset(datasets.DirectoryDataSet(path), fold, stage, limit, batch_size, ttflips)
 
     def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
         mdl = self.load_model(fold, stage)
@@ -395,6 +399,7 @@ class Stage:
     def __init__(self, dict, cfg: GenericConfig):
         self.dict = dict
         self.cfg = cfg;
+        self.negatives="all"
         if 'initial_weights' in dict:
             self.initial_weights=dict['initial_weights']
         else: self.initial_weights=None
