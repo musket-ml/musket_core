@@ -132,6 +132,7 @@ class GenericConfig:
         self.random_state = 33
         self.stages = []
         self.gpus = 1
+        self.lr=0.001
         self.callbacks = []
         self.path = None
         self.primary_metric = "val_binary_accuracy"
@@ -476,7 +477,22 @@ class Stage:
         if self.epochs-kepoch==0:
             return
         if self.cfg.gpus>1:
+            omodel=model
             model=multi_gpu_model(model,self.cfg.gpus,True,True)
+            lr=self.cfg.lr;
+            if self.lr is not None:
+                lr=self.lr
+            loss=self.cfg.loss
+            if self.loss is not None:
+                loss=self.loss
+
+            self.cfg.compile(model, self.cfg.createOptimizer(lr), loss)
+            #TODO This is weird
+            if self.initial_weights is not None:
+                model.layers[-2].load_weights(self.initial_weights)
+            if os.path.exists(ec.weightsPath()):
+                model.layers[-2].load_weights(ec.weightsPath())
+
         kf.trainOnFold(ec.fold, model, cb, self.epochs-kepoch, self.negatives, subsample=ec.subsample,validation_negatives=self.validation_negatives)
         pass
 
