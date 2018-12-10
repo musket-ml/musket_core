@@ -48,7 +48,7 @@ def maxEpoch(file):
          num=0;
          for row in spamreader:
              if num>0:
-                epoch=max(epoch,int(row[0]))
+                epoch=max(epoch,int(row[0])+1)
              num = num + 1;
          return epoch;
 
@@ -194,7 +194,7 @@ class GenericConfig:
         if stage == -1: stage = len(self.stages) - 1
         ec = ExecutionConfig(fold=fold, stage=stage, subsample=1.0, dr=os.path.dirname(self.path))
         model = self.createAndCompile()
-        model.load_weights(ec.weightsPath())
+        model.load_weights(ec.weightsPath(),False)
         return model
 
     def predict_on_directory(self, path, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
@@ -464,11 +464,8 @@ class Stage:
             kepoch=0
             cb.append(CSVLogger(ec.metricsPath()))
         md = self.cfg.primary_metric_mode
-        if self.cfg.gpus>1:
-            cb.append(
-                alt.AltModelCheckpoint(ec.weightsPath(), model,save_best_only=True, monitor=self.cfg.primary_metric,
-                                                mode=md, verbose=1))
-        else:
+        if self.cfg.gpus==1:
+
             cb.append(
                 keras.callbacks.ModelCheckpoint(ec.weightsPath(), save_best_only=True, monitor=self.cfg.primary_metric,
                                                 mode=md, verbose=1))
@@ -478,6 +475,7 @@ class Stage:
             return
         if self.cfg.gpus>1:
             omodel=model
+            omodel.save_weights(ec.weightsPath()+".tmp",True)
             model=multi_gpu_model(model,self.cfg.gpus,True,True)
             lr=self.cfg.lr;
             if self.lr is not None:
@@ -487,13 +485,16 @@ class Stage:
                 loss=self.loss
 
             self.cfg.compile(model, self.cfg.createOptimizer(lr), loss)
-            #TODO This is weird
-            if self.initial_weights is not None:
-                model.layers[-2].load_weights(self.initial_weights)
-            if os.path.exists(ec.weightsPath()):
-                model.layers[-2].load_weights(ec.weightsPath())
+            print("Restoring weights...")
+            # weights are destroyed by some reason
+            model.layers[-2].load_weights(ec.weightsPath()+".tmp",False)
 
+            cb.append(
+                alt.AltModelCheckpoint(ec.weightsPath(), model.layers[-2], save_best_only=True, monitor=self.cfg.primary_metric,
+                                       mode=md, verbose=1))
         kf.trainOnFold(ec.fold, model, cb, self.epochs-kepoch, self.negatives, subsample=ec.subsample,validation_negatives=self.validation_negatives)
+
+        print('saved')
         pass
 
     def unfreeze(self, model):
