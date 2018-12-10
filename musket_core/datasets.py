@@ -452,7 +452,7 @@ class KFoldedDataSet:
             random.shuffle(nindexes)
             nindexes = nindexes[ 0 : min(len(nindexes),round(len(sindexes)*negatives))]
             r=[]+sindexes+nindexes
-            random.shuffle(r,232772)
+            random.shuffle(r)
             return r;
         return indexes
 
