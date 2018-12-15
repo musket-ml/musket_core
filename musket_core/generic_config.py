@@ -20,7 +20,9 @@ import musket_core
 from musket_core.clr_callback import CyclicLR
 keras.callbacks.CyclicLR= CyclicLR
 keras.utils.get_custom_objects()["macro_f1"]= musket_core.losses.macro_f1
+keras.utils.get_custom_objects()["f1_loss"]= musket_core.losses.f1_loss
 keras.utils.get_custom_objects()["dice"]= musket_core.losses.dice
+
 keras.utils.get_custom_objects()["iou"]= musket_core.losses.iou_coef
 keras.utils.get_custom_objects()["iot"]= musket_core.losses.iot_coef
 keras.utils.get_custom_objects()["lovasz_loss"]= musket_core.losses.lovasz_loss
@@ -122,6 +124,7 @@ class GenericConfig:
     def __init__(self,**atrs):
         self.batch = 8
         self.all = atrs
+        self.verbose=1
         self.copyWeights=False
         self.saveLast=False
         self.augmentation = []
@@ -133,6 +136,7 @@ class GenericConfig:
         self.stages = []
         self.gpus = 1
         self.lr=0.001
+        self.activation=None
         self.callbacks = []
         self.path = None
         self.primary_metric = "val_binary_accuracy"
@@ -315,6 +319,7 @@ class GenericConfig:
         return datasets.SubDataSet(ds,ids)
 
     def createAndCompile(self, lr=None, loss=None)->keras.Model:
+
         return self.compile(self.createNet(), self.createOptimizer(lr=lr), loss=loss)
 
     def predict_on_directory_with_model(self, mdl, path, limit=-1, batch_size=32, ttflips=False):
@@ -395,6 +400,16 @@ class GenericConfig:
                         pass
         return res
 
+
+class KFoldCallback(keras.callbacks.Callback):
+
+    def __init__(self,k:datasets.KFoldedDataSet):
+        self.data=k
+
+    def on_epoch_end(self, epoch, logs=None):
+        self.data.epoch()
+        pass
+
 class Stage:
 
     def __init__(self, dict, cfg: GenericConfig):
@@ -448,8 +463,9 @@ class Stage:
         if 'callbacks' in self.dict:
             cb = configloader.parse("callbacks", self.dict['callbacks'])
         if 'extra_callbacks' in self.dict:
-            cb = configloader.parse("callbacks", self.dict['extra_callbacks'])
+            cb = cb + configloader.parse("callbacks", self.dict['extra_callbacks'])
         kepoch=-1
+        cb.append(KFoldCallback(kf))
         if self.cfg.resume:
             kepoch=maxEpoch(ec.metricsPath())
             if kepoch!=-1:
@@ -492,10 +508,12 @@ class Stage:
             cb.append(
                 alt.AltModelCheckpoint(ec.weightsPath(), model.layers[-2], save_best_only=True, monitor=self.cfg.primary_metric,
                                        mode=md, verbose=1))
-        kf.trainOnFold(ec.fold, model, cb, self.epochs-kepoch, self.negatives, subsample=ec.subsample,validation_negatives=self.validation_negatives)
+        kf.trainOnFold(ec.fold, model, cb, self.epochs-kepoch, self.negatives, subsample=ec.subsample,validation_negatives=self.validation_negatives,verbose=self.cfg.verbose)
 
         print('saved')
         pass
+
+
 
     def unfreeze(self, model):
         pass

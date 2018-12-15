@@ -359,6 +359,11 @@ class KFoldedDataSet:
             indexes = fold[1]
         return indexes
 
+    def epoch(self):
+        for fold in self.folds:
+            train = fold[0]
+            np.random.shuffle(train)
+
     def generator(self,foldNum, isTrain=True,negatives="all",returnBatch=False):
         indexes = self.sampledIndexes(foldNum, isTrain, negatives)
         yield from self.generator_from_indexes(indexes,isTrain,returnBatch)
@@ -461,7 +466,7 @@ class KFoldedDataSet:
         return len(train_indexes)//(round(subsample*self.batchSize))
 
     def trainOnFold(self,fold:int,model:keras.Model,callbacks=[],numEpochs:int=100,negatives="all",
-                    subsample=1.0,validation_negatives=None):
+                    subsample=1.0,validation_negatives=None,verbose=1):
         train_indexes = self.sampledIndexes(fold, True, negatives)
         if validation_negatives==None:
             validation_negatives=negatives
@@ -474,6 +479,7 @@ class KFoldedDataSet:
                              epochs=numEpochs,
                              validation_data=test_g(),
                              callbacks=callbacks,
+                             verbose=verbose,
                              validation_steps=len(test_indexes)//(round(subsample*self.batchSize)))
         finally:
             tl.terminate();

@@ -33,7 +33,7 @@ types:
       classifier:
         type: string
         (meta.custom): true
-        enum: [resnet50,densenet121,densenet169,densenet201]
+        enum: [ResNet50,DenseNet121,DenseNet169,DenseNet201,NASNetLarge,InceptionV3,NASNetMobile,VGG16,VGG19,Xception,InceptionResNetV2,MobileNet,MobileNetV2]
       folds_count?:
         type: integer
         (meta.custom): true
@@ -45,6 +45,9 @@ types:
         (meta.custom): true
       extra_train_data?:
         type: string
+        (meta.custom): true
+      dropout?:
+        type: number
         (meta.custom): true
       dataset_augmenter?:
         type: AugmenterConfig
