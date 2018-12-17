@@ -35,6 +35,12 @@ dataset_augmenters={
 }
 extra_train={}
 
+class Rotate90(imgaug.augmenters.Affine):
+    def __init__(self):
+        super(Rotate90, self).__init__(rotate=imgaug.parameters.Choice([0, 90, 180, 270]))
+
+imgaug.augmenters.Rotate90 = Rotate90
+
 def ensure(p):
     try:
         os.makedirs(p);
