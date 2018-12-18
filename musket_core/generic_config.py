@@ -41,6 +41,8 @@ class Rotate90(imgaug.augmenters.Affine):
 
 imgaug.augmenters.Rotate90 = Rotate90
 
+print("Rotate90 registered");
+
 def ensure(p):
     try:
         os.makedirs(p);
@@ -267,24 +269,51 @@ class GenericConfig:
                 res1 = imgaug.augmenters.Fliplr(1.0).augment_images(res1)
             res = (res + res1) / 2.0
         elif ttflips:
-            another = imgaug.augmenters.Fliplr(1.0).augment_images(z.images_aug)
-            res1 = mdl.predict(np.array(another))
-            if self.flipPred:
-                res1 = imgaug.augmenters.Fliplr(1.0).augment_images(res1)
-
-            another1 = imgaug.augmenters.Flipud(1.0).augment_images(z.images_aug)
-            res2 = mdl.predict(np.array(another1))
-            if self.flipPred:
-                res2 = imgaug.augmenters.Flipud(1.0).augment_images(res2)
-
-            seq = imgaug.augmenters.Sequential([imgaug.augmenters.Fliplr(1.0), imgaug.augmenters.Flipud(1.0)])
-            another2 = seq.augment_images(z.images_aug)
-            res3 = mdl.predict(np.array(another2))
-            if self.flipPred:
-                res3 = seq.augment_images(res3)
-            res = (res + res1 + res2 + res3) / 4.0
+            res = self.predict_with_all_augs(mdl, ttflips, z);
         return res
-
+    
+    def predict_with_all_augs(self, mdl, ttflips, z):
+        input_left = z.images_aug
+        input_right = imgaug.augmenters.Fliplr(1.0).augment_images(z.images_aug)
+        
+        out_left = self.predict_with_all_rot_augs(mdl, ttflips, z, input_left)
+        out_right = self.predict_with_all_rot_augs(mdl, ttflips, z, input_right)
+        
+        if z.flipPred:
+            out_right = imgaug.augmenters.Fliplr(1.0).augment_images(z.images_aug);
+        
+        return (out_left + out_right) / 2.0;
+    
+    
+    def predict_with_all_rot_augs(self, mdl, ttflips, z, input):
+        rot_90 = imgaug.augmenters.Affine(90);
+        rot_180 = imgaug.augmenters.Affine(180);
+        rot_270 = imgaug.augmenters.Affine(270);
+        
+        count = 2
+        
+        res_0 = mdl.predict(np.array(input));
+        
+        res_180 = self.predict_there_and_back(mdl, rot_180, rot_180, input, z);
+        
+        res_270 = 0;
+        res_90 = 0
+        
+        if z.rotations90:
+            res_270 = self.predict_there_and_back(mdl, rot_270, rot_90, input, z);
+            res_90 = self.predict_there_and_back(mdl, rot_90, rot_270, input, z);
+        
+        output = (res_0 + res_90 + res_180 + res_270) / 4.0;
+    
+    def predict_there_and_back(self, mdl, there, back, input, z):
+        there_res = mdl.predict(np.array(there.augment_images(input)))
+        
+        if z.flipPred:
+            return back.augment_images(there_res);
+        
+        return there_res;
+    
+    
     def compile(self, net: keras.Model, opt: keras.optimizers.Optimizer, loss:str=None)->keras.Model:
         if loss==None:
             loss=self.loss
