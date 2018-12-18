@@ -290,7 +290,7 @@ class GenericConfig:
         rot_180 = imgaug.augmenters.Affine(180);
         rot_270 = imgaug.augmenters.Affine(270);
         
-        count = 2
+        count = 2.0
         
         res_0 = mdl.predict(np.array(input));
         
@@ -300,10 +300,12 @@ class GenericConfig:
         res_90 = 0
         
         if z.rotations90:
+            count = 4.0
+            
             res_270 = self.predict_there_and_back(mdl, rot_270, rot_90, input, z);
             res_90 = self.predict_there_and_back(mdl, rot_90, rot_270, input, z);
         
-        output = (res_0 + res_90 + res_180 + res_270) / 4.0;
+        output = (res_0 + res_90 + res_180 + res_270) / count;
     
     def predict_there_and_back(self, mdl, there, back, input, z):
         there_res = mdl.predict(np.array(there.augment_images(input)))
