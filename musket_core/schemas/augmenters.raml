@@ -60,8 +60,10 @@ types:
   Rotate90:
     type: Augmenter
     properties:
-      (meta.positional): true
-      enabled: boolean
+      enabled:
+        (meta.positional): true
+        type: boolean
+        
   Sequential: ControlFlow
   Affine:
     type: Augmenter
