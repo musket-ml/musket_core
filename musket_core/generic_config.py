@@ -44,8 +44,6 @@ class Rotate90(imgaug.augmenters.Affine):
 
 imgaug.augmenters.Rotate90 = Rotate90
 
-print("Rotate90 registered");
-
 def ensure(p):
     try:
         os.makedirs(p);
@@ -282,16 +280,16 @@ class GenericConfig:
         out_left = self.predict_with_all_rot_augs(mdl, ttflips, z, input_left)
         out_right = self.predict_with_all_rot_augs(mdl, ttflips, z, input_right)
         
-        if z.flipPred:
-            out_right = imgaug.augmenters.Fliplr(1.0).augment_images(z.images_aug);
+        if self.flipPred:
+            out_right = imgaug.augmenters.Fliplr(1.0).augment_images(out_right);
         
         return (out_left + out_right) / 2.0;
     
     
     def predict_with_all_rot_augs(self, mdl, ttflips, z, input):
-        rot_90 = imgaug.augmenters.Affine(90);
-        rot_180 = imgaug.augmenters.Affine(180);
-        rot_270 = imgaug.augmenters.Affine(270);
+        rot_90 = imgaug.augmenters.Affine(rotate=90.0);
+        rot_180 = imgaug.augmenters.Affine(rotate=180.0);
+        rot_270 = imgaug.augmenters.Affine(rotate=270.0);
         
         count = 2.0
         
@@ -302,18 +300,20 @@ class GenericConfig:
         res_270 = 0;
         res_90 = 0
         
-        if z.rotations90:
+        if ttflips == "Horizontal_and_vertical":
             count = 4.0
             
             res_270 = self.predict_there_and_back(mdl, rot_270, rot_90, input, z);
             res_90 = self.predict_there_and_back(mdl, rot_90, rot_270, input, z);
         
-        output = (res_0 + res_90 + res_180 + res_270) / count;
+        return (res_0 + res_90 + res_180 + res_270) / count;
     
     def predict_there_and_back(self, mdl, there, back, input, z):
-        there_res = mdl.predict(np.array(there.augment_images(input)))
+        augmented_input = there.augment_images(input)
+
+        there_res = mdl.predict(np.array(augmented_input))
         
-        if z.flipPred:
+        if self.flipPred:
             return back.augment_images(there_res);
         
         return there_res;
