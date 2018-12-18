@@ -36,8 +36,11 @@ dataset_augmenters={
 extra_train={}
 
 class Rotate90(imgaug.augmenters.Affine):
-    def __init__(self):
-        super(Rotate90, self).__init__(rotate=imgaug.parameters.Choice([0, 90, 180, 270]))
+    def __init__(self, enabled):
+        if enabled:
+            super(Rotate90, self).__init__(rotate=imgaug.parameters.Choice([0, 90, 180, 270]))
+        else:
+            super(Rotate90, self).__init__(rotate=imgaug.parameters.Choice([0]))
 
 imgaug.augmenters.Rotate90 = Rotate90
 
