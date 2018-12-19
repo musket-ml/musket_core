@@ -44,9 +44,9 @@ class Rotate90(imgaug.augmenters.Affine):
 
 imgaug.augmenters.Rotate90 = Rotate90
 
-def ensure(p):
+def ensure(directory):
     try:
-        os.makedirs(p);
+        os.makedirs(directory);
     except:
         pass
 
@@ -218,19 +218,19 @@ class GenericConfig:
         if self.crops is not None:
             mdl=BatchCrop(self.crops,mdl)
         ta = self.transformAugmentor()
-        for v in datasets.batch_generator(dataset, batch_size, limit):
-            for z in ta.augment_batches([v]):
-                res = self.predict_on_batch(mdl, ttflips, z)
-                self.update(z,res)
-                yield z
+        for original_batch in datasets.batch_generator(dataset, batch_size, limit):
+            for batch in ta.augment_batches([original_batch]):
+                res = self.predict_on_batch(mdl, ttflips, batch)
+                self.update(batch,res)
+                yield batch
 
-    def fit(self, d, subsample=1.0, foldsToExecute=None, start_from_stage=0):
+    def fit(self, dataset, subsample=1.0, foldsToExecute=None, start_from_stage=0):
         if self.crops is not None:
-            d= datasets.CropAndSplit(d, self.crops)
+            dataset= datasets.CropAndSplit(dataset, self.crops)
         dn = os.path.dirname(self.path)
         if os.path.exists(os.path.join(dn, "summary.yaml")):
             raise ValueError("Experiment is already finished!!!!")
-        folds = self.kfold(d, range(0, len(d)))
+        folds = self.kfold(dataset, range(0, len(dataset)))
         for i in range(len(folds.folds)):
             if foldsToExecute:
                 if not i in foldsToExecute:
@@ -250,7 +250,7 @@ class GenericConfig:
                  "folds": foldsToExecute},
                 f)
 
-    def update(self,z,res):
+    def update(self,batch,res):
         pass
 
     def createOptimizer(self, lr=None):
@@ -260,42 +260,41 @@ class GenericConfig:
             ds["lr"] = lr
         return r(**ds)
 
-    def predict_on_batch(self, mdl, ttflips, z):
-        o1 = np.array(z.images_aug)
+    def predict_on_batch(self, mdl, ttflips, batch):
+        o1 = np.array(batch.images_aug)
         res = mdl.predict(o1)
         if ttflips == "Horizontal":
-            another = imgaug.augmenters.Fliplr(1.0).augment_images(z.images_aug)
+            another = imgaug.augmenters.Fliplr(1.0).augment_images(batch.images_aug)
             res1 = mdl.predict(np.array(another))
             if self.flipPred:
                 res1 = imgaug.augmenters.Fliplr(1.0).augment_images(res1)
             res = (res + res1) / 2.0
         elif ttflips:
-            res = self.predict_with_all_augs(mdl, ttflips, z);
+            res = self.predict_with_all_augs(mdl, ttflips, batch)
         return res
     
-    def predict_with_all_augs(self, mdl, ttflips, z):
-        input_left = z.images_aug
-        input_right = imgaug.augmenters.Fliplr(1.0).augment_images(z.images_aug)
+    def predict_with_all_augs(self, mdl, ttflips, batch):
+        input_left = batch.images_aug
+        input_right = imgaug.augmenters.Fliplr(1.0).augment_images(batch.images_aug)
         
-        out_left = self.predict_with_all_rot_augs(mdl, ttflips, z, input_left)
-        out_right = self.predict_with_all_rot_augs(mdl, ttflips, z, input_right)
+        out_left = self.predict_with_all_rot_augs(mdl, ttflips,  input_left)
+        out_right = self.predict_with_all_rot_augs(mdl, ttflips,  input_right)
         
         if self.flipPred:
-            out_right = imgaug.augmenters.Fliplr(1.0).augment_images(out_right);
+            out_right = imgaug.augmenters.Fliplr(1.0).augment_images(out_right)
         
-        return (out_left + out_right) / 2.0;
-    
-    
-    def predict_with_all_rot_augs(self, mdl, ttflips, z, input):
-        rot_90 = imgaug.augmenters.Affine(rotate=90.0);
-        rot_180 = imgaug.augmenters.Affine(rotate=180.0);
-        rot_270 = imgaug.augmenters.Affine(rotate=270.0);
+        return (out_left + out_right) / 2.0
+
+    def predict_with_all_rot_augs(self, mdl, ttflips,  input):
+        rot_90 = imgaug.augmenters.Affine(rotate=90.0)
+        rot_180 = imgaug.augmenters.Affine(rotate=180.0)
+        rot_270 = imgaug.augmenters.Affine(rotate=270.0)
         
         count = 2.0
         
-        res_0 = mdl.predict(np.array(input));
+        res_0 = mdl.predict(np.array(input))
         
-        res_180 = self.predict_there_and_back(mdl, rot_180, rot_180, input, z);
+        res_180 = self.predict_there_and_back(mdl, rot_180, rot_180, input)
         
         res_270 = 0;
         res_90 = 0
@@ -303,20 +302,20 @@ class GenericConfig:
         if ttflips == "Horizontal_and_vertical":
             count = 4.0
             
-            res_270 = self.predict_there_and_back(mdl, rot_270, rot_90, input, z);
-            res_90 = self.predict_there_and_back(mdl, rot_90, rot_270, input, z);
+            res_270 = self.predict_there_and_back(mdl, rot_270, rot_90, input)
+            res_90 = self.predict_there_and_back(mdl, rot_90, rot_270, input)
         
-        return (res_0 + res_90 + res_180 + res_270) / count;
+        return (res_0 + res_90 + res_180 + res_270) / count
     
-    def predict_there_and_back(self, mdl, there, back, input, z):
+    def predict_there_and_back(self, mdl, there, back, input):
         augmented_input = there.augment_images(input)
 
         there_res = mdl.predict(np.array(augmented_input))
         
         if self.flipPred:
-            return back.augment_images(there_res);
+            return back.augment_images(there_res)
         
-        return there_res;
+        return there_res
     
     
     def compile(self, net: keras.Model, opt: keras.optimizers.Optimizer, loss:str=None)->keras.Model:
