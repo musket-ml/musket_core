@@ -36,8 +36,11 @@ dataset_augmenters={
 extra_train={}
 
 class Rotate90(imgaug.augmenters.Affine):
-    def __init__(self):
-        super(Rotate90, self).__init__(rotate=imgaug.parameters.Choice([0, 90, 180, 270]))
+    def __init__(self, enabled):
+        if enabled:
+            super(Rotate90, self).__init__(rotate=imgaug.parameters.Choice([0, 90, 180, 270]))
+        else:
+            super(Rotate90, self).__init__(rotate=imgaug.parameters.Choice([0]))
 
 imgaug.augmenters.Rotate90 = Rotate90
 
@@ -267,24 +270,55 @@ class GenericConfig:
                 res1 = imgaug.augmenters.Fliplr(1.0).augment_images(res1)
             res = (res + res1) / 2.0
         elif ttflips:
-            another = imgaug.augmenters.Fliplr(1.0).augment_images(z.images_aug)
-            res1 = mdl.predict(np.array(another))
-            if self.flipPred:
-                res1 = imgaug.augmenters.Fliplr(1.0).augment_images(res1)
-
-            another1 = imgaug.augmenters.Flipud(1.0).augment_images(z.images_aug)
-            res2 = mdl.predict(np.array(another1))
-            if self.flipPred:
-                res2 = imgaug.augmenters.Flipud(1.0).augment_images(res2)
-
-            seq = imgaug.augmenters.Sequential([imgaug.augmenters.Fliplr(1.0), imgaug.augmenters.Flipud(1.0)])
-            another2 = seq.augment_images(z.images_aug)
-            res3 = mdl.predict(np.array(another2))
-            if self.flipPred:
-                res3 = seq.augment_images(res3)
-            res = (res + res1 + res2 + res3) / 4.0
+            res = self.predict_with_all_augs(mdl, ttflips, z);
         return res
+    
+    def predict_with_all_augs(self, mdl, ttflips, z):
+        input_left = z.images_aug
+        input_right = imgaug.augmenters.Fliplr(1.0).augment_images(z.images_aug)
+        
+        out_left = self.predict_with_all_rot_augs(mdl, ttflips, z, input_left)
+        out_right = self.predict_with_all_rot_augs(mdl, ttflips, z, input_right)
+        
+        if self.flipPred:
+            out_right = imgaug.augmenters.Fliplr(1.0).augment_images(out_right);
+        
+        return (out_left + out_right) / 2.0;
+    
+    
+    def predict_with_all_rot_augs(self, mdl, ttflips, z, input):
+        rot_90 = imgaug.augmenters.Affine(rotate=90.0);
+        rot_180 = imgaug.augmenters.Affine(rotate=180.0);
+        rot_270 = imgaug.augmenters.Affine(rotate=270.0);
+        
+        count = 2.0
+        
+        res_0 = mdl.predict(np.array(input));
+        
+        res_180 = self.predict_there_and_back(mdl, rot_180, rot_180, input, z);
+        
+        res_270 = 0;
+        res_90 = 0
+        
+        if ttflips == "Horizontal_and_vertical":
+            count = 4.0
+            
+            res_270 = self.predict_there_and_back(mdl, rot_270, rot_90, input, z);
+            res_90 = self.predict_there_and_back(mdl, rot_90, rot_270, input, z);
+        
+        return (res_0 + res_90 + res_180 + res_270) / count;
+    
+    def predict_there_and_back(self, mdl, there, back, input, z):
+        augmented_input = there.augment_images(input)
 
+        there_res = mdl.predict(np.array(augmented_input))
+        
+        if self.flipPred:
+            return back.augment_images(there_res);
+        
+        return there_res;
+    
+    
     def compile(self, net: keras.Model, opt: keras.optimizers.Optimizer, loss:str=None)->keras.Model:
         if loss==None:
             loss=self.loss

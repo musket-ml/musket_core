@@ -57,7 +57,13 @@ types:
   Fliplr: WithChance
   Flipud: WithChance
   Invert: WithChance
-  Rotate90: Augmenter
+  Rotate90:
+    type: Augmenter
+    properties:
+      enabled:
+        (meta.positional): true
+        type: boolean
+        
   Sequential: ControlFlow
   Affine:
     type: Augmenter
