@@ -336,7 +336,7 @@ class SimplePNGMaskDataSet:
         
         out = out.astype(np.float32)
         
-        out = np.sum(out, axis=3)
+        out = np.sum(out, axis=2)
         
         out = out / np.max(out)
         
