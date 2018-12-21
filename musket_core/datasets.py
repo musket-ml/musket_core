@@ -329,8 +329,15 @@ class SimplePNGMaskDataSet:
         if self.detect_exts:
             in_ext = self.exts[item]
         
-        return PredictionItem(self.ids[item] + str(), imageio.imread(os.path.join(self.path, self.ids[item]+"." + in_ext)),
-                              np.expand_dims(imageio.imread(os.path.join(self.mask, self.ids[item] + "." + self.out_ext)),axis=2).astype(np.float32)/255.0)
+        out = imageio.imread(os.path.join(self.mask, self.ids[item] + "." + self.out_ext))
+        
+        if len(out.shape) < 3:
+            out = np.expand_dims(out, axis=2)
+        
+        out = out.astype(np.float32)
+        out = out / np.max(out)
+        
+        return PredictionItem(self.ids[item] + str(), imageio.imread(os.path.join(self.path, self.ids[item]+"." + in_ext)), out)
 
     def isPositive(self, item):
         return True
