@@ -335,6 +335,9 @@ class SimplePNGMaskDataSet:
             out = np.expand_dims(out, axis=2)
         
         out = out.astype(np.float32)
+        
+        out = np.sum(out, axis=3)
+        
         out = out / np.max(out)
         
         return PredictionItem(self.ids[item] + str(), imageio.imread(os.path.join(self.path, self.ids[item]+"." + in_ext)), out)
