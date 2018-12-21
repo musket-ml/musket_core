@@ -303,15 +303,19 @@ class WithBackgrounds:
 
 
 class SimplePNGMaskDataSet:
-    def __init__(self, path, mask):
+    def __init__(self, path, mask, in_ext="jpg", out_ext="png"):
         self.path = path;
         self.mask = mask;
         self.ids=[x[0:x.index('.')] for x in os.listdir(path)]
+        
+        self.in_ext = in_ext
+        self.out_ext = out_ext
+        
         pass
 
     def __getitem__(self, item):
-        return PredictionItem(self.ids[item] + str(), imageio.imread(os.path.join(self.path, self.ids[item]+".jpg")),
-                              np.expand_dims(imageio.imread(os.path.join(self.mask, self.ids[item] + ".png")),axis=2).astype(np.float32)/255.0)
+        return PredictionItem(self.ids[item] + str(), imageio.imread(os.path.join(self.path, self.ids[item]+"." + self.in_ext)),
+                              np.expand_dims(imageio.imread(os.path.join(self.mask, self.ids[item] + "." + self.out_ext)),axis=2).astype(np.float32)/255.0)
 
     def isPositive(self, item):
         return True
