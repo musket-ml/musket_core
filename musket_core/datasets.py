@@ -542,7 +542,12 @@ class AspectRatioDataSet:
         new_size_in = self.get_new_size((child_item.x.shape[0], child_item.x.shape[1]))
         new_size_out = self.get_new_size((child_item.y.shape[0], child_item.y.shape[1]))
 
-        return PredictionItem(child_item.id, self.get_new_image(new_size_in, child_item.x), self.get_new_image(new_size_out, child_item.y))
+        rnd = 0.5;
+
+        if self.strategy == "random":
+            rnd = random.random();
+
+        return PredictionItem(child_item.id, self.get_new_image(new_size_in, child_item.x, rnd), self.get_new_image(new_size_out, child_item.y, rnd))
 
     def get_new_size(self, input_size):
         input_x = input_size[0]
@@ -562,7 +567,7 @@ class AspectRatioDataSet:
 
         return (input_x, input_y)
 
-    def get_new_image(self, new_size, image):
+    def get_new_image(self, new_size, image, rnd):
         shift_x = 0
         shift_y = 0
 
@@ -574,10 +579,7 @@ class AspectRatioDataSet:
         elif new_size[1] != image.shape[1]:
             shift = image.shape[1] - new_size[1]
 
-        if self.strategy == "center":
-            shift = shift // 2
-        elif self.strategy == "random":
-            shift = random.randint(0, shift - 1)
+        shift = round(rnd * shift)
 
         if new_size[0] != image.shape[0]:
             shift_x = shift
