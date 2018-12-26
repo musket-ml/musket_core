@@ -530,9 +530,11 @@ class NoChangeDataSetImageClassification(KFoldedDataSet):
         return NullTerminatable(),NullTerminatable(),r
 
 class AspectRatioDataSet:
-    def __init__(self, child, target_ratio=(1, 1)):
+    def __init__(self, child, target_ratio=(1, 1), strategy="center"):
         self.child = child
         self.target_size = target_ratio
+
+        self.strategy = strategy
 
     def __getitem__(self, item):
         child_item = self.child[item]
@@ -552,15 +554,11 @@ class AspectRatioDataSet:
         input_ratio = input_x / input_y
         output_ratio = target_x / target_y
 
-        while input_ratio > output_ratio:
-            input_x = input_x - 1;
+        if input_ratio > output_ratio:
+            input_x = round(input_y * output_ratio)
 
-            input_ratio = input_x / input_y
-
-        while input_ratio < output_ratio:
-            input_y = input_y - 1;
-
-            input_ratio = input_x / input_y
+        elif input_ratio < output_ratio:
+            input_y = round(input_y / output_ratio)
 
         return (input_x, input_y)
 
@@ -568,11 +566,24 @@ class AspectRatioDataSet:
         shift_x = 0
         shift_y = 0
 
-        if new_size[0] != image.shape[0]:
-            shift_x = (image.shape[0] - new_size[0]) // 2
+        shift = 0
 
-        if new_size[1] != image.shape[1]:
-            shift_y = (image.shape[1] - new_size[1]) // 2
+        if new_size[0] != image.shape[0]:
+            shift = image.shape[0] - new_size[0]
+
+        elif new_size[1] != image.shape[1]:
+            shift = image.shape[1] - new_size[1]
+
+        if self.strategy == "center":
+            shift = shift // 2
+        elif self.strategy == "random":
+            shift = random.randint(0, shift - 1)
+
+        if new_size[0] != image.shape[0]:
+            shift_x = shift
+
+        elif new_size[1] != image.shape[1]:
+            shift_y = shift
 
         return image[shift_x:new_size[0] + shift_x, shift_y:new_size[1] + shift_y, :]
 
