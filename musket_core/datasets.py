@@ -549,6 +549,9 @@ class AspectRatioDataSet:
 
         return PredictionItem(child_item.id, self.get_new_image(new_size_in, child_item.x, rnd), self.get_new_image(new_size_out, child_item.y, rnd))
 
+    def __len__(self):
+        return len(self.child)
+    
     def get_new_size(self, input_size):
         input_x = input_size[0]
         input_y = input_size[1]
