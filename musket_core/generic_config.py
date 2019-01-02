@@ -227,6 +227,7 @@ class GenericConfig:
     def fit(self, dataset, subsample=1.0, foldsToExecute=None, start_from_stage=0):
         if self.crops is not None:
             dataset= datasets.CropAndSplit(dataset, self.crops)
+
         dn = os.path.dirname(self.path)
         if os.path.exists(os.path.join(dn, "summary.yaml")):
             raise ValueError("Experiment is already finished!!!!")
@@ -241,6 +242,8 @@ class GenericConfig:
                     self.skip_stage(i, model, s, subsample)
                     continue
                 st: Stage = self.stages[s]
+
+
                 ec = ExecutionConfig(fold=i, stage=s, subsample=subsample, dr=os.path.dirname(self.path))
                 st.execute(folds, model, ec)
 
@@ -476,8 +479,13 @@ class Stage:
     def lr_find(self, kf: datasets.KFoldedDataSet, model: keras.Model, ec: ExecutionConfig, start_lr, end_lr, epochs):
         if 'unfreeze_encoder' in self.dict and self.dict['unfreeze_encoder']:
             self.unfreeze(model)
+
+        if 'unfreeze_encoder' in self.dict and not self.dict['unfreeze_encoder']:
+            self.freeze(model)
+
         if self.loss or self.lr:
             self.cfg.compile(model, self.cfg.createOptimizer(self.lr), self.loss)
+
         cb = [] + self.cfg.callbacks
         if self.initial_weights is not None:
             model.load_weights(self.initial_weights)
@@ -493,6 +501,10 @@ class Stage:
     def execute(self, kf: datasets.KFoldedDataSet, model: keras.Model, ec: ExecutionConfig):
         if 'unfreeze_encoder' in self.dict and self.dict['unfreeze_encoder']:
             self.unfreeze(model)
+
+        if 'unfreeze_encoder' in self.dict and not self.dict['unfreeze_encoder']:
+            self.freeze(model)
+
         if self.loss or self.lr:
             self.cfg.compile(model, self.cfg.createOptimizer(self.lr), self.loss)
         cb = [] + self.cfg.callbacks
@@ -554,6 +566,9 @@ class Stage:
 
 
     def unfreeze(self, model):
+        pass
+
+    def freeze(self, model):
         pass
 
     def add_visualization_callbacks(self, cb, ec, kf):

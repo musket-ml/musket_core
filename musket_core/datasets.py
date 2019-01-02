@@ -18,7 +18,7 @@ AUGMENTER_QUEUE_LIMIT=10
 USE_MULTIPROCESSING=False
 
 class PredictionItem:
-    def __init__(self, path,x,y):
+    def __init__(self, path, x, y):
         self.x=x
         self.y=y
         self.id=path;
@@ -303,15 +303,46 @@ class WithBackgrounds:
 
 
 class SimplePNGMaskDataSet:
-    def __init__(self, path, mask):
+    def __init__(self, path, mask, detect_exts=False, in_ext="jpg", out_ext="png"):
         self.path = path;
         self.mask = mask;
-        self.ids=[x[0:x.index('.')] for x in os.listdir(path)]
+        
+        ldir = os.listdir(path)
+        
+        self.ids=[x[0:x.index('.')] for x in ldir]
+        
+        self.exts = []
+                
+        if detect_exts:
+            self.exts=[x[x.index('.') + 1:] for x in ldir]
+        
+        self.detect_exts = detect_exts
+        
+        self.in_ext = in_ext
+        self.out_ext = out_ext
+        
         pass
 
     def __getitem__(self, item):
-        return PredictionItem(self.ids[item] + str(), imageio.imread(os.path.join(self.path, self.ids[item]+".jpg")),
-                              np.expand_dims(imageio.imread(os.path.join(self.mask, self.ids[item] + ".png")),axis=2).astype(np.float32)/255.0)
+        in_ext = self.in_ext
+        
+        if self.detect_exts:
+            in_ext = self.exts[item]
+        
+        out = imageio.imread(os.path.join(self.mask, self.ids[item] + "." + self.out_ext))
+        
+        if len(out.shape) < 3:
+            out = np.expand_dims(out, axis=2)
+        
+        out = out.astype(np.float32)
+        
+        out = np.sum(out, axis=2)
+        
+        out = np.expand_dims(out, axis=2)
+        
+        out = out / np.max(out)
+        
+        return PredictionItem(self.ids[item] + str(), imageio.imread(os.path.join(self.path, self.ids[item]+"." + in_ext)), out)
 
     def isPositive(self, item):
         return True
@@ -409,24 +440,6 @@ class KFoldedDataSet:
 
             return NullTerminatable(),NullTerminatable(),r
 
-    # def positive_negative_classification_generator_from_indexes(self, indexes, isTrain=True):
-    #     m = DataSetLoader(self.ds, indexes, self.batchSize,isTrain=isTrain).generator
-    #     aug = self.augmentor(isTrain)
-    #     l = imgaug.imgaug.BatchLoader(m)
-    #     g = imgaug.imgaug.BackgroundAugmenter(l, augseq=aug,queue_size=AUGMENTER_QUEUE_LIMIT)
-    #     def r():
-    #         num = 0;
-    #         while True:
-    #             r = g.get_batch();
-    #             x,y= np.array(r.images_aug), np.array([x.arr for x in r.segmentation_maps_aug])
-    #             rs=np.zeros((len(y)))
-    #             for i in range(0,len(y)):
-    #                 if y[i].max()>0.5:
-    #                     rs[i]=1.0
-    #             num=num+1
-    #             yield x,rs
-    #     return l,g,r
-
     def augmentor(self, isTrain)->imgaug.augmenters.Augmenter:
         allAug = [];
         if isTrain:
@@ -515,6 +528,69 @@ class NoChangeDataSetImageClassification(KFoldedDataSet):
                         yield x,y,r
                     else: yield x,y
         return NullTerminatable(),NullTerminatable(),r
+
+class AspectRatioDataSet:
+    def __init__(self, child, target_ratio=(1, 1), strategy="center"):
+        self.child = child
+        self.target_size = target_ratio
+
+        self.strategy = strategy
+
+    def __getitem__(self, item):
+        child_item = self.child[item]
+
+        new_size_in = self.get_new_size((child_item.x.shape[0], child_item.x.shape[1]))
+        new_size_out = self.get_new_size((child_item.y.shape[0], child_item.y.shape[1]))
+
+        rnd = 0.5;
+
+        if self.strategy == "random":
+            rnd = random.random();
+
+        return PredictionItem(child_item.id, self.get_new_image(new_size_in, child_item.x, rnd), self.get_new_image(new_size_out, child_item.y, rnd))
+
+    def __len__(self):
+        return len(self.child)
+    
+    def get_new_size(self, input_size):
+        input_x = input_size[0]
+        input_y = input_size[1]
+
+        target_x = self.target_size[0]
+        target_y = self.target_size[1]
+
+        input_ratio = input_x / input_y
+        output_ratio = target_x / target_y
+
+        if input_ratio > output_ratio:
+            input_x = round(input_y * output_ratio)
+
+        elif input_ratio < output_ratio:
+            input_y = round(input_y / output_ratio)
+
+        return (input_x, input_y)
+
+    def get_new_image(self, new_size, image, rnd):
+        shift_x = 0
+        shift_y = 0
+
+        shift = 0
+
+        if new_size[0] != image.shape[0]:
+            shift = image.shape[0] - new_size[0]
+
+        elif new_size[1] != image.shape[1]:
+            shift = image.shape[1] - new_size[1]
+
+        shift = round(rnd * shift)
+
+        if new_size[0] != image.shape[0]:
+            shift_x = shift
+
+        elif new_size[1] != image.shape[1]:
+            shift_y = shift
+
+        return image[shift_x:new_size[0] + shift_x, shift_y:new_size[1] + shift_y, :]
 
 class CropAndSplit:
     def __init__(self,orig,n):
