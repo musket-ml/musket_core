@@ -289,7 +289,6 @@ class GenericConfig:
         rot_90 = imgaug.augmenters.Affine(rotate=90.0)
         rot_180 = imgaug.augmenters.Affine(rotate=180.0)
         rot_270 = imgaug.augmenters.Affine(rotate=270.0)
-        
         count = 2.0
         
         res_0 = mdl.predict(np.array(input))

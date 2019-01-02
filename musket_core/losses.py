@@ -237,13 +237,12 @@ Compatible with tensorflow backend
 def focal_loss(y_true, y_pred):
     gamma=2#0.75
     alpha=0.25
-    pt_1 = tf.where(tf.equal(y_true, 1), y_pred, tf.ones_like(y_pred))
-    pt_0 = tf.where(tf.equal(y_true, 0), y_pred, tf.zeros_like(y_pred))
 
-    pt_1 = K.clip(pt_1, 1e-3, .999)
-    pt_0 = K.clip(pt_0, 1e-3, .999)
-
-    return -K.sum(alpha * K.pow(1. - pt_1, gamma) * K.log(pt_1))-K.sum((1-alpha) * K.pow( pt_0, gamma) * K.log(1. - pt_0))
+    yc = tf.clip_by_value(y_pred, 1e-15, 1 - 1e-15)
+    pt_1 = tf.where(tf.equal(y_true, 1), yc, tf.ones_like(yc))
+    pt_0 = tf.where(tf.equal(y_true, 0), yc, tf.zeros_like(yc))
+    return (-K.sum(alpha * K.pow(1. - pt_1, gamma) * K.log(pt_1)) - K.sum(
+        (1 - alpha) * K.pow(pt_0, gamma) * K.log(1. - pt_0)))
 
 def plus(s1,f1,s2,f2):
     def impl(x,y):
