@@ -365,7 +365,10 @@ class KFoldedDataSet:
         self.batchSize=batchSize
         self.positive={}
         self.kf=ms.KFold(folds,shuffle=True,random_state=rs);
-        self.folds=[v for v in self.kf.split(indexes)]
+        if hasattr(ds,"folds"):
+            self.folds=getattr(ds,"folds");
+        else:
+            self.folds = [v for v in self.kf.split(indexes)]
 
     def addToTrain(self,dataset):
         ma = len(self.ds)
