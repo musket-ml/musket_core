@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import yaml
+import traceback
 import csv
 import keras
 import tqdm
@@ -418,7 +419,10 @@ class GenericConfig:
                 model.layers[i].set_weights([vvv])
                 notUpdated=False
             else:
-                model.layers[i].set_weights(model1.layers[i].get_weights())
+                try:
+                    model.layers[i].set_weights(model1.layers[i].get_weights())
+                except:
+                    traceback.print_exc()
 
     def setAllowResume(self,resume):
         self.resume=resume
