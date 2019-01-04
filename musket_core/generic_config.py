@@ -567,17 +567,34 @@ class Stage:
             self.cfg.compile(model, self.cfg.createOptimizer(lr), loss)
             print("Restoring weights...")
             # weights are destroyed by some reason
-            model.layers[-2].load_weights(ec.weightsPath()+".tmp",False)
+            bestWeightsLoaded = self.loadBestWeightsFromPrevStageIfExists(ec, model.layers[-2])
+            if not bestWeightsLoaded:
+                model.layers[-2].load_weights(ec.weightsPath()+".tmp",False)
 
             cb.append(
                 alt.AltModelCheckpoint(ec.weightsPath(), model.layers[-2], save_best_only=True, monitor=self.cfg.primary_metric,
                                        mode=md, verbose=1))
+        else:
+            self.loadBestWeightsFromPrevStageIfExists(ec, model)
         kf.trainOnFold(ec.fold, model, cb, self.epochs-kepoch, self.negatives, subsample=ec.subsample,validation_negatives=self.validation_negatives,verbose=self.cfg.verbose)
 
         print('saved')
         pass
 
+    def loadBestWeightsFromPrevStageIfExists(self, ec, model):
 
+        bestWeightsLoaded = False
+        if ec.stage > 0:
+            ec.stage = ec.stage - 1;
+            try:
+                if os.path.exists(ec.weightsPath()):
+                    print("Loading best weights from previous stage...")
+                    model.load_weights(ec.weightsPath(), False)
+                    bestWeightsLoaded = True
+            except:
+                pass
+            ec.stage = ec.stage + 1;
+        return bestWeightsLoaded
 
     def unfreeze(self, model):
         pass

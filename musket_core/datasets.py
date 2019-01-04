@@ -350,7 +350,7 @@ class SimplePNGMaskDataSet:
     def __len__(self):
         return len(self.ids)
 
-
+NB_WORKERS="auto"
 class KFoldedDataSet:
 
     def __init__(self,ds,indexes,aug,transforms,folds=5,rs=33,batchSize=16):
@@ -413,7 +413,7 @@ class KFoldedDataSet:
         aug = self.augmentor(isTrain)
         if USE_MULTIPROCESSING:
             l = imgaug.imgaug.BatchLoader(m)
-            g = imgaug.imgaug.BackgroundAugmenter(l, augseq=aug,queue_size=AUGMENTER_QUEUE_LIMIT)
+            g = imgaug.imgaug.BackgroundAugmenter(l, augseq=aug,queue_size=AUGMENTER_QUEUE_LIMIT,nb_workers=NB_WORKERS)
 
             def r():
                 num = 0;
