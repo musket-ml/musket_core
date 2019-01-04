@@ -410,12 +410,14 @@ class GenericConfig:
         notUpdated = True
         for i in range(0, len(model1.layers)):
             if isinstance(model.layers[i], keras.layers.BatchNormalization) and notUpdated:
-                val = model1.layers[i].get_weights()[0]
-                # print(val.shape)
-                vvv = np.zeros(shape=(4), dtype=np.float32)
-                vvv[0:3] = val
-                vvv[3] = (val[0] + val[1] + val[2]) / 3
-                model.layers[i].set_weights([vvv])
+                uw = []
+                for w in model1.layers[i].get_weights():
+                    val = w
+                    vvv = np.zeros(shape=(4), dtype=np.float32)
+                    vvv[0:3] = val
+                    vvv[3] = (val[0] + val[1] + val[2]) / 3
+                    uw.append(vvv)
+                model.layers[i].set_weights(uw)
 
             elif isinstance(model.layers[i], keras.layers.Conv2D) and notUpdated:
                 val = model1.layers[i].get_weights()[0]
