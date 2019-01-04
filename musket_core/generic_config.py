@@ -406,18 +406,26 @@ class GenericConfig:
             if 'unfreeze_encoder' in st.dict and st.dict['unfreeze_encoder']:
                 st.unfreeze(model)
 
-    def adaptNet(self,model,model1,copy=False):
-        notUpdated=True
+    def adaptNet(self, model, model1, copy=False):
+        notUpdated = True
         for i in range(0, len(model1.layers)):
-            if isinstance(model.layers[i],keras.layers.Conv2D) and notUpdated:
+            if isinstance(model.layers[i], keras.layers.BatchNormalization) and notUpdated:
                 val = model1.layers[i].get_weights()[0]
-                #print(val.shape)
+                # print(val.shape)
+                vvv = np.zeros(shape=(4), dtype=np.float32)
+                vvv[0:3] = val
+                vvv[3] = (val[0] + val[1] + val[2]) / 3
+                model.layers[i].set_weights([vvv])
+
+            elif isinstance(model.layers[i], keras.layers.Conv2D) and notUpdated:
+                val = model1.layers[i].get_weights()[0]
+                # print(val.shape)
                 vvv = np.zeros(shape=(val.shape[0], val.shape[1], 4, val.shape[3]), dtype=np.float32)
                 vvv[:, :, 0:3, :] = val
                 if copy:
                     vvv[:, :, 3, :] = val[:, :, 2, :]
                 model.layers[i].set_weights([vvv])
-                notUpdated=False
+                notUpdated = False
             else:
                 try:
                     model.layers[i].set_weights(model1.layers[i].get_weights())
