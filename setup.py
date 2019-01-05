@@ -1,7 +1,7 @@
 from setuptools import setup
 import setuptools
 setup(name='musket_core',
-      version='0.37',
+      version='0.38',
       description='Common parts of my pipelines',
       url='https://github.com/petrochenko-pavel-a/musket_core',
       author='Petrochenko Pavel',
