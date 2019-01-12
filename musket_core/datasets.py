@@ -557,13 +557,13 @@ class AspectRatioDataSet:
 
     def __len__(self):
         return len(self.child)
-    
+
     def get_new_size(self, input_size):
         input_x = input_size[0]
         input_y = input_size[1]
 
-        target_x = self.target_size[0]
-        target_y = self.target_size[1]
+        target_x = self.target_size[1]
+        target_y = self.target_size[0]
 
         input_ratio = input_x / input_y
         output_ratio = target_x / target_y
@@ -572,7 +572,7 @@ class AspectRatioDataSet:
             input_x = round(input_y * output_ratio)
 
         elif input_ratio < output_ratio:
-            input_y = round(input_y / output_ratio)
+            input_y = round(input_x / output_ratio)
 
         return (input_x, input_y)
 
