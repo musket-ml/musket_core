@@ -368,46 +368,86 @@ class BlendedDataSet:
         return cv.addWeighted(new_image, 0.6, bland_image, 0.4, 0)
 
 class SimplePNGMaskDataSet:
-    def __init__(self, path, mask, detect_exts=False, in_ext="jpg", out_ext="png"):
-        self.path = path
-        self.mask = mask
-        
+    def __init__(self, path, mask, detect_exts=False, in_ext="jpg", out_ext="png", generate=False):
+        self.path = path;
+        self.mask = mask;
+
         ldir = os.listdir(path)
-        
-        self.ids=[x[0:x.index('.')] for x in ldir]
-        
+
+        self.ids = [x[0:x.index('.')] for x in ldir]
+
         self.exts = []
-                
+
         if detect_exts:
-            self.exts=[x[x.index('.') + 1:] for x in ldir]
-        
+            self.exts = [x[x.index('.') + 1:] for x in ldir]
+
         self.detect_exts = detect_exts
-        
+
         self.in_ext = in_ext
         self.out_ext = out_ext
-        
+
+        self.generate = generate
+
         pass
 
-    def __getitem__(self, item):
+    def __getitem__(self, item_):
+        item = item_
+
         in_ext = self.in_ext
-        
+        out_ext = self.out_ext
+
         if self.detect_exts:
             in_ext = self.exts[item]
-        
-        out = imageio.imread(os.path.join(self.mask, self.ids[item] + "." + self.out_ext))
-        
+            # out_ext = self.exts[item]
+
+        out_path = self.ids[item] + "." + out_ext
+
+        # print("reading: " + os.path.join(self.mask, out_path))
+
+        image = imageio.imread(os.path.join(self.path, self.ids[item] + "." + in_ext))
+
+        out = []
+
+        if not self.generate:
+            out = imageio.imread(os.path.join(self.mask, out_path))
+        else:
+            out = np.zeros((image.shape[0], image.shape[1], 1))
+
         if len(out.shape) < 3:
             out = np.expand_dims(out, axis=2)
-        
+
         out = out.astype(np.float32)
-        
+
         out = np.sum(out, axis=2)
-        
+
         out = np.expand_dims(out, axis=2)
-        
-        out = out / np.max(out)
-        
-        return PredictionItem(self.ids[item] + str(), imageio.imread(os.path.join(self.path, self.ids[item]+"." + in_ext)), out)
+
+        maxout = np.max(out)
+
+        if maxout > 0:
+            out = out / maxout
+
+        if len(image.shape) < 3:
+            image = np.expand_dims(image, 2)
+
+            newImage = np.zeros((image.shape[0], image.shape[1], 3))
+
+            newImage[:, :, 0] = image[:, :, 0]
+            newImage[:, :, 1] = image[:, :, 0]
+            newImage[:, :, 2] = image[:, :, 0]
+
+            image = newImage
+
+        elif image.shape[2] == 4:
+            newImage = np.zeros((image.shape[0], image.shape[1], 3))
+
+            newImage[:, :, 0] = image[:, :, 0]
+            newImage[:, :, 1] = image[:, :, 1]
+            newImage[:, :, 2] = image[:, :, 2]
+
+            image = newImage
+
+        return PredictionItem(self.ids[item] + str(), image, out)
 
     def isPositive(self, item):
         return True
