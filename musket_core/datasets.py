@@ -332,6 +332,36 @@ class NegativeDataSet:
 
         return PredictionItem(self.ids[item] + str(), image, out)
 
+class BlendedDataSet:
+    def __init__(self, child, blendwith, size=(320, 320)):
+        self.child = child
+
+        self.blend = blendwith
+
+        self.bids = list(range(len(blendwith)))
+
+        self.size = size
+
+        self.rnd = random.Random(23232)
+
+    def __getitem__(self, item):
+        child_item = self.child[item]
+
+        return PredictionItem(child_item.id, self.get_new_image(child_item.x), child_item.y)
+
+    def __len__(self):
+        return len(self.child)
+
+    def get_new_image(self, image):
+        new_image = cv.resize(image, self.size)
+
+        if self.rnd.choice([True, False]):
+            return new_image
+
+        bid = self.rnd.choice(self.bids)
+        bland_image = cv.resize(self.blend[bid].x, self.size)
+
+        return cv.addWeighted(new_image, 0.6, bland_image, 0.4, 0)
 
 class SimplePNGMaskDataSet:
     def __init__(self, path, mask, detect_exts=False, in_ext="jpg", out_ext="png"):
