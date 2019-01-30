@@ -301,11 +301,42 @@ class WithBackgrounds:
             return self.bg.augment_item(i)
         return i
 
+class NegativeDataSet:
+    def __init__(self, path):
+        self.path = path
+
+        ldir = os.listdir(path)
+
+        ldir.remove(".DS_Store")
+
+        self.ids = [x[0:x.index('.')] for x in ldir]
+        self.exts = [x[x.index('.') + 1:] for x in ldir]
+
+    def __getitem__(self, item):
+        in_ext = self.exts[item]
+
+        image = imageio.imread(os.path.join(self.path, self.ids[item] + "." + in_ext))
+
+        out = np.zeros(image.shape)
+
+        if len(out.shape) < 3:
+            out = np.expand_dims(out, axis=2)
+
+        out = out.astype(np.float32)
+
+        out = np.sum(out, axis=2)
+
+        out = np.expand_dims(out, axis=2)
+
+        #out = out / np.max(out)
+
+        return PredictionItem(self.ids[item] + str(), image, out)
+
 
 class SimplePNGMaskDataSet:
     def __init__(self, path, mask, detect_exts=False, in_ext="jpg", out_ext="png"):
-        self.path = path;
-        self.mask = mask;
+        self.path = path
+        self.mask = mask
         
         ldir = os.listdir(path)
         
@@ -632,7 +663,6 @@ class CropAndSplit:
 
 
 class SubDataSet:
-
     def __init__(self,orig,indexes):
         self.ds=orig
         self.indexes=indexes
