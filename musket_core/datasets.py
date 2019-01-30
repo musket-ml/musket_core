@@ -136,35 +136,39 @@ class ConstrainedDirectory:
 
 class CompositeDataSet:
 
-    def __init__(self,components):
-        self.components=components
-        sum=0;
-        shifts=[]
+    def __init__(self, components):
+        self.components = components
+        sum = 0;
+        shifts = []
         for i in components:
-            sum=sum+len(i)
+            sum = sum + len(i)
             shifts.append(sum)
-        self.shifts=shifts
-        self.len=sum
+        self.shifts = shifts
+        self.len = sum
 
     def item(self, item, isTrain):
         i = item
         for j in range(len(self.shifts)):
             d = self.components[j]
-            if i < self.shifts[j]:
-                if hasattr(d,"item"):
-                    return d.item(i,isTrain)
+            if item < self.shifts[j]:
+                if hasattr(d, "item"):
+                    return d.item(i, isTrain)
                 return d[i]
             else:
-                i = i - self.shifts[j]
+                i = item - self.shifts[j]
+
+        print("none")
         return None
 
     def __getitem__(self, item):
-        i=item
+        i = item
         for j in range(len(self.shifts)):
-            d=self.components[j]
-            if i<self.shifts[j]:
+            d = self.components[j]
+            if item < self.shifts[j]:
                 return d[i]
-            else: i=i-self.shifts[j]
+            else:
+                i = item - self.shifts[j]
+
         return None
 
     def isPositive(self, item):
