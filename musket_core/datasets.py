@@ -367,6 +367,144 @@ class BlendedDataSet:
 
         return cv.addWeighted(new_image, 0.6, bland_image, 0.4, 0)
 
+class DropItemsDataset:
+    def __init__(self, child, drop_items):
+        self.child = child
+
+        self.drop_items = drop_items
+
+        self.rnd = random.Random(23232)
+
+        self.drop_size = 0.25
+
+        self.times = 5
+
+    def __len__(self):
+        return len(self.ids)
+
+    def __getitem__(self, item_):
+        original_item = self.child[item_]
+
+        input = original_item.x
+
+        mask = self.rescale_mask_to_input(input, original_item.y)
+
+        for time in range(self.times):
+            drop_item, drop_mask = self.get_drop_item()
+
+            rescaled_drop_item, rescaled_drop_mask = self.rescale_drop_item(input, drop_item, drop_mask, self.drop_size)
+
+            self.apply_drop_item(input, mask, rescaled_drop_item, rescaled_drop_mask, original_item.id + "_" + str(time))
+
+        return PredictionItem(original_item.id, input, mask)
+
+    def apply_drop_item(self, item, mask, drop_item, drop_mask, id=""):
+        x = self.rnd.randrange(0, item.shape[1])
+        y = self.rnd.randrange(0, item.shape[0])
+
+        self.draw_drop(item, mask, drop_item, drop_mask, x, y, self.rnd.choice(["behind", "above"]), id)
+
+    def draw_drop(self, item, mask, drop_item, drop_mask, x, y, mode="above", id=""):
+        half_width = drop_item.shape[1] // 2
+        half_height = drop_item.shape[0] // 2
+
+        left = x - half_width
+        right = x + half_width
+
+        down = y - half_height
+        up = y + half_height
+
+        if left < 0: left = 0
+        if down < 0: down = 0
+
+        if up > item.shape[0]: up = item.shape[0]
+        if right > item.shape[1]: right = item.shape[1]
+
+        drop_left = left - x + half_width
+        drop_right = right - x + half_width
+
+        drop_down = down - y + half_height
+        drop_up = up - y + half_height
+
+        temp_mask = mask * 0
+        temp_item = item * 0
+
+        temp_mask[down:up, left:right] = drop_mask[drop_down:drop_up,drop_left:drop_right]
+        temp_item[down:up, left:right]= drop_item[drop_down:drop_up,drop_left:drop_right]
+
+        temp_mask = np.where(np.sum(temp_mask, 2))
+
+        if mode == "above":
+            item[temp_mask] = temp_item[temp_mask]
+
+            mask[temp_mask] = 0
+        else:
+            old_mask = np.where(np.sum(mask, 2))
+
+            old_item = item * 0
+
+            old_item[old_mask] = item[old_mask] + 0
+
+            item[temp_mask] = temp_item[temp_mask]
+
+            item[old_mask] = old_item[old_mask]
+
+    def rescale_drop_item(self, item, drop_item, drop_mask, scale):
+        input_area = item.shape[0] * item.shape[1]
+
+        target_area = scale * input_area
+
+        drop_area = drop_item.shape[0] * drop_item.shape[1]
+
+        sqrt = np.sqrt([target_area / drop_area])[0]
+
+        new_size = (int(sqrt * drop_item.shape[1]), int(sqrt * drop_item.shape[0]))
+
+        new_drop_item = (cv.resize(drop_item / 255, new_size) * 255).astype(np.int32)
+
+        return new_drop_item, self.rescale_mask_to_input(new_drop_item, drop_mask)
+
+
+    def mask_box_size(self, mask_):
+        mask = np.sum(mask_, 2)
+
+        hp = np.sum(mask, 0) > 0
+        vp = np.sum(mask, 1) > 0
+
+        return (np.sum(hp), np.sum(vp))
+
+    def rescale_mask_to_input(self, input, mask):
+        rescaled_mask = (cv.resize(mask.astype(np.float32), (input.shape[1], input.shape[0])) > 0.5).astype(np.int32)
+
+        rescaled_mask = np.expand_dims(rescaled_mask, 2)
+
+        return rescaled_mask
+
+
+    def get_drop_item(self):
+        drop_item = self.rnd.choice(self.drop_items)
+
+        drop_item_id = drop_item.id
+
+        drop_mask = (cv.resize(drop_item.y, (drop_item.x.shape[1], drop_item.x.shape[0])) > 0.5).astype(np.int32)
+
+        hp = np.sum(drop_mask, 0) > 0
+        vp = np.sum(drop_mask, 1) > 0
+
+        hp = np.where(hp)[0]
+        vp = np.where(vp)[0]
+
+        drop_mask = np.expand_dims(drop_mask, 2)
+
+        drop_item = drop_item.x * drop_mask
+
+        drop_item = drop_item[vp[0] : vp[-1] + 1, hp[0] : hp[-1] + 1]
+
+        drop_mask = drop_mask[vp[0] : vp[-1] + 1, hp[0] : hp[-1] + 1]
+
+        return drop_item, drop_mask
+
+
 class SimplePNGMaskDataSet:
     def __init__(self, path, mask, detect_exts=False, in_ext="jpg", out_ext="png", generate=False):
         self.path = path;
