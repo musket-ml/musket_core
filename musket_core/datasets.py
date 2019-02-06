@@ -13,6 +13,7 @@ import numpy as np
 import traceback
 import random
 import cv2 as cv
+import scipy
 
 AUGMENTER_QUEUE_LIMIT=10
 USE_MULTIPROCESSING=False
@@ -367,6 +368,140 @@ class BlendedDataSet:
 
         return cv.addWeighted(new_image, 0.6, bland_image, 0.4, 0)
 
+class TextMaskGenerator:
+    def __init__(self, textures):
+        self.fonts = [x for x in dir(cv) if x.startswith('FONT_')]
+
+        self.letters = list(" abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+        weights = np.ones(len(self.letters))
+
+        weights[0] = 15
+
+        weights = weights / np.sum(weights)
+
+        self.weights = weights
+
+        self.textures = textures
+
+    def getFont(self):
+        return getattr(cv, random.choice(self.fonts))
+
+    def generateText(self, lines, lineLength):
+        text = ""
+
+        for lineNum in range(lines):
+            line = np.random.choice(self.letters, size=lineLength, p=self.weights)
+
+            text += "".join(line)
+
+            if lineNum == lines - 1:
+                continue
+
+            text += "\n"
+
+        return text
+
+    def getLineSize(self, text, font, scale, thickness):
+        lines = text.split("\n")
+
+        width = -1
+
+        heights = []
+        baselines = []
+
+        for line in lines:
+            size = cv.getTextSize(text=line, fontFace=font, fontScale=scale, thickness=thickness)
+
+            if width < size[0][0]:
+                width = size[0][0]
+
+            heights.append(size[0][1])
+            baselines.append(size[1])
+
+        return width, heights, baselines, lines
+
+    def getInitialMask(self):
+        lines = random.randint(1, 5)
+        length = random.randint(10, 35)
+        thickness = 5
+        scale = 3
+
+        text = self.generateText(lines, length)
+
+        font = self.getFont()
+
+        lineWidth, lineHeights, baselines, lines = self.getLineSize(text, font, scale, thickness)
+
+        image = np.zeros((sum(lineHeights) + sum(baselines), lineWidth, 3), np.uint8)
+
+        count = 0
+
+        linePos = 0
+
+        for line in lines:
+            lineHeight = lineHeights[count]
+            baseLine = baselines[count]
+
+            linePos += lineHeight
+
+            cv.putText(image, line, org=(0, linePos), fontFace=font, fontScale=scale, color=(255,255,255), lineType=cv.LINE_8, thickness=thickness)
+
+            linePos += baseLine
+
+            count += 1
+
+        return image
+
+    def getImageAndMask(self):
+        initialMask = self.getInitialMask()
+
+        texture = random.choice(self.textures).x.astype(np.uint8)
+
+        maskTexture = initialMask * 0
+
+        baseWidth, baseHeight = self.getTextureBaseSize(texture, initialMask)
+
+        texture = cv.resize(texture, (baseWidth, baseHeight))
+
+        ids = np.indices((initialMask.shape[0], initialMask.shape[1]))
+
+        maskTexture[ids[0], ids[1]] = texture[np.mod(ids[0], baseHeight), np.mod(ids[1], baseWidth)]
+
+        angle = random.randint(-30, 30)
+
+        mask = scipy.ndimage.rotate(initialMask, angle)
+        maskTexture = scipy.ndimage.rotate(maskTexture, angle)
+
+        return maskTexture, mask[:, :, 0]
+
+    def getTextureBaseSize(self, texture, mask):
+        width = mask.shape[1]
+        height = mask.shape[0]
+
+        textureWidth = texture.shape[1]
+        textureHeight = texture.shape[0]
+
+        textureAspectRatio = textureWidth / textureHeight
+        maskAspectRatio = width / height
+
+        multiplier = 0
+
+        if textureAspectRatio > maskAspectRatio:
+            height = width * textureHeight / textureWidth
+        else:
+            width = height * textureWidth / textureHeight
+
+        return int(width), int(height)
+
+    def __len__(self):
+        return 10
+
+    def __getitem__(self, item):
+        image, mask = self.getImageAndMask()
+
+        return PredictionItem(str(item), image, mask)
+
 class DropItemsDataset:
     def __init__(self, child, drop_items):
         self.child = child
@@ -511,6 +646,9 @@ class SimplePNGMaskDataSet:
         self.mask = mask;
 
         ldir = os.listdir(path)
+
+        if ".DS_Store" in ldir:
+            ldir.remove(".DS_Store")
 
         self.ids = [x[0:x.index('.')] for x in ldir]
 
