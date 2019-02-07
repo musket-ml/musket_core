@@ -369,7 +369,7 @@ class BlendedDataSet:
         return cv.addWeighted(new_image, 0.6, bland_image, 0.4, 0)
 
 class TextMaskGenerator:
-    def __init__(self, textures):
+    def __init__(self, textures, band = False):
         self.fonts = [x for x in dir(cv) if x.startswith('FONT_')]
 
         self.letters = list(" abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
@@ -383,6 +383,8 @@ class TextMaskGenerator:
         self.weights = weights
 
         self.textures = textures
+
+        self.band = band
 
     def getFont(self):
         return getattr(cv, random.choice(self.fonts))
@@ -454,7 +456,12 @@ class TextMaskGenerator:
         return image
 
     def getImageAndMask(self):
-        initialMask = self.getInitialMask()
+        initialMask = []
+
+        if self.band:
+            initialMask = np.ones((random.randint(500, 1000), random.randint(100, 200), 3), np.uint8)
+        else:
+            initialMask = self.getInitialMask()
 
         texture = random.choice(self.textures).x.astype(np.uint8)
 
@@ -510,7 +517,7 @@ class DropItemsDataset:
 
         self.rnd = random.Random(23232)
 
-        self.drop_size = 0.25
+        self.drop_size = 1
 
         self.times = 5
 
