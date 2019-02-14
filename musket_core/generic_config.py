@@ -134,6 +134,7 @@ class GenericConfig:
     def __init__(self,**atrs):
         self.batch = 8
         self.all = atrs
+        self.noTrain=False
         self.verbose=1
         self.copyWeights=False
         self.saveLast=False
@@ -346,6 +347,8 @@ class GenericConfig:
         if self.bgr is not None:
             ds= datasets.WithBackgrounds(ds, self.bgr)
         kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count)
+        if self.noTrain==True:
+            kf.clearTrain()
         if self.extra_train_data is not None:
             kf.addToTrain(extra_train[self.extra_train_data])
         if self.dataset_augmenter is not None:

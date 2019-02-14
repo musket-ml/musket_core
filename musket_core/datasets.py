@@ -371,6 +371,8 @@ class WithBackgrounds:
         return i
 
 
+
+
 class NegativeDataSet:
     def __init__(self, path):
         self.path = path
@@ -414,6 +416,12 @@ class BlendedDataSet:
         self.size = size
 
         self.rnd = random.Random(23232)
+
+    def item(self,item,isTrain):
+        if not isTrain:
+            return self.child[item]
+
+        return self[item]
 
     def __getitem__(self, item):
         child_item = self.child[item]
@@ -491,8 +499,8 @@ class TextMaskGenerator:
         return width, heights, baselines, lines
 
     def getInitialMask(self):
-        lines = random.randint(1, 5)
-        length = random.randint(10, 35)
+        lines = random.randint(1, 2)
+        length = random.randint(5, 10)
         thickness = 5
         scale = 3
 
@@ -526,7 +534,7 @@ class TextMaskGenerator:
         initialMask = []
 
         if self.band:
-            initialMask = np.ones((random.randint(500, 1000), random.randint(100, 200), 3), np.uint8)
+            initialMask = np.ones(( random.randint(100, 200),random.randint(500, 1000), 3), np.uint8)
         else:
             initialMask = self.getInitialMask()
 
@@ -577,7 +585,7 @@ class TextMaskGenerator:
         return PredictionItem(str(item), image, mask)
 
 class DropItemsDataset:
-    def __init__(self, child, drop_items):
+    def __init__(self, child, drop_items,times=5):
         self.child = child
 
         self.drop_items = drop_items
@@ -586,10 +594,16 @@ class DropItemsDataset:
 
         self.drop_size = 1
 
-        self.times = 5
+        self.times = times
 
     def __len__(self):
-        return len(self.ids)
+        return len(self.child)
+
+    def item(self,item,isTrain):
+        if not isTrain:
+            return self.child[item]
+
+        return self[item]
 
     def __getitem__(self, item_):
         original_item = self.child[item_]
@@ -605,7 +619,7 @@ class DropItemsDataset:
 
             self.apply_drop_item(input, mask, rescaled_drop_item, rescaled_drop_mask, original_item.id + "_" + str(time))
 
-        return PredictionItem(original_item.id, input, mask)
+        return PredictionItem(original_item.id, input, mask.astype(np.bool))
 
     def apply_drop_item(self, item, mask, drop_item, drop_mask, id=""):
         x = self.rnd.randrange(0, item.shape[1])
@@ -830,6 +844,12 @@ class KFoldedDataSet:
             self.folds=getattr(ds,"folds");
         else:
             self.folds = [v for v in self.kf.split(indexes)]
+
+    def clearTrain(self):
+        nf = []
+        for fold in self.folds:
+            nf.append((fold[0][0:0],fold[1]))
+        self.folds = nf
 
     def addToTrain(self,dataset):
         ma = len(self.ds)
