@@ -18,11 +18,13 @@ import scipy
 AUGMENTER_QUEUE_LIMIT=10
 USE_MULTIPROCESSING=False
 
+
 class PredictionItem:
     def __init__(self, path, x, y):
         self.x=x
         self.y=y
         self.id=path;
+
 
 class DataSetLoader:
     def __init__(self,dataset,indeces,batchSize=16,isTrain=True):
@@ -185,6 +187,7 @@ class CompositeDataSet:
     def __len__(self):
         return self.len
 
+
 class DirectoryDataSet:
 
     def __init__(self,imgPath):
@@ -232,6 +235,67 @@ def batch_generator(ds, batchSize, maxItems=-1):
         if len(bx)>0:
             yield imgaug.Batch(images=bx,data=ps)
         return
+
+
+class GenericDataSetSequence(keras.utils.Sequence):
+
+    def __init__(self,ds,batch_size,indexes=None):
+        self.ds=ds
+        self.batchSize=batch_size
+        self._dim=None
+        if indexes is None:
+            indexes =range(len(self.ds))
+        self.indexes=indexes
+
+    def __len__(self):
+        return int(np.ceil(len(self.indexes) / float(self.batchSize)))
+
+    def dim(self):
+        if self._dim is not None:
+            return self._dim
+        v=self.ds[0]
+
+        if isinstance(v.x, tuple) or isinstance(v.x, list):
+            x_d=len(v.x)
+        else: x_d=1
+
+        if isinstance(v.y, tuple) or isinstance(v.y, list):
+            y_d = len(v.y)
+        else:
+            y_d = 1
+        self._dim=(x_d,y_d)
+        return self._dim
+
+    def __simple_batch(self, idx):
+        l = len(self.indexes)
+        X=[]
+        y=[]
+        for i in range(idx * self.batchSize,(idx + 1) * self.batchSize):
+            if i>l:
+                i=i%l
+            r=self.ds[self.indexes[i]]
+            X.append(r.x)
+            y.append(r.y)
+        return X,y
+
+    def __getitem__(self, idx):
+        l=len(self.indexes)
+        xd, yd=self.dim()
+        if xd == 1 and yd==1:
+            return self.__simple_batch(idx)
+
+        batch_x = [[] for i in range(xd)]
+        batch_y = [[] for i in range(yd)]
+
+        for i in range(idx * self.batchSize,(idx + 1) * self.batchSize):
+            if i>l:
+                i=i%l
+            r=self.ds[self.indexes[i]]
+            for j in range(xd):
+                batch_x[j].append(r.x[j])
+            for j in range(yd):
+                batch_y[j].append(r.y[j])
+        return batch_x,batch_y
 
 
 class Backgrounds:
@@ -306,6 +370,7 @@ class WithBackgrounds:
             return self.bg.augment_item(i)
         return i
 
+
 class NegativeDataSet:
     def __init__(self, path):
         self.path = path
@@ -337,6 +402,7 @@ class NegativeDataSet:
 
         return PredictionItem(self.ids[item] + str(), image, out)
 
+
 class BlendedDataSet:
     def __init__(self, child, blendwith, size=(320, 320)):
         self.child = child
@@ -367,6 +433,7 @@ class BlendedDataSet:
         bland_image = cv.resize(self.blend[bid].x, self.size)
 
         return cv.addWeighted(new_image, 0.6, bland_image, 0.4, 0)
+
 
 class TextMaskGenerator:
     def __init__(self, textures, band = False):
@@ -742,16 +809,19 @@ NB_WORKERS="auto"
 NB_WORKERS_IN_LOADER=1
 LOADER_SIZE=50
 LOADER_THREADED=True
+
+
 class KFoldedDataSet:
 
-    def __init__(self,ds,indexes,aug,transforms,folds=5,rs=33,batchSize=16):
+    def __init__(self,ds,indexes=None,aug=None,transforms=None,folds=5,rs=33,batchSize=16):
         self.ds=ds;
         if aug==None:
             aug=[]
         if transforms==None:
             transforms=[]
         self.aug=aug;
-
+        if indexes==None:
+            indexes=range(len(ds))
         self.transforms=transforms
         self.batchSize=batchSize
         self.positive={}
@@ -893,6 +963,7 @@ class KFoldedDataSet:
             tg.terminate();
             vl.terminate();
             vg.terminate();
+
 
 class KFoldedDataSetImageClassification(KFoldedDataSet):
 

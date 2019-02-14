@@ -361,7 +361,6 @@ class GenericConfig:
         return datasets.SubDataSet(ds,ids)
 
     def createAndCompile(self, lr=None, loss=None)->keras.Model:
-
         return self.compile(self.createNet(), self.createOptimizer(lr=lr), loss=loss)
 
     def predict_on_directory_with_model(self, mdl, path, limit=-1, batch_size=32, ttflips=False):
@@ -464,6 +463,7 @@ class KFoldCallback(keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         self.data.epoch()
         pass
+
 
 class Stage:
 
