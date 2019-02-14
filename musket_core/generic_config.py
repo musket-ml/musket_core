@@ -335,7 +335,7 @@ class GenericConfig:
             net.compile(opt, self.loss, self.metrics)
         return net
 
-    def kfold(self, ds, indeces=None,batch=None)-> datasets.KFoldedDataSet:
+    def kfold(self, ds, indeces=None,batch=None)-> datasets.ImageKFoldedDataSet:
         if self.testSplit>0:
             train,test=datasets.split(ds,self.testSplit,self.testSplitSeed)
             pass
@@ -348,7 +348,7 @@ class GenericConfig:
             ds= datasets.WithBackgrounds(ds, self.bgr)
         kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count)
         if self.noTrain==True:
-            kf.clearTrain()
+            kf.clear_train()
         if self.extra_train_data is not None:
             kf.addToTrain(extra_train[self.extra_train_data])
         if self.dataset_augmenter is not None:
@@ -460,7 +460,7 @@ class GenericConfig:
 
 class KFoldCallback(keras.callbacks.Callback):
 
-    def __init__(self,k:datasets.KFoldedDataSet):
+    def __init__(self, k:datasets.ImageKFoldedDataSet):
         self.data=k
 
     def on_epoch_end(self, epoch, logs=None):
@@ -493,7 +493,7 @@ class Stage:
         else:
             self.lr = None
 
-    def lr_find(self, kf: datasets.KFoldedDataSet, model: keras.Model, ec: ExecutionConfig, start_lr, end_lr, epochs):
+    def lr_find(self, kf: datasets.ImageKFoldedDataSet, model: keras.Model, ec: ExecutionConfig, start_lr, end_lr, epochs):
         if 'unfreeze_encoder' in self.dict and self.dict['unfreeze_encoder']:
             self.unfreeze(model)
 
@@ -515,7 +515,7 @@ class Stage:
         kf.trainOnFold(ec.fold, model, cb,epochs, self.negatives, subsample=ec.subsample,validation_negatives=self.validation_negatives)
         return ll
 
-    def execute(self, kf: datasets.KFoldedDataSet, model: keras.Model, ec: ExecutionConfig):
+    def execute(self, kf: datasets.ImageKFoldedDataSet, model: keras.Model, ec: ExecutionConfig):
         if 'unfreeze_encoder' in self.dict and self.dict['unfreeze_encoder']:
             self.unfreeze(model)
 

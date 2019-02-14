@@ -2,6 +2,7 @@ def warn(*args, **kwargs):
     pass
 import warnings
 old=warnings.warn
+
 warnings.warn = warn
 import sklearn.model_selection as ms
 import imgaug
@@ -277,6 +278,10 @@ class GenericDataSetSequence(keras.utils.Sequence):
             X.append(r.x)
             y.append(r.y)
         return X,y
+
+    def on_epoch_end(self):
+        random.shuffle(self.indexes)
+        pass
 
     def __getitem__(self, idx):
         l=len(self.indexes)
@@ -584,6 +589,7 @@ class TextMaskGenerator:
 
         return PredictionItem(str(item), image, mask)
 
+
 class DropItemsDataset:
     def __init__(self, child, drop_items,times=5):
         self.child = child
@@ -825,8 +831,7 @@ LOADER_SIZE=50
 LOADER_THREADED=True
 
 
-class KFoldedDataSet:
-
+class AbstractKFoldedDataSet:
     def __init__(self,ds,indexes=None,aug=None,transforms=None,folds=5,rs=33,batchSize=16):
         self.ds=ds;
         if aug==None:
@@ -845,7 +850,7 @@ class KFoldedDataSet:
         else:
             self.folds = [v for v in self.kf.split(indexes)]
 
-    def clearTrain(self):
+    def clear_train(self):
         nf = []
         for fold in self.folds:
             nf.append((fold[0][0:0],fold[1]))
@@ -873,6 +878,67 @@ class KFoldedDataSet:
         else:
             indexes = fold[1]
         return indexes
+
+    def epoch(self):
+        pass
+
+    def inner_isPositive(self,x):
+        if x in self.positive:
+            return self.positive[x]
+        self.positive[x]=self.ds.isPositive(x);
+        return self.positive[x];
+
+    def sampledIndexes(self, foldNum, isTrain, negatives):
+        indexes = self.indexes(foldNum, isTrain)
+        if negatives == 'none':
+            indexes = [x for x in indexes if self.inner_isPositive(x)]
+        if type(negatives)==int:
+            sindexes = []
+            nindexes = []
+            for x in indexes:
+                if self.inner_isPositive(x):
+                    sindexes.append(x)
+                else:
+                    nindexes.append(x)
+            random.seed(23232)
+            random.shuffle(nindexes)
+            nindexes = nindexes[ 0 : min(len(nindexes),round(len(sindexes)*negatives))]
+            r=[]+sindexes+nindexes
+            random.shuffle(r)
+            return r;
+        return indexes
+
+    def generator_from_indexes(self, indexes, isTrain=True, returnBatch=False):
+        return GenericDataSetSequence(self.ds,self.batchSize,indexes)
+
+    def trainOnFold(self,fold:int,model:keras.Model,callbacks=[],numEpochs:int=100,negatives="all",
+                    subsample=1.0,validation_negatives=None,verbose=1):
+        train_indexes = self.sampledIndexes(fold, True, negatives)
+        if validation_negatives==None:
+            validation_negatives=negatives
+        test_indexes = self.sampledIndexes(fold, False, validation_negatives)
+
+        tl,tg,train_g=self.generator_from_indexes(train_indexes)
+        vl,vg,test_g = self.generator_from_indexes(test_indexes,isTrain=False)
+        try:
+            model.fit_generator(train_g(), len(train_indexes)//(round(subsample*self.batchSize)),
+                             epochs=numEpochs,
+                             validation_data=test_g(),
+                             callbacks=callbacks,
+                             verbose=verbose,
+                             validation_steps=len(test_indexes)//(round(subsample*self.batchSize)))
+        finally:
+            tl.terminate()
+            tg.terminate()
+            vl.terminate()
+            vg.terminate()
+
+    def numBatches(self,fold,negatives,subsample):
+        train_indexes = self.sampledIndexes(fold, True, negatives)
+        return len(train_indexes)//(round(subsample*self.batchSize))
+
+
+class ImageKFoldedDataSet(AbstractKFoldedDataSet):
 
     def epoch(self):
         for fold in self.folds:
@@ -932,60 +998,8 @@ class KFoldedDataSet:
         aug = imgaug.augmenters.Sequential(allAug);
         return aug
 
-    def inner_isPositive(self,x):
-        if x in self.positive:
-            return self.positive[x]
-        self.positive[x]=self.ds.isPositive(x);
-        return self.positive[x];
 
-    def sampledIndexes(self, foldNum, isTrain, negatives):
-        indexes = self.indexes(foldNum, isTrain)
-        if negatives == 'none':
-            indexes = [x for x in indexes if self.inner_isPositive(x)]
-        if type(negatives)==int:
-            sindexes = []
-            nindexes = []
-            for x in indexes:
-                if self.inner_isPositive(x):
-                    sindexes.append(x)
-                else:
-                    nindexes.append(x)
-            random.seed(23232)
-            random.shuffle(nindexes)
-            nindexes = nindexes[ 0 : min(len(nindexes),round(len(sindexes)*negatives))]
-            r=[]+sindexes+nindexes
-            random.shuffle(r)
-            return r;
-        return indexes
-
-    def numBatches(self,fold,negatives,subsample):
-        train_indexes = self.sampledIndexes(fold, True, negatives)
-        return len(train_indexes)//(round(subsample*self.batchSize))
-
-    def trainOnFold(self,fold:int,model:keras.Model,callbacks=[],numEpochs:int=100,negatives="all",
-                    subsample=1.0,validation_negatives=None,verbose=1):
-        train_indexes = self.sampledIndexes(fold, True, negatives)
-        if validation_negatives==None:
-            validation_negatives=negatives
-        test_indexes = self.sampledIndexes(fold, False, validation_negatives)
-
-        tl,tg,train_g=self.generator_from_indexes(train_indexes)
-        vl,vg,test_g = self.generator_from_indexes(test_indexes,isTrain=False)
-        try:
-            model.fit_generator(train_g(), len(train_indexes)//(round(subsample*self.batchSize)),
-                             epochs=numEpochs,
-                             validation_data=test_g(),
-                             callbacks=callbacks,
-                             verbose=verbose,
-                             validation_steps=len(test_indexes)//(round(subsample*self.batchSize)))
-        finally:
-            tl.terminate();
-            tg.terminate();
-            vl.terminate();
-            vg.terminate();
-
-
-class KFoldedDataSetImageClassification(KFoldedDataSet):
+class KFoldedDataSet4ImageClassification(ImageKFoldedDataSet):
 
     def _prepare_vals_from_batch(self, r):
         return np.array(r.images_aug), np.array([x for x in r.data[1]])
@@ -997,7 +1011,7 @@ class NullTerminatable:
         pass
 
 
-class NoChangeDataSetImageClassification(KFoldedDataSet):
+class NoChangeDataSetImageClassificationImage(ImageKFoldedDataSet):
 
     def generator_from_indexes(self, indexes,isTrain=True,returnBatch=False):
         m = DataSetLoader(self.ds, indexes, self.batchSize,isTrain=isTrain).generator
