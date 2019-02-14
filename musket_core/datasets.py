@@ -58,7 +58,7 @@ class DataSetLoader:
     def createBatch(self, bx, by, ids):
         if len(by[0].shape)>1:
             return imgaug.imgaug.Batch(data=ids, images=bx,
-                                       segmentation_maps=[imgaug.SegmentationMapOnImage(x, shape=x.shape) for x
+                                       segmentation_maps=[imgaug.SegmentationMapOnImage(x, shape=x.shape,nb_classes=20) for x
                                                           in by])
         else:
             r=imgaug.imgaug.Batch(data=[ids,by], images=bx)
@@ -121,7 +121,7 @@ def draw_test_batch(batch,path):
     for i in range(0, len(batch.segmentation_maps_aug)):
         cells.append(batch.images_aug[i][:,:,0:3])
         cells.append(batch.segmentation_maps_aug[i].draw_on_image(batch.images_aug[i][:,:,0:3]))  # column 2
-        cells.append(batch.heatmaps_aug[i].draw_on_image(batch.images_aug[i][:,:,0:3])[0])  # column 2
+        cells.append(batch.heatmaps_aug[i].draw_on_image(batch.images_aug[i][:,:,0:3]))  # column 2
     # Convert cells to grid image and save.
     grid_image = imgaug.draw_grid(cells, cols=3)
     imageio.imwrite(path, grid_image)
@@ -306,6 +306,8 @@ class WithBackgrounds:
             return self.bg.augment_item(i)
         return i
 
+
+
 class NegativeDataSet:
     def __init__(self, path):
         self.path = path
@@ -348,6 +350,12 @@ class BlendedDataSet:
         self.size = size
 
         self.rnd = random.Random(23232)
+
+    def item(self,item,isTrain):
+        if not isTrain:
+            return self.child[item]
+
+        return self[item]
 
     def __getitem__(self, item):
         child_item = self.child[item]
@@ -424,8 +432,8 @@ class TextMaskGenerator:
         return width, heights, baselines, lines
 
     def getInitialMask(self):
-        lines = random.randint(1, 5)
-        length = random.randint(10, 35)
+        lines = random.randint(1, 2)
+        length = random.randint(5, 10)
         thickness = 5
         scale = 3
 
@@ -459,7 +467,7 @@ class TextMaskGenerator:
         initialMask = []
 
         if self.band:
-            initialMask = np.ones((random.randint(500, 1000), random.randint(100, 200), 3), np.uint8)
+            initialMask = np.ones(( random.randint(100, 200),random.randint(500, 1000), 3), np.uint8)
         else:
             initialMask = self.getInitialMask()
 
@@ -510,7 +518,7 @@ class TextMaskGenerator:
         return PredictionItem(str(item), image, mask)
 
 class DropItemsDataset:
-    def __init__(self, child, drop_items):
+    def __init__(self, child, drop_items,times=5):
         self.child = child
 
         self.drop_items = drop_items
@@ -519,10 +527,16 @@ class DropItemsDataset:
 
         self.drop_size = 1
 
-        self.times = 5
+        self.times = times
 
     def __len__(self):
-        return len(self.ids)
+        return len(self.child)
+
+    def item(self,item,isTrain):
+        if not isTrain:
+            return self.child[item]
+
+        return self[item]
 
     def __getitem__(self, item_):
         original_item = self.child[item_]
@@ -538,7 +552,7 @@ class DropItemsDataset:
 
             self.apply_drop_item(input, mask, rescaled_drop_item, rescaled_drop_mask, original_item.id + "_" + str(time))
 
-        return PredictionItem(original_item.id, input, mask)
+        return PredictionItem(original_item.id, input, mask.astype(np.bool))
 
     def apply_drop_item(self, item, mask, drop_item, drop_mask, id=""):
         x = self.rnd.randrange(0, item.shape[1])
@@ -760,6 +774,12 @@ class KFoldedDataSet:
             self.folds=getattr(ds,"folds");
         else:
             self.folds = [v for v in self.kf.split(indexes)]
+
+    def clearTrain(self):
+        nf = []
+        for fold in self.folds:
+            nf.append((fold[0][0:0],fold[1]))
+        self.folds = nf
 
     def addToTrain(self,dataset):
         ma = len(self.ds)
