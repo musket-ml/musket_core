@@ -909,7 +909,9 @@ class DefaultKFoldedDataSet:
         return indexes
 
     def generator_from_indexes(self, indexes, isTrain=True, returnBatch=False):
-        return NullTerminatable(),NullTerminatable(),GenericDataSetSequence(self.ds,self.batchSize,indexes)
+        def _factory():
+            return GenericDataSetSequence(self.ds,self.batchSize,indexes)
+        return NullTerminatable(),NullTerminatable(),_factory
 
     def trainOnFold(self,fold:int,model:keras.Model,callbacks=[],numEpochs:int=100,negatives="all",
                     subsample=1.0,validation_negatives=None,verbose=1):

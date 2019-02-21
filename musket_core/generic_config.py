@@ -158,7 +158,7 @@ class GenericTaskConfig:
         self.augmentation=[]
         self.extra_train_data=None
         self.dataset_augmenter=None
-        self.dataset_clazz = None
+        self.dataset_clazz = datasets.DefaultKFoldedDataSet
         for v in atrs:
             val = atrs[v]
             val = self._update_from_config(v, val)
