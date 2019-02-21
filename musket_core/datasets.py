@@ -831,7 +831,7 @@ LOADER_SIZE=50
 LOADER_THREADED=True
 
 
-class AbstractKFoldedDataSet:
+class DefaultKFoldedDataSet:
     def __init__(self,ds,indexes=None,aug=None,transforms=None,folds=5,rs=33,batchSize=16):
         self.ds=ds;
         if aug==None:
@@ -909,7 +909,7 @@ class AbstractKFoldedDataSet:
         return indexes
 
     def generator_from_indexes(self, indexes, isTrain=True, returnBatch=False):
-        return GenericDataSetSequence(self.ds,self.batchSize,indexes)
+        return NullTerminatable(),NullTerminatable(),GenericDataSetSequence(self.ds,self.batchSize,indexes)
 
     def trainOnFold(self,fold:int,model:keras.Model,callbacks=[],numEpochs:int=100,negatives="all",
                     subsample=1.0,validation_negatives=None,verbose=1):
@@ -938,7 +938,7 @@ class AbstractKFoldedDataSet:
         return len(train_indexes)//(round(subsample*self.batchSize))
 
 
-class ImageKFoldedDataSet(AbstractKFoldedDataSet):
+class ImageKFoldedDataSet(DefaultKFoldedDataSet):
 
     def epoch(self):
         for fold in self.folds:

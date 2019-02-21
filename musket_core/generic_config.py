@@ -20,10 +20,10 @@ import imgaug
 import musket_core
 from musket_core.clr_callback import CyclicLR
 keras.callbacks.CyclicLR= CyclicLR
+
 keras.utils.get_custom_objects()["macro_f1"]= musket_core.losses.macro_f1
 keras.utils.get_custom_objects()["f1_loss"]= musket_core.losses.f1_loss
 keras.utils.get_custom_objects()["dice"]= musket_core.losses.dice
-
 keras.utils.get_custom_objects()["iou"]= musket_core.losses.iou_coef
 keras.utils.get_custom_objects()["iot"]= musket_core.losses.iot_coef
 keras.utils.get_custom_objects()["lovasz_loss"]= musket_core.losses.lovasz_loss
@@ -129,80 +129,133 @@ def create_with(names: [str], fr: dict):
     return res;
 
 
-class GenericConfig:
+class GenericTaskConfig:
 
     def __init__(self,**atrs):
         self.batch = 8
         self.all = atrs
-        self.noTrain=False
-        self.verbose=1
-        self.copyWeights=False
-        self.saveLast=False
-        self.augmentation = []
-        self.transforms = []
-        self.architecture=None
+        self.verbose = 1
+        self.noTrain = False
+        self.saveLast = False
         self.folds_count = 5
-        self.encoder_weights=None
+        self.add_to_train = None
         self.random_state = 33
-        self.stages = []
-        self.gpus = 1
-        self.lr=0.001
-        self.activation=None
-        self.callbacks = []
-        self.path = None
         self.primary_metric = "val_binary_accuracy"
         self.primary_metric_mode = "auto"
-        self.dataset_augmenter = None
-        self.add_to_train = None
-        self.extra_train_data = None
-        self.bgr = None
-        self.rate = 0.5
-        self.dataset_clazz=None
-        self.showDataExamples = False
-        self.crops = None
+        self.stages = []
+        self.gpus = 1
+        self.lr = 0.001
+        self.callbacks = []
+        self.optimizer = None
+        self.loss = None
+        self.testSplit = 0
+        self.testSplitSeed = 123
+        self.path = None
+        self.metrics = []
         self.resume = False
-        self.weights=None
-        self.flipPred=True
-        self.loss=None
-        self.testSplit=0
-        self.testSplitSeed=123
-        self.optimizer=None
-        self.shape=None
-        self.metrics=[]
+        self.weights = None
+        self.transforms=[]
+        self.augmentation=[]
+        self.extra_train_data=None
+        self.dataset_augmenter=None
+        self.dataset_clazz = None
         for v in atrs:
             val = atrs[v]
-            if v == 'augmentation' and val is not None:
-                if "BackgroundReplacer" in val:
-                    bgr=val["BackgroundReplacer"]
-                    aug=None
-                    erosion=0
-                    if "erosion" in bgr:
-                        erosion=bgr["erosion"]
-                    if "augmenters" in bgr:
-                        aug=bgr["augmenters"]
-                        aug = configloader.parse("augmenters", aug)
-                        aug=imgaug.augmenters.Sequential(aug)
-                    self.bgr= datasets.Backgrounds(bgr["path"], erosion=erosion, augmenters=aug)
-                    self.bgr.rate = bgr["rate"]
-                    del val["BackgroundReplacer"]
-                val = configloader.parse("augmenters", val)
-            if v == 'transforms':
-                val = configloader.parse("augmenters", val)
-            if v == 'callbacks':
-                cs=[]
-                val = configloader.parse("callbacks", val)
-                if val is not None:
-                    val=val+cs
-            if v == 'stages':
-                val = [self.createStage(x) for x in val]
+            val = self._update_from_config(v, val)
             setattr(self, v, val)
+        pass
+
+    def _update_from_config(self, v, val):
+        return val
+
+    def inject_task_specific_transforms(self, ds, transforms):
+        pass
+
+    def kfold(self, ds, indeces=None,batch=None)-> datasets.ImageKFoldedDataSet:
+        if self.testSplit>0:
+            train,test=datasets.split(ds,self.testSplit,self.testSplitSeed)
+            pass
+        if batch is None:
+            batch=self.batch
+        if indeces is None: indeces=range(0,len(ds))
+        transforms = [] + self.transforms
+        ds = self.inject_task_specific_transforms(ds, transforms)
+        kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count)
+        if self.noTrain:
+            kf.clear_train()
+        if self.extra_train_data is not None:
+            kf.addToTrain(extra_train[self.extra_train_data])
+        if self.dataset_augmenter is not None:
+            args = dict(self.dataset_augmenter)
+            del args["name"]
+            ag=dataset_augmenters[self.dataset_augmenter["name"]](**args)
+            kf=ag(kf)
+            pass
+        return kf
+
+    def createAndCompile(self, lr=None, loss=None)->keras.Model:
+        return self.compile(self.createNet(), self.createOptimizer(lr=lr), loss=loss)
+
+    def validation(self,ds,foldNum):
+        ids=self.kfold(ds).indexes(foldNum,False)
+        return datasets.SubDataSet(ds,ids)
+
+    def createOptimizer(self, lr=None):
+        r = getattr(opt, self.optimizer)
+        ds = create_with(["lr", "clipnorm", "clipvalue"], self.all)
+        if lr:
+            ds["lr"] = lr
+        return r(**ds)
+
+    def skip_stage(self, i, model, s, subsample):
+        st: Stage = self.stages[s]
+        ec = ExecutionConfig(fold=i, stage=s, subsample=subsample, dr=os.path.dirname(self.path))
+        if os.path.exists(ec.weightsPath()):
+            model.load_weights(ec.weightsPath())
+            if 'unfreeze_encoder' in st.dict and st.dict['unfreeze_encoder']:
+                st.unfreeze(model)
 
     def createStage(self,x):
-        return None
+        return Stage(x,self)
+
+    def lr_find(self, d, foldsToExecute=None,stage=0,subsample=1.0,start_lr=0.000001,end_lr=1.0,epochs=5):
+        dn = os.path.dirname(self.path)
+        if os.path.exists(os.path.join(dn, "summary.yaml")):
+            raise ValueError("Experiment is already finished!!!!")
+        folds = self.kfold(d)
+
+        for i in range(len(folds.folds)):
+            if foldsToExecute:
+                if not i in foldsToExecute:
+                    continue
+            model = self.createAndCompile()
+            for s in range(0, len(self.stages)):
+                if s<stage:
+                    self.skip_stage(i, model, s, subsample)
+                    continue
+                st: Stage = self.stages[s]
+                ec = ExecutionConfig(fold=i, stage=s, subsample=subsample, dr=os.path.dirname(self.path))
+                return st.lr_find(folds, model, ec,start_lr,end_lr,epochs)
+
+    def setAllowResume(self,resume):
+        self.resume=resume
+
+    def compile(self, net: keras.Model, opt: keras.optimizers.Optimizer, loss:str=None)->keras.Model:
+        if loss==None:
+            loss=self.loss
+        if "+" in loss:
+            loss= losses.composite_loss(loss)
+        if loss=='lovasz_loss' and isinstance(net.layers[-1],keras.layers.Activation):
+            net=keras.Model(net.layers[0].input,net.layers[-1].input)
+        if loss:
+            net.compile(opt, loss, self.metrics)
+        else:
+            net.compile(opt, self.loss, self.metrics)
+        return net
 
     def load_model(self, fold: int = 0, stage: int = -1):
         if isinstance(fold,list):
-            mdl=[];
+            mdl=[]
             for i in fold:
                 mdl.append(self.load_model(i,stage))
             return AnsembleModel(mdl)
@@ -211,6 +264,66 @@ class GenericConfig:
         model = self.createAndCompile()
         model.load_weights(ec.weightsPath(),False)
         return model
+
+    def info(self,metric=None):
+        if metric is None:
+            metric=self.primary_metric
+        ln=self.folds_count
+        res=[]
+        for i in range(ln):
+            for s in range(0, len(self.stages)):
+                st: Stage = self.stages[s]
+                ec = ExecutionConfig(fold=i, stage=s, dr=os.path.dirname(self.path))
+                if os.path.exists(ec.metricsPath()):
+                    try:
+                        fr=pd.read_csv(ec.metricsPath())
+                        res.append((i,s,fr[metric].max()))
+                    except:
+                        pass
+        return res
+
+
+class GenericImageTaskConfig(GenericTaskConfig):
+
+    def __init__(self,**atrs):
+        super().__init__(**atrs)
+        self.copyWeights=False
+        self.architecture=None
+        self.encoder_weights=None
+        self.activation=None
+        self.bgr = None
+        self.rate = 0.5
+        self.showDataExamples = False
+        self.crops = None
+        self.flipPred=True
+        self.shape=None
+
+    def _update_from_config(self, v, val):
+        if v == 'augmentation' and val is not None:
+            if "BackgroundReplacer" in val:
+                bgr = val["BackgroundReplacer"]
+                aug = None
+                erosion = 0
+                if "erosion" in bgr:
+                    erosion = bgr["erosion"]
+                if "augmenters" in bgr:
+                    aug = bgr["augmenters"]
+                    aug = configloader.parse("augmenters", aug)
+                    aug = imgaug.augmenters.Sequential(aug)
+                self.bgr = datasets.Backgrounds(bgr["path"], erosion=erosion, augmenters=aug)
+                self.bgr.rate = bgr["rate"]
+                del val["BackgroundReplacer"]
+            val = configloader.parse("augmenters", val)
+        if v == 'transforms':
+            val = configloader.parse("augmenters", val)
+        if v == 'callbacks':
+            cs = []
+            val = configloader.parse("callbacks", val)
+            if val is not None:
+                val = val + cs
+        if v == 'stages':
+            val = [self.createStage(x) for x in val]
+        return val
 
     def predict_on_directory(self, path, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
         return self.predict_on_dataset(datasets.DirectoryDataSet(path), fold, stage, limit, batch_size, ttflips)
@@ -257,13 +370,6 @@ class GenericConfig:
 
     def update(self,batch,res):
         pass
-
-    def createOptimizer(self, lr=None):
-        r = getattr(opt, self.optimizer)
-        ds = create_with(["lr", "clipnorm", "clipvalue"], self.all)
-        if lr:
-            ds["lr"] = lr
-        return r(**ds)
 
     def predict_on_batch(self, mdl, ttflips, batch):
         o1 = np.array(batch.images_aug)
@@ -313,58 +419,16 @@ class GenericConfig:
     
     def predict_there_and_back(self, mdl, there, back, input):
         augmented_input = there.augment_images(input)
-
         there_res = mdl.predict(np.array(augmented_input))
-        
         if self.flipPred:
             return back.augment_images(there_res)
-        
         return there_res
-    
-    
-    def compile(self, net: keras.Model, opt: keras.optimizers.Optimizer, loss:str=None)->keras.Model:
-        if loss==None:
-            loss=self.loss
-        if "+" in loss:
-            loss= losses.composite_loss(loss)
-        if loss=='lovasz_loss' and isinstance(net.layers[-1],keras.layers.Activation):
-            net=keras.Model(net.layers[0].input,net.layers[-1].input);
-        if loss:
-            net.compile(opt, loss, self.metrics)
-        else:
-            net.compile(opt, self.loss, self.metrics)
-        return net
 
-    def kfold(self, ds, indeces=None,batch=None)-> datasets.ImageKFoldedDataSet:
-        if self.testSplit>0:
-            train,test=datasets.split(ds,self.testSplit,self.testSplitSeed)
-            pass
-        if batch is None:
-            batch=self.batch
-        if indeces is None: indeces=range(0,len(ds))
-        transforms = [] + self.transforms
+    def inject_task_specific_transforms(self, ds, transforms):
         transforms.append(imgaug.augmenters.Scale({"height": self.shape[0], "width": self.shape[1]}))
         if self.bgr is not None:
-            ds= datasets.WithBackgrounds(ds, self.bgr)
-        kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count)
-        if self.noTrain==True:
-            kf.clear_train()
-        if self.extra_train_data is not None:
-            kf.addToTrain(extra_train[self.extra_train_data])
-        if self.dataset_augmenter is not None:
-            args = dict(self.dataset_augmenter)
-            del args["name"]
-            ag=dataset_augmenters[self.dataset_augmenter["name"]](**args)
-            kf=ag(kf)
-            pass
-        return kf
-
-    def validation(self,ds,foldNum):
-        ids=self.kfold(ds).indexes(foldNum,False)
-        return datasets.SubDataSet(ds,ids)
-
-    def createAndCompile(self, lr=None, loss=None)->keras.Model:
-        return self.compile(self.createNet(), self.createOptimizer(lr=lr), loss=loss)
+            ds = datasets.WithBackgrounds(ds, self.bgr)
+        return ds
 
     def predict_on_directory_with_model(self, mdl, path, limit=-1, batch_size=32, ttflips=False):
         ta = self.transformAugmentor()
@@ -381,32 +445,6 @@ class GenericConfig:
         transforms.append(imgaug.augmenters.Scale({"height": self.shape[0], "width": self.shape[1]}))
         return imgaug.augmenters.Sequential(transforms)
 
-    def lr_find(self, d, foldsToExecute=None,stage=0,subsample=1.0,start_lr=0.000001,end_lr=1.0,epochs=5):
-        dn = os.path.dirname(self.path)
-        if os.path.exists(os.path.join(dn, "summary.yaml")):
-            raise ValueError("Experiment is already finished!!!!")
-        folds = self.kfold(d)
-
-        for i in range(len(folds.folds)):
-            if foldsToExecute:
-                if not i in foldsToExecute:
-                    continue
-            model = self.createAndCompile()
-            for s in range(0, len(self.stages)):
-                if s<stage:
-                    self.skip_stage(i, model, s, subsample)
-                    continue
-                st: Stage = self.stages[s]
-                ec = ExecutionConfig(fold=i, stage=s, subsample=subsample, dr=os.path.dirname(self.path))
-                return st.lr_find(folds, model, ec,start_lr,end_lr,epochs)
-
-    def skip_stage(self, i, model, s, subsample):
-        st: Stage = self.stages[s]
-        ec = ExecutionConfig(fold=i, stage=s, subsample=subsample, dr=os.path.dirname(self.path))
-        if os.path.exists(ec.weightsPath()):
-            model.load_weights(ec.weightsPath())
-            if 'unfreeze_encoder' in st.dict and st.dict['unfreeze_encoder']:
-                st.unfreeze(model)
 
     def adaptNet(self, model, model1, copy=False):
         notUpdated = True
@@ -436,28 +474,6 @@ class GenericConfig:
                 except:
                     traceback.print_exc()
 
-    def setAllowResume(self,resume):
-        self.resume=resume
-
-    def info(self,metric=None):
-        if metric is None:
-            metric=self.primary_metric
-        ln=self.folds_count
-        res=[]
-        for i in range(ln):
-            for s in range(0, len(self.stages)):
-
-                st: Stage = self.stages[s]
-                ec = ExecutionConfig(fold=i, stage=s, dr=os.path.dirname(self.path))
-                if (os.path.exists(ec.metricsPath())):
-                    try:
-                        fr=pd.read_csv(ec.metricsPath())
-                        res.append((i,s,fr[metric].max()))
-                    except:
-                        pass
-        return res
-
-
 class KFoldCallback(keras.callbacks.Callback):
 
     def __init__(self, k:datasets.ImageKFoldedDataSet):
@@ -470,7 +486,7 @@ class KFoldCallback(keras.callbacks.Callback):
 
 class Stage:
 
-    def __init__(self, dict, cfg: GenericConfig):
+    def __init__(self, dict, cfg: GenericTaskConfig):
         self.dict = dict
         self.cfg = cfg;
         self.negatives="all"
@@ -585,7 +601,6 @@ class Stage:
         pass
 
     def loadBestWeightsFromPrevStageIfExists(self, ec, model):
-
         bestWeightsLoaded = False
         if ec.stage > 0:
             ec.stage = ec.stage - 1;

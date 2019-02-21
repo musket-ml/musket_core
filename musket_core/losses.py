@@ -13,6 +13,7 @@ def macro_f1(y_true, y_pred):
 
     p = tp / (tp + fp + K.epsilon())
     r = tp / (tp + fn + K.epsilon())
+    r = tp / (tp + fn + K.epsilon())
 
     f1 = 2 * p * r / (p + r + K.epsilon())
     f1 = tf.where(tf.is_nan(f1), tf.zeros_like(f1), f1)
