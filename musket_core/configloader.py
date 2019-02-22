@@ -14,11 +14,11 @@ class Module:
         self.pythonModule=importlib.import_module(dict["(meta.module)"])
         pass
 
-    def instantiate(self,dct):
+    def instantiate(self,dct,clearCustom=False):
         if self.entry:
             typeDefinition = self.catalog[self.entry];
             clazz = getattr(self.pythonModule, self.entry)
-            args = typeDefinition.constructArgs(dct);
+            args = typeDefinition.constructArgs(dct,clearCustom)
             return clazz(**args)
 
         if (type(dct)==dict):
@@ -27,7 +27,7 @@ class Module:
                 clazz=getattr(self.pythonModule, v)
 
                 typeDefinition=self.catalog[v];
-                args=typeDefinition.constructArgs(dct[v]);
+                args=typeDefinition.constructArgs(dct[v],clearCustom)
                 if type(args)==dict:
                     result.append(clazz(**args))
                 else:
@@ -37,10 +37,19 @@ class Module:
 
 class Type:
 
-    def constructArgs(self,dct):
+    def constructArgs(self,dct,clearCustom=False):
         #for c in dct:
-        if type(dct)==str:
+        if type(dct)==str or type(dct)==int:
+
             return dct
+        if clearCustom:
+            r=dct.copy()
+
+            ct=self.custom()
+            for v in dct:
+                if v in ct:
+                    del r[v]
+            return r
         return dct
 
     def alias(self,name:str):
@@ -51,7 +60,10 @@ class Type:
         return name
 
     def custom(self):
-        return [v for v in self.properties if self.properties[v].custom]
+        c= {v for v in self.properties if self.properties[v].custom}
+        if self.type in self.module.catalog:
+            c = c.union(self.module.catalog[self.type].custom())
+        return c
 
     def __init__(self,m:Module,dict):
         self.module=m;

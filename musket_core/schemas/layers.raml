@@ -1,0 +1,74 @@
+#%RAML 1.0 Library
+(meta.module): keras.layers
+uses:
+  meta: meta.raml
+types:
+  Layer:
+    (meta.abstract): true
+    type: object
+    properties:
+      name?: string
+      inputs?:
+        (meta.custom): true
+        type: string[]
+  Input:
+    type: Layer
+    properties:
+      shape:
+        type: array
+        items:
+          type: integer
+        (meta.positional): true
+  LSTM:
+    type: Layer
+    properties:
+      units:
+        type: integer
+        (meta.positional): true
+      return_sequences?:
+        type: boolean
+      return_state?:
+        type: boolean
+      stateful?:
+        type: boolean
+  GlobalMaxPool1D:
+    type: Layer
+  GlobalAveragePool1D:
+    type: Layer
+  Conv1D:
+    type: Layer
+    properties:
+      filters: number
+      kernel_size: number | array
+      padding:
+        type: string
+        enum: [ valid, causal , same]
+      dilation_rate: number | array
+      activation: string
+      strides: number | array
+  MaxPool1D:
+     type: Layer
+     properties:
+       pool_size:
+         type: number
+         (meta.positional): true
+  AveragePooling1D:
+    type: Layer
+    properties:
+
+      pool_size:
+        type: number
+        (meta.positional): true
+  CuDNNLSTM:
+    type: LSTM
+  Dense:
+    type: Layer
+    properties:
+      units:
+        type: integer
+        (meta.positional): true
+      activation?:
+        type: string
+
+
+

@@ -158,6 +158,7 @@ class GenericTaskConfig:
         self.augmentation=[]
         self.extra_train_data=None
         self.dataset_augmenter=None
+        self.architecture=None
         self.dataset_clazz = datasets.DefaultKFoldedDataSet
         for v in atrs:
             val = atrs[v]
@@ -166,10 +167,17 @@ class GenericTaskConfig:
         pass
 
     def _update_from_config(self, v, val):
+        if v == 'callbacks':
+            cs = []
+            val = configloader.parse("callbacks", val)
+            if val is not None:
+                val = val + cs
+        if v == 'stages':
+            val = [self.createStage(x) for x in val]
         return val
 
     def inject_task_specific_transforms(self, ds, transforms):
-        pass
+        return ds
 
     def kfold(self, ds, indeces=None,batch=None)-> datasets.ImageKFoldedDataSet:
         if self.testSplit>0:
@@ -192,6 +200,7 @@ class GenericTaskConfig:
             kf=ag(kf)
             pass
         return kf
+
 
     def createAndCompile(self, lr=None, loss=None)->keras.Model:
         return self.compile(self.createNet(), self.createOptimizer(lr=lr), loss=loss)
@@ -237,6 +246,7 @@ class GenericTaskConfig:
                 ec = ExecutionConfig(fold=i, stage=s, subsample=subsample, dr=os.path.dirname(self.path))
                 return st.lr_find(folds, model, ec,start_lr,end_lr,epochs)
 
+
     def setAllowResume(self,resume):
         self.resume=resume
 
@@ -281,6 +291,37 @@ class GenericTaskConfig:
                     except:
                         pass
         return res
+
+    def fit(self, dataset, subsample=1.0, foldsToExecute=None, start_from_stage=0):
+        dataset = self._adapt_before_fit(dataset)
+
+        dn = os.path.dirname(self.path)
+        if os.path.exists(os.path.join(dn, "summary.yaml")):
+            raise ValueError("Experiment is already finished!!!!")
+        folds = self.kfold(dataset, range(0, len(dataset)))
+        for i in range(len(folds.folds)):
+            if foldsToExecute:
+                if not i in foldsToExecute:
+                    continue
+            model = self.createAndCompile()
+            for s in range(0, len(self.stages)):
+                if s<start_from_stage:
+                    self.skip_stage(i, model, s, subsample)
+                    continue
+                st: Stage = self.stages[s]
+                ec = ExecutionConfig(fold=i, stage=s, subsample=subsample, dr=os.path.dirname(self.path))
+                st.execute(folds, model, ec)
+
+        with open(os.path.join(dn, "summary.yaml"), "w") as f:
+            yaml.dump(
+                {"completed": True, "cfgName": os.path.basename(self.path), "subsample": subsample,
+                 "folds": foldsToExecute},
+                f)
+
+    def _adapt_before_fit(self, dataset):
+        return dataset
+
+
 
 
 class GenericImageTaskConfig(GenericTaskConfig):
@@ -339,34 +380,12 @@ class GenericImageTaskConfig(GenericTaskConfig):
                 self.update(batch,res)
                 yield batch
 
-    def fit(self, dataset, subsample=1.0, foldsToExecute=None, start_from_stage=0):
+
+
+    def _adapt_before_fit(self, dataset):
         if self.crops is not None:
-            dataset= datasets.CropAndSplit(dataset, self.crops)
-
-        dn = os.path.dirname(self.path)
-        if os.path.exists(os.path.join(dn, "summary.yaml")):
-            raise ValueError("Experiment is already finished!!!!")
-        folds = self.kfold(dataset, range(0, len(dataset)))
-        for i in range(len(folds.folds)):
-            if foldsToExecute:
-                if not i in foldsToExecute:
-                    continue
-            model = self.createAndCompile()
-            for s in range(0, len(self.stages)):
-                if s<start_from_stage:
-                    self.skip_stage(i, model, s, subsample)
-                    continue
-                st: Stage = self.stages[s]
-
-
-                ec = ExecutionConfig(fold=i, stage=s, subsample=subsample, dr=os.path.dirname(self.path))
-                st.execute(folds, model, ec)
-
-        with open(os.path.join(dn, "summary.yaml"), "w") as f:
-            yaml.dump(
-                {"completed": True, "cfgName": os.path.basename(self.path), "subsample": subsample,
-                 "folds": foldsToExecute},
-                f)
+            dataset = datasets.CropAndSplit(dataset, self.crops)
+        return dataset
 
     def update(self,batch,res):
         pass
@@ -509,7 +528,7 @@ class Stage:
         else:
             self.lr = None
 
-    def lr_find(self, kf: datasets.ImageKFoldedDataSet, model: keras.Model, ec: ExecutionConfig, start_lr, end_lr, epochs):
+    def lr_find(self, kf: datasets.DefaultKFoldedDataSet, model: keras.Model, ec: ExecutionConfig, start_lr, end_lr, epochs):
         if 'unfreeze_encoder' in self.dict and self.dict['unfreeze_encoder']:
             self.unfreeze(model)
 
@@ -531,7 +550,7 @@ class Stage:
         kf.trainOnFold(ec.fold, model, cb,epochs, self.negatives, subsample=ec.subsample,validation_negatives=self.validation_negatives)
         return ll
 
-    def execute(self, kf: datasets.ImageKFoldedDataSet, model: keras.Model, ec: ExecutionConfig):
+    def execute(self, kf: datasets.DefaultKFoldedDataSet, model: keras.Model, ec: ExecutionConfig):
         if 'unfreeze_encoder' in self.dict and self.dict['unfreeze_encoder']:
             self.unfreeze(model)
 

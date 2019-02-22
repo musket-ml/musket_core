@@ -272,12 +272,12 @@ class GenericDataSetSequence(keras.utils.Sequence):
         X=[]
         y=[]
         for i in range(idx * self.batchSize,(idx + 1) * self.batchSize):
-            if i>l:
+            if i>=l:
                 i=i%l
             r=self.ds[self.indexes[i]]
             X.append(r.x)
             y.append(r.y)
-        return X,y
+        return np.array(X),np.array(y)
 
     def on_epoch_end(self):
         random.shuffle(self.indexes)
@@ -293,13 +293,15 @@ class GenericDataSetSequence(keras.utils.Sequence):
         batch_y = [[] for i in range(yd)]
 
         for i in range(idx * self.batchSize,(idx + 1) * self.batchSize):
-            if i>l:
+            if i>=l:
                 i=i%l
             r=self.ds[self.indexes[i]]
             for j in range(xd):
                 batch_x[j].append(r.x[j])
             for j in range(yd):
                 batch_y[j].append(r.y[j])
+        batch_x=[np.array(x) for x in batch_x]
+        batch_y = [np.array(y) for y in batch_y]
         return batch_x,batch_y
 
 
