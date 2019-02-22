@@ -166,6 +166,8 @@ class GenericTaskConfig:
         self.showDataExamples = False
         self.crops = None
         self.flipPred = True
+        self.copyWeights = False
+        self.dropout = 0
         self.dataset_clazz = datasets.DefaultKFoldedDataSet
         for v in atrs:
             val = atrs[v]
@@ -335,7 +337,7 @@ class GenericImageTaskConfig(GenericTaskConfig):
 
     def __init__(self,**atrs):
         super().__init__(**atrs)
-        self.copyWeights=False
+
 
 
 
