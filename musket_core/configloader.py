@@ -21,8 +21,10 @@ class Module:
             args = typeDefinition.constructArgs(dct,clearCustom)
             return clazz(**args)
 
-        if (type(dct)==dict):
-            result=[];
+        if type(dct)==dict:
+            result = [];
+
+
             for v in dct:
                 clazz=getattr(self.pythonModule, v)
 
@@ -33,6 +35,10 @@ class Module:
                 else:
                     result.append(clazz(args))
             return result
+
+
+        return dct
+
 
 
 class Type:

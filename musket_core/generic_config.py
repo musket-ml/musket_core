@@ -159,6 +159,13 @@ class GenericTaskConfig:
         self.extra_train_data=None
         self.dataset_augmenter=None
         self.architecture=None
+        self.encoder_weights = None
+        self.activation = None
+        self.bgr = None
+        self.rate = 0.5
+        self.showDataExamples = False
+        self.crops = None
+        self.flipPred = True
         self.dataset_clazz = datasets.DefaultKFoldedDataSet
         for v in atrs:
             val = atrs[v]
@@ -329,15 +336,9 @@ class GenericImageTaskConfig(GenericTaskConfig):
     def __init__(self,**atrs):
         super().__init__(**atrs)
         self.copyWeights=False
-        self.architecture=None
-        self.encoder_weights=None
-        self.activation=None
-        self.bgr = None
-        self.rate = 0.5
-        self.showDataExamples = False
-        self.crops = None
-        self.flipPred=True
-        self.shape=None
+
+
+
 
     def _update_from_config(self, v, val):
         if v == 'augmentation' and val is not None:
