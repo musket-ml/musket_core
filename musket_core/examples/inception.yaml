@@ -1,0 +1,29 @@
+#Weird case with multiple inputs and multiple output
+declarations:
+  c2d:
+    parameters: [size, pool]
+    body:
+      - Conv1D: [100,size,relu]
+      - Conv1D: [100,size,relu]
+      - Conv1D: [100,size,relu]
+      - MaxPool1D: pool
+  net:
+    inputs: [i]
+    body:
+      - c2d:
+          args: [4,2]
+          name: b1
+          inputs: i
+      - c2d:
+          args: [4,4]
+          name: b2
+          inputs: i
+      - c2d:
+          args: [4,4]
+          name: b3
+          inputs: i
+      - concatenate:
+           axis: 1
+           inputs: [b1,b2,b3]
+
+

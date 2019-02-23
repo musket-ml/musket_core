@@ -1,0 +1,26 @@
+declarations:
+  c2d:
+    parameters: [size, pool]
+    body:
+      - conv1D: [100,size,relu]
+      - conv1D: [100,size,relu]
+      - conv1D: [100,size,relu]
+      - maxPool1D: pool
+  net:
+    inputs: [a,b]
+    #outputs: [d1,d2]
+    body:
+      - c2d:
+         name: a
+         inputs: a
+         args: [4,4]
+      - c2d:
+         name: b
+         inputs: b
+         size: 4
+         pool: 4
+      - concatenate: [a,b ]
+      - dense:
+          units: 4
+          activation: sigmoid
+

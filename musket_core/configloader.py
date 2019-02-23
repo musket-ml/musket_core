@@ -10,7 +10,7 @@ class Module:
             t=Type(self, dict["types"][v]);
             if t.entry:
                 self.entry=v;
-            self.catalog[v]=t
+            self.catalog[v.lower()]=t
         self.pythonModule=importlib.import_module(dict["(meta.module)"])
         pass
 
@@ -26,9 +26,12 @@ class Module:
 
 
             for v in dct:
-                clazz=getattr(self.pythonModule, v)
+                if hasattr(self.pythonModule,v[0].upper()+v[1:]):
+                    clazz = getattr(self.pythonModule, v[0].upper()+v[1:])
+                else: clazz=getattr(self.pythonModule, v)
 
-                typeDefinition=self.catalog[v];
+
+                typeDefinition=self.catalog[v.lower()];
                 args=typeDefinition.constructArgs(dct[v],clearCustom)
                 if type(args)==dict:
                     result.append(clazz(**args))
@@ -48,7 +51,17 @@ class Type:
         if type(dct)==str or type(dct)==int:
 
             return dct
+
         if clearCustom:
+            if "args" in dct:
+                dct=dct["args"]
+            if isinstance(dct,list):
+                pos=self.positional()
+                argMap={}
+                for i in range(min(len(dct),len(pos))):
+                    argMap[pos[i]]=dct[i]
+                dct=argMap
+                pass
             r=dct.copy()
 
             ct=self.custom()
@@ -67,8 +80,14 @@ class Type:
 
     def custom(self):
         c= {v for v in self.properties if self.properties[v].custom}
-        if self.type in self.module.catalog:
-            c = c.union(self.module.catalog[self.type].custom())
+        if self.type.lower() in self.module.catalog:
+            c = c.union(self.module.catalog[self.type.lower()].custom())
+        return c
+
+    def positional(self):
+        c= [v for v in self.properties if self.properties[v].positional]
+        if self.type.lower() in self.module.catalog:
+            c = c+self.module.catalog[self.type.lower()].positional()
         return c
 
     def __init__(self,m:Module,dict):

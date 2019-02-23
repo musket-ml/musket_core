@@ -35,16 +35,35 @@ types:
     type: Layer
   GlobalAveragePool1D:
     type: Layer
+  Concatenate:
+    type: Layer
+  Add:
+    type: Layer
+  Substract:
+    type: Layer
+  Mult:
+    type: Layer
+  Max:
+    type: Layer
+  Min:
+    type: Layer
   Conv1D:
     type: Layer
     properties:
-      filters: number
-      kernel_size: number | array
+      filters:
+         type: number
+         (meta.positional): true
+      kernel_size:
+         type: number | array
+         (meta.positional): true
+      activation:
+         type: string
+         (meta.positional): true
       padding:
         type: string
         enum: [ valid, causal , same]
       dilation_rate: number | array
-      activation: string
+
       strides: number | array
   MaxPool1D:
      type: Layer
@@ -68,6 +87,7 @@ types:
         type: integer
         (meta.positional): true
       activation?:
+        (meta.positional): true
         type: string
 
 
