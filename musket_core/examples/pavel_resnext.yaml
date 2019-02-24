@@ -1,0 +1,66 @@
+#Weird case with multiple inputs and multiple output
+declarations:
+  inceptionBlock:
+    parameters: [channels]
+    inputs: [i1]
+    body:
+      - Conv2D:
+          name: conv0
+          args: [channels,1]
+      - Conv2D:
+          inputs: i1
+          args: [channels/3,1]
+      - Conv2D:
+          name: conv1
+          args: [channels,3]
+      - Conv2D:
+          inputs: i1
+          args: [channels/4,1]
+      - Conv2D:
+          name: conv2
+          args: [channels,5]
+      - MaxPool2D:
+          inputs: i1
+          args: [3]
+      - Conv2D:
+          name: conv3
+          args: [channels,1]
+      - concatenate: [conv0, conv1, conv2, conv3]
+  resnextBlock:
+    parameters: [channels]
+    inputs: [i1]
+    body:
+      - inceptionBlock:
+          inputs: i1
+          name: inc1
+          args: [channels]
+      - inceptionBlock:
+          inputs: i1
+          name: inc2
+          args: [channels]
+      - inceptionBlock:
+          inputs: i1
+          name: inc3
+          args: [channels]
+      - concatenate: [inc1, inc2, inc3]
+  resnextPairBlock:
+    parameters: [channels]
+    inputs: [i1]
+    body:
+      - inceptionBlock:
+          args: [channels]
+      - inceptionBlock:
+          inputs: [inc1]
+          name: inc2
+          args: [channels]
+      - concatenate: [i1, inc2]
+      - MaxPool2D: [3]
+  sampleNetwork:
+    parameters: [channels]
+    body:
+      - resnextPairBlock:
+          args: [channels]
+      - resnextPairBlock:
+          args: [channels]
+      - resnextPairBlock:
+          args: [channels]

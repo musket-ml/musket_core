@@ -1,0 +1,18 @@
+#Basic example with multiple inputs and single output
+declarations:
+  c2d:
+    parameters: [size, pool]
+    body:
+      - Conv1D: [size,3,relu]
+      - Conv1D: [size*2,3,relu]
+      - Conv1D: [size*3,3,relu]
+      - MaxPool1D: pool
+  net:
+    inputs: [i1]
+    body:
+      - split:
+          - c2d: [4,4]
+          - c2d: [4,4]
+      - concatenate: all
+      - dense: [4, sigmoid]
+

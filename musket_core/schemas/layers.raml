@@ -65,12 +65,16 @@ types:
       dilation_rate: number | array
 
       strides: number | array
+  Conv2D:
+    type: Conv1D
   MaxPool1D:
      type: Layer
      properties:
        pool_size:
          type: number
          (meta.positional): true
+  MaxPool2D:
+    type: MaxPool1D
   AveragePooling1D:
     type: Layer
     properties:

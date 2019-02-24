@@ -1,0 +1,35 @@
+declarations:
+  inceptionBlock:
+    parameters: [channels]
+    concat:
+      - Conv2D: [channels,1]
+      - seq:
+        - Conv2D: [channels/3,1]
+        - Conv2D: [channels,3]
+      - seq:
+          - Conv2D: [channels/4,1]
+          - Conv2D: [channels,5]
+      - seq:
+          - MaxPool2D: [3]
+          - Conv2D: [channels,1]
+  resnextBlock:
+    parameters: [channels]
+    concat:
+      - inceptionBlock: [channels]
+      - inceptionBlock: [channels]
+      - inceptionBlock: [channels]
+  resnextPairBlock:
+    parameters: [channels]
+    seq:
+      - concat:
+        - seq:
+          - inceptionBlock: [channels]
+          - inceptionBlock: [channels]
+        - input: true
+      - MaxPool2D: [3]
+  sampleNetwork:
+    parameters: [channels]
+    seq:
+      - resnextPairBlock:[channels]
+      - resnextPairBlock:[channels]
+      - resnextPairBlock:[channels]

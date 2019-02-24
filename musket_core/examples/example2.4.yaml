@@ -1,0 +1,23 @@
+#Basic example with sequencial model
+declarations:
+  inceptionBlock:
+    parameters: [channels]
+    with:
+      padding: same
+    body:
+      - split:
+        - Conv2D: [channels,1]
+        - seq:
+          - Conv2D: [channels*3,1]
+          - Conv2D: [channels,3]
+        - seq:
+            - Conv2D: [channels*4,1]
+            - Conv2D: [channels,1]
+        - seq:
+            - Conv2D: [channels,2]
+            - Conv2D: [channels,1]
+      - concatenate: all
+  net:
+      - inceptionBlock: [120]
+      - inceptionBlock: [120]
+      - inceptionBlock: [120]

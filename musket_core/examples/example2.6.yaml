@@ -1,0 +1,31 @@
+#Basic example with sequencial model
+declarations:
+  inceptionBlock:
+    parameters: [channels]
+    with:
+      padding: same
+    body:
+      - split-concatenate:
+        - Conv2D: [channels,1]
+        - seq:
+          - Conv2D: [channels*3,1]
+          - Conv2D: [channels,3]
+        - seq:
+            - Conv2D: [channels*4,1]
+            - Conv2D: [channels,1]
+        - seq:
+            - Conv2D: [channels,2]
+            - Conv2D: [channels,1]
+  resnextPairBlock:
+    parameters: [channels]
+    body:
+    - split-concatenate:
+      - seq:
+        - inceptionBlock: [channels]
+        - inceptionBlock: [channels]
+      - input: true
+    - MaxPool2D: [3]
+  net:
+      - resnextPairBlock: [120]
+      - resnextPairBlock: [120]
+      - resnextPairBlock: [120]

@@ -1,0 +1,41 @@
+#Basic example with sequencial model
+declarations:
+  inceptionBlock:
+    parameters: [channels]
+    body:
+      - split:
+        - Conv2D: [channels,1]
+        - seq:
+          - Conv2D: [channels/3,1]
+          - Conv2D: [channels,3]
+        - seq:
+            - Conv2D: [channels/4,1]
+            - Conv2D: [channels,5]
+        - seq:
+            - MaxPool2D: [3]
+            - Conv2D: [channels,1]
+      - concatenate: all
+  resnextBlock:
+    parameters: [channels]
+    body:
+      - split:
+        - inceptionBlock: [channels]
+        - inceptionBlock: [channels]
+        - inceptionBlock: [channels]
+      - concatenate: all
+  resnextPairBlock:
+    parameters: [channels]
+    body:
+      - split:
+        - seq:
+          - inceptionBlock: [channels]
+          - inceptionBlock: [channels]
+        - input: true
+      - concatenate: all
+      - MaxPool2D: [3]
+  sampleNetwork:
+    parameters: [channels]
+    body:
+      - resnextPairBlock: [channels]
+      - resnextPairBlock: [channels]
+      - resnextPairBlock: [channels]

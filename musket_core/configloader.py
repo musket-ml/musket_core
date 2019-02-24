@@ -14,7 +14,7 @@ class Module:
         self.pythonModule=importlib.import_module(dict["(meta.module)"])
         pass
 
-    def instantiate(self,dct,clearCustom=False):
+    def instantiate(self,dct,clearCustom=False,withArgs={}):
         if self.entry:
             typeDefinition = self.catalog[self.entry];
             clazz = getattr(self.pythonModule, self.entry)
@@ -33,6 +33,10 @@ class Module:
 
                 typeDefinition=self.catalog[v.lower()];
                 args=typeDefinition.constructArgs(dct[v],clearCustom)
+                allProps=typeDefinition.all()
+                for v in withArgs:
+                    if v in allProps:
+                        args[v]=withArgs[v]
                 if type(args)==dict:
                     result.append(clazz(**args))
                 else:
@@ -53,7 +57,8 @@ class Type:
             return dct
 
         if clearCustom:
-            if "args" in dct:
+
+            if isinstance(dct,dict) and "args" in dct:
                 dct=dct["args"]
             if isinstance(dct,list):
                 pos=self.positional()
@@ -62,13 +67,13 @@ class Type:
                     argMap[pos[i]]=dct[i]
                 dct=argMap
                 pass
-            r=dct.copy()
-
-            ct=self.custom()
-            for v in dct:
-                if v in ct:
-                    del r[v]
-            return r
+            if isinstance(dct, dict):
+                r=dct.copy()
+                ct=self.custom()
+                for v in dct:
+                    if v in ct:
+                        del r[v]
+                return r
         return dct
 
     def alias(self,name:str):
@@ -88,6 +93,12 @@ class Type:
         c= [v for v in self.properties if self.properties[v].positional]
         if self.type.lower() in self.module.catalog:
             c = c+self.module.catalog[self.type.lower()].positional()
+        return c
+
+    def all(self):
+        c= [v for v in self.properties]
+        if self.type.lower() in self.module.catalog:
+            c = c+self.module.catalog[self.type.lower()].all()
         return c
 
     def __init__(self,m:Module,dict):
