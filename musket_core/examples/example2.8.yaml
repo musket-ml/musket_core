@@ -1,0 +1,11 @@
+#Basic example with sequencial model
+declarations:
+  convBlock:
+    parameters: [channels]
+    with:
+      padding: same
+    body:
+      - repeat(5):
+        - Conv2D: [channels*_,1]
+  net:
+      - convBlock: [120]

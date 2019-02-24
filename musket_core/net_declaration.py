@@ -17,6 +17,16 @@ def seq(layers,declarations,config,outputs,linputs,pName,withArgs):
     layers=Layers(config,declarations,{},outputs,linputs,withArgs)
     return layers
 
+def repeat(num):
+    def repeat(layers,declarations,config,outputs,linputs,pName,withArgs):
+        m=[]
+        for v in range(num+1):
+            cm=layers.parameters.copy()
+            cm["_"]=v+1
+            m.append(Layers(config, declarations, cm, outputs, linputs, withArgs))
+        return m,num
+    return repeat
+
 def split(layers,declarations,config,outputs,linputs,pName,withArgs):
     m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
     return m
@@ -67,6 +77,8 @@ builtins={
     "seq":seq,
     "input": take_input
 }
+for i in range(20):
+    builtins["repeat("+str(i)+")"]=repeat(i)
 gnum=0
 class Layers:
 
@@ -79,6 +91,7 @@ class Layers:
         self.layerArguments:{str:{str}}={}
         self.layerSequence:[keras.layers.Layer]=[]
         self.name="l"+str(gnum)
+        self.parameters=parameters
         gnum=gnum+1
         nums={}
         for layer in layers_yaml:
@@ -101,23 +114,35 @@ class Layers:
                     pName = [i.name for i in layerImpl]
                     continue
                 if isinstance(layerImpl,tuple):
+                    second = layerImpl[1]
                     first=layerImpl[0]
-                    for i in first:
-                        inputs = pName
-                        name = i.name
-                        self._add(config, inputs, i, name)
-                        #pName = name
-                        self.output = name
+                    if isinstance(second,int):
+                        for i in first:
+                            inputs = pName
+                            name = i.name
+                            self._add(config, inputs, i, name)
+                            pName = name
+                            self.output = name
+                            if outputs is not None:
+                                self.output = outputs
+                        #pName = [i.name for i in first]
+                    else:
+                        for i in first:
+                            inputs = pName
+                            name = i.name
+                            self._add(config, inputs, i, name)
+                            #pName = name
+                            self.output = name
+                            if outputs is not None:
+                                self.output = outputs
+                        pName = [i.name for i in first]
+
+                        second=layerImpl[1]
+                        self._add({}, pName, second, second.name)
+                        self.output = second.name
                         if outputs is not None:
                             self.output = outputs
-                    pName = [i.name for i in first]
-
-                    second=layerImpl[1]
-                    self._add({}, pName, second, second.name)
-                    self.output = second.name
-                    if outputs is not None:
-                        self.output = outputs
-                    pName=second.name
+                        pName=second.name
                     continue
 
                 inputs = pName

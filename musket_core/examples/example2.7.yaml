@@ -16,6 +16,5 @@ declarations:
         - seq:
             - Conv2D: [channels,2]
             - Conv2D: [channels,1]
-
   net:
       - inceptionBlock: [120]
