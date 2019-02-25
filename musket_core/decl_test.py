@@ -1,7 +1,9 @@
 from musket_core import net_declaration
 import keras
-m1=net_declaration.create_model("./examples/example2.8.yaml",keras.layers.Input((200,200,3)))
+m1=net_declaration.create_model("./examples/example2.9.yaml",keras.layers.Input((200,200,3)))
 print(m1.summary())
+# m1=net_declaration.create_model("./examples/example2.8.yaml",keras.layers.Input((200,200,3)))
+# print(m1.summary())
 # m1=net_declaration.create_model("./examples/example2.7.yaml",keras.layers.Input((200,200,3)))
 # print(m1.summary())
 # m1=net_declaration.create_model("./examples/example2.6.yaml",keras.layers.Input((200,200,3)))

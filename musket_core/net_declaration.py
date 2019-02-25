@@ -257,15 +257,22 @@ class Declaration:
             self.inputs = declaration_yaml["inputs"] if "inputs" in declaration_yaml else []
             self.outputs = declaration_yaml["outputs"] if "outputs" in declaration_yaml else None
             self.body = declaration_yaml["body"] if "body" in declaration_yaml else []
+            self.shared = declaration_yaml["shared"] if "shared" in declaration_yaml else False
             self.withArgs = declaration_yaml["with"] if "with" in declaration_yaml else {}
+            self.layers=None
         else:
             self.parameters=[]
             self.body=declaration_yaml
             self.outputs=None
             self.inputs=[]
             self.withArgs ={}
+            self.shared=False
+            self.layers = None
 
     def instantiate(self, dMap, parameters=None):
+        if self.shared:
+            if self.layers is not None:
+                return self.layers
         if parameters is None:
             parameters={}
         if "args" in parameters:
@@ -276,7 +283,8 @@ class Declaration:
                 pMap[self.parameters[p]]=parameters[p]
             parameters=pMap
         l=Layers(self.body,dMap,parameters,self.outputs,self.inputs,self.withArgs)
-
+        if self.shared:
+            self.layers=l
         return l
 
 

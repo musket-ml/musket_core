@@ -11,6 +11,7 @@ class Module:
             if t.entry:
                 self.entry=v;
             self.catalog[v.lower()]=t
+            self.catalog[v] = t
         self.pythonModule=importlib.import_module(dict["(meta.module)"])
         pass
 
