@@ -67,11 +67,12 @@ def maxEpoch(file):
 
 class ExecutionConfig:
 
-    def __init__(self, fold=0, stage=0, subsample=1.0, dr: str = ""):
+    def __init__(self, fold=0, stage=0, subsample=1.0, dr: str = "", drawingFunction=None):
         self.subsample = subsample
         self.stage = stage
         self.fold = fold
         self.dirName = dr
+        self.drawingFunction = drawingFunction
         pass
 
     def weightsPath(self):
@@ -301,7 +302,7 @@ class GenericTaskConfig:
                         pass
         return res
 
-    def fit(self, dataset, subsample=1.0, foldsToExecute=None, start_from_stage=0):
+    def fit(self, dataset, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction = None):
         dataset = self._adapt_before_fit(dataset)
 
         dn = os.path.dirname(self.path)
@@ -318,7 +319,7 @@ class GenericTaskConfig:
                     self.skip_stage(i, model, s, subsample)
                     continue
                 st: Stage = self.stages[s]
-                ec = ExecutionConfig(fold=i, stage=s, subsample=subsample, dr=os.path.dirname(self.path))
+                ec = ExecutionConfig(fold=i, stage=s, subsample=subsample, dr=os.path.dirname(self.path),drawingFunction=drawingFunction)
                 st.execute(folds, model, ec)
 
         with open(os.path.join(dn, "summary.yaml"), "w") as f:
