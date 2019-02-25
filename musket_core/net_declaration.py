@@ -237,6 +237,7 @@ class Layers:
             if isinstance(inp,dict):
                 if "$input" in inp and len(inp)==1:
                     inp=inp["$input"]
+            print(l)
             res=l(inp)
             tensorMap[l.name]=res
             last=res
@@ -272,7 +273,9 @@ class Declaration:
     def instantiate(self, dMap, parameters=None):
         if self.shared:
             if self.layers is not None:
-                return self.layers
+                def am(args):
+                    return self.layers(args)
+                return am
         if parameters is None:
             parameters={}
         if "args" in parameters:

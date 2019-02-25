@@ -11,7 +11,6 @@ def createSequence(seq):
     layerMap={}
     pName=[]
     first=True
-    keras.layers.Conv1D
 
     input=None
     for v in seq:

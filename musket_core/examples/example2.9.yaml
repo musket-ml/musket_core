@@ -9,5 +9,5 @@ declarations:
       - Conv2D: [channels,1]
       - Conv2D: [channels,1]
   net:
-      - convBlock: [120]
-      - convBlock: [120]
+      - convBlock: [3]
+      - convBlock: [3]
