@@ -4,6 +4,8 @@ import keras
 import musket_core.templating as tp
 layers=configloader.load("layers")
 
+
+
 import inspect
 import tensorflow as tf
 
@@ -158,7 +160,14 @@ class Layers:
                 if config=="all":
                     layer[key]=[]
                 layerImpl = layers.instantiate(layer, True,withArgs)[0]
-                name = layer["name"] if "name" in layer else layerImpl.name
+                if "name" in layer:
+                    name = layer["name"]
+                else:
+                    if hasattr(layerImpl,"name"):
+                        name=layerImpl.name
+                    else:
+                        name=str(layerImpl)
+                        layerImpl.name=name
                 if isinstance(config,dict):
                     inputs = config["inputs"] if "inputs" in config else pName
                 else:
@@ -331,7 +340,8 @@ def create_model(path,inputs,name="net")->keras.Model:
     out=d.model(name, inputs)
     return out
 
-def create_model_from_config(n,inputs,name="net")->keras.Model:
+def create_model_from_config(n,inputs,name="net",imports=[])->keras.Model:
     d=Declarations(n)
+    for x in imports: layers.register(x)
     out=d.model(name, inputs)
     return out

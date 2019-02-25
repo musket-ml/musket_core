@@ -54,7 +54,7 @@ class GenericPipeline(generic.GenericTaskConfig):
             inputs=[keras.Input(x) for x in input]
         else:
             inputs=[keras.Input(input)]
-        m=net.create_model_from_config(self.declarations,inputs,self.architecture)
+        m=net.create_model_from_config(self.declarations,inputs,self.architecture,self.imports)
         return m
 
 

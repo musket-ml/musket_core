@@ -135,6 +135,7 @@ class GenericTaskConfig:
     def __init__(self,**atrs):
         self.batch = 8
         self.all = atrs
+        self.imports=[]
         self.verbose = 1
         self.noTrain = False
         self.saveLast = False

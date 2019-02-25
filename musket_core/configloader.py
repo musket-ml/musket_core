@@ -1,6 +1,7 @@
 import importlib
 import os
 import yaml
+import inspect
 class Module:
 
     def __init__(self,dict):
@@ -17,29 +18,47 @@ class Module:
         self.pythonModule=importlib.import_module(dict["(meta.module)"])
         pass
 
-    def instantiate(self,dct,clearCustom=False,withArgs={}):
+    def register(self,pythonPath):
+        pyMod=importlib.import_module(pythonPath)
+        for x in dir(pyMod):
+            tp=getattr(pyMod,x)
+            if inspect.isclass(tp):
+                init=getattr(tp, "__init__")
+                gignature=inspect.signature(init)
+                typeName=x
+                tp=PythonType(gignature,tp)
+                self.catalog[typeName.lower()] = tp
+                self.catalog[typeName] = tp
+                self.orig[typeName.lower()] = typeName
+            pass
+        pass
+
+    def instantiate(self, dct, clear_custom=False, with_args=None):
+        if with_args is None:
+            with_args={}
         if self.entry:
             typeDefinition = self.catalog[self.entry];
             clazz = getattr(self.pythonModule, self.entry)
-            args = typeDefinition.constructArgs(dct,clearCustom)
+            args = typeDefinition.constructArgs(dct, clear_custom)
             return clazz(**args)
 
         if type(dct)==dict:
-            result = [];
-
+            result = []
 
             for v in dct:
-                if hasattr(self.pythonModule,v[0].upper()+v[1:]):
-                    clazz = getattr(self.pythonModule, v[0].upper()+v[1:])
-                else: clazz=getattr(self.pythonModule, self.orig[v])
+                typeDefinition = self.catalog[v.lower()]
+                if isinstance(typeDefinition,PythonType):
+                    clazz=typeDefinition.clazz
+                else:
+                    if hasattr(self.pythonModule,v[0].upper()+v[1:]):
+                        clazz = getattr(self.pythonModule, v[0].upper()+v[1:])
+                    else: clazz=getattr(self.pythonModule, self.orig[v])
 
-
-                typeDefinition=self.catalog[v.lower()]
-                args=typeDefinition.constructArgs(dct[v],clearCustom)
+                args=typeDefinition.constructArgs(dct[v], clear_custom)
                 allProps=typeDefinition.all()
-                for v in withArgs:
+                for v in with_args:
                     if v in allProps:
-                        args[v]=withArgs[v]
+                        args[v]=with_args[v]
                 if type(args)==dict:
                     result.append(clazz(**args))
                 else:
@@ -49,9 +68,16 @@ class Module:
 
         return dct
 
+class AbstractType:
 
+    def positional(self):
+        return []
 
-class Type:
+    def all(self):
+        return []
+
+    def custom(self):
+        return []
 
     def constructArgs(self,dct,clearCustom=False):
         #for c in dct:
@@ -78,6 +104,24 @@ class Type:
                         del r[v]
                 return r
         return dct
+
+
+class PythonType(AbstractType):
+
+    def __init__(self,s:inspect.Signature,clazz):
+        args=[p for p in s.parameters][1:]
+        self.args=args
+        self.clazz=clazz
+
+    def positional(self):
+        return self.args
+
+    def all(self):
+        return self.args
+
+class Type(AbstractType):
+
+
 
     def alias(self,name:str):
         if name in self.properties:
