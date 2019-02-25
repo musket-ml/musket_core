@@ -571,14 +571,16 @@ class Stage:
         if 'extra_callbacks' in self.dict:
             cb = cb + configloader.parse("callbacks", self.dict['extra_callbacks'])
         kepoch=-1
+        best = None
         cb.append(KFoldCallback(kf))
         if self.cfg.resume:
+            allBest = self.cfg.info()
+            best = next(x for x in allBest if (x[1] == ec.stage and x[0] == ec.fold))
             kepoch=maxEpoch(ec.metricsPath())
             if kepoch!=-1:
-                self.epochs=self.epochs-kepoch
                 if os.path.exists(ec.weightsPath()):
                     model.load_weights(ec.weightsPath())
-                cb.append(CSVLogger(ec.metricsPath(),append=True,start=kepoch))
+                cb.append(CSVLogger(ec.metricsPath(),append=True))
             else:
                 cb.append(CSVLogger(ec.metricsPath()))
                 kepoch=0
@@ -586,11 +588,15 @@ class Stage:
             kepoch=0
             cb.append(CSVLogger(ec.metricsPath()))
         md = self.cfg.primary_metric_mode
+
         if self.cfg.gpus==1:
 
-            cb.append(
-                keras.callbacks.ModelCheckpoint(ec.weightsPath(), save_best_only=True, monitor=self.cfg.primary_metric,
-                                                mode=md, verbose=1))
+            mcp = keras.callbacks.ModelCheckpoint(ec.weightsPath(), save_best_only=True,
+                                                         monitor=self.cfg.primary_metric, mode=md, verbose=1)
+            if best != None:
+                mcp.best = best[2]
+
+            cb.append(mcp)
 
         self.add_visualization_callbacks(cb, ec, kf)
         if self.epochs-kepoch==0:
@@ -613,12 +619,15 @@ class Stage:
             if not bestWeightsLoaded:
                 model.layers[-2].load_weights(ec.weightsPath()+".tmp",False)
 
-            cb.append(
-                alt.AltModelCheckpoint(ec.weightsPath(), model.layers[-2], save_best_only=True, monitor=self.cfg.primary_metric,
-                                       mode=md, verbose=1))
+            amcp = alt.AltModelCheckpoint(ec.weightsPath(), model.layers[-2], save_best_only=True,
+                                                monitor=self.cfg.primary_metric, mode=md, verbose=1)
+            if best != None:
+                amcp.best = best[2]
+
+            cb.append(amcp)
         else:
             self.loadBestWeightsFromPrevStageIfExists(ec, model)
-        kf.trainOnFold(ec.fold, model, cb, self.epochs-kepoch, self.negatives, subsample=ec.subsample,validation_negatives=self.validation_negatives,verbose=self.cfg.verbose)
+        kf.trainOnFold(ec.fold, model, cb, self.epochs, self.negatives, subsample=ec.subsample,validation_negatives=self.validation_negatives,verbose=self.cfg.verbose, initial_epoch=kepoch)
 
         print('saved')
         pass

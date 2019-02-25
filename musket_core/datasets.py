@@ -916,7 +916,7 @@ class DefaultKFoldedDataSet:
         return NullTerminatable(),NullTerminatable(),_factory
 
     def trainOnFold(self,fold:int,model:keras.Model,callbacks=[],numEpochs:int=100,negatives="all",
-                    subsample=1.0,validation_negatives=None,verbose=1):
+                    subsample=1.0,validation_negatives=None,verbose=1, initial_epoch=0):
         train_indexes = self.sampledIndexes(fold, True, negatives)
         if validation_negatives==None:
             validation_negatives=negatives
@@ -930,7 +930,8 @@ class DefaultKFoldedDataSet:
                              validation_data=test_g(),
                              callbacks=callbacks,
                              verbose=verbose,
-                             validation_steps=len(test_indexes)//(round(subsample*self.batchSize)))
+                             validation_steps=len(test_indexes)//(round(subsample*self.batchSize)),
+                             initial_epoch=initial_epoch)
         finally:
             tl.terminate()
             tg.terminate()
