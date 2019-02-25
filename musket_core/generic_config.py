@@ -575,7 +575,9 @@ class Stage:
         cb.append(KFoldCallback(kf))
         if self.cfg.resume:
             allBest = self.cfg.info()
-            best = next(x for x in allBest if (x[1] == ec.stage and x[0] == ec.fold))
+            filtered = list(filter(lambda x: x[1] == ec.stage and x[0] == ec.fold, allBest))
+            if len(filtered) > 0:
+                best = filtered[0]
             kepoch=maxEpoch(ec.metricsPath())
             if kepoch!=-1:
                 if os.path.exists(ec.weightsPath()):
