@@ -5,6 +5,7 @@ class Module:
 
     def __init__(self,dict):
         self.catalog={};
+        self.orig={}
         self.entry=None
         for v in dict["types"]:
             t=Type(self, dict["types"][v]);
@@ -12,6 +13,7 @@ class Module:
                 self.entry=v;
             self.catalog[v.lower()]=t
             self.catalog[v] = t
+            self.orig[v.lower()]=v
         self.pythonModule=importlib.import_module(dict["(meta.module)"])
         pass
 
@@ -29,10 +31,10 @@ class Module:
             for v in dct:
                 if hasattr(self.pythonModule,v[0].upper()+v[1:]):
                     clazz = getattr(self.pythonModule, v[0].upper()+v[1:])
-                else: clazz=getattr(self.pythonModule, v)
+                else: clazz=getattr(self.pythonModule, self.orig[v])
 
 
-                typeDefinition=self.catalog[v.lower()];
+                typeDefinition=self.catalog[v.lower()]
                 args=typeDefinition.constructArgs(dct[v],clearCustom)
                 allProps=typeDefinition.all()
                 for v in withArgs:

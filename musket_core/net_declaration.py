@@ -1,4 +1,5 @@
 from musket_core import configloader
+from musket_core.utils import load_yaml
 import keras
 import musket_core.templating as tp
 layers=configloader.load("layers")
@@ -324,18 +325,13 @@ class Declarations:
         return keras.Model(inputs,m)
 
 
-import yaml
-
-def load(path):
-    with open(path, "r") as f:
-        return yaml.load(f);
-
 def create_model(path,inputs,name="net")->keras.Model:
-
-    n=load(path)
+    n=load_yaml(path)
     d=Declarations(n["declarations"])
-
-    input_ = inputs
     out=d.model(name, inputs)
     return out
 
+def create_model_from_config(n,inputs,name="net")->keras.Model:
+    d=Declarations(n)
+    out=d.model(name, inputs)
+    return out

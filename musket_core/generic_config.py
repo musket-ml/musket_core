@@ -147,6 +147,7 @@ class GenericTaskConfig:
         self.gpus = 1
         self.lr = 0.001
         self.callbacks = []
+        self.declarations={}
         self.optimizer = None
         self.loss = None
         self.testSplit = 0

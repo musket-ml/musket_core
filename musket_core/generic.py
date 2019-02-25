@@ -1,9 +1,12 @@
 import musket_core.generic_config as generic
 import musket_core.datasets as datasets
 import musket_core.configloader as configloader
+import musket_core.utils as utils
 import numpy as np
 import keras
 import tqdm
+import musket_core.net_declaration as net
+
 
 
 def createSequence(seq):
@@ -30,17 +33,30 @@ def createSequence(seq):
         first=False
         pName=name
 
-    return keras.Model(input,layerMap[pName])    
+    return keras.Model(input,layerMap[pName])
+
+def _shape(x):
+    if isinstance(x,list) or isinstance(x,tuple):
+        return [i.shape for i in x]
+    return x.shape
 
 class GenericPipeline(generic.GenericTaskConfig):
 
     def __init__(self,**atrs):
         super().__init__(**atrs)
         self.dataset_clazz = datasets.DefaultKFoldedDataSet
+
         pass
 
     def createNet(self):
-        return createSequence(self.architecture)
+        input,output=utils.load_yaml(self.path + ".shapes")
+        if isinstance(input,list):
+            inputs=[keras.Input(x) for x in input]
+        else:
+            inputs=[keras.Input(input)]
+        m=net.create_model_from_config(self.declarations,inputs,self.architecture)
+        return m
+
 
     def evaluateAll(self,ds, fold:int,stage=-1,negatives="real",ttflips=None,batchSize=32):
         folds = self.kfold(ds, range(0, len(ds)),batch=batchSize)
@@ -97,6 +113,11 @@ class GenericPipeline(generic.GenericTaskConfig):
                     res.append(b.results[i])
                 pbar.update(batch_size)
         return np.array(res)
+
+    def fit(self, dataset, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction=None):
+        predItem=dataset[0]
+        utils.save_yaml(self.path+".shapes",(_shape(predItem.x),_shape(predItem.y)))
+        super().fit(dataset,subsample,foldsToExecute,start_from_stage,drawingFunction)
 
 def parse(path) -> GenericPipeline:
     cfg = configloader.parse("generic", path)
