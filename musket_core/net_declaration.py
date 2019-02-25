@@ -237,7 +237,6 @@ class Layers:
             if isinstance(inp,dict):
                 if "$input" in inp and len(inp)==1:
                     inp=inp["$input"]
-            print(l)
             res=l(inp)
             tensorMap[l.name]=res
             last=res
