@@ -30,6 +30,13 @@ class Module:
                 self.catalog[typeName.lower()] = tp
                 self.catalog[typeName] = tp
                 self.orig[typeName.lower()] = typeName
+            if inspect.isfunction(tp):
+                gignature = inspect.signature(tp)
+                typeName = x
+                tp = PythonFunction(gignature, tp)
+                self.catalog[typeName.lower()] = tp
+                self.catalog[typeName] = tp
+                self.orig[typeName.lower()] = typeName
             pass
         pass
 
@@ -47,7 +54,7 @@ class Module:
 
             for v in dct:
                 typeDefinition = self.catalog[v.lower()]
-                if isinstance(typeDefinition,PythonType):
+                if isinstance(typeDefinition,PythonType) or isinstance(typeDefinition,PythonFunction):
                     clazz=typeDefinition.clazz
                 else:
                     if hasattr(self.pythonModule,v[0].upper()+v[1:]):
@@ -112,6 +119,31 @@ class PythonType(AbstractType):
         args=[p for p in s.parameters][1:]
         self.args=args
         self.clazz=clazz
+
+    def positional(self):
+        return self.args
+
+    def all(self):
+        return self.args
+
+class PythonFunction(AbstractType):
+
+    def __init__(self,s:inspect.Signature,clazz):
+        args=[p for p in s.parameters if "input" not in p]
+        self.args=args
+
+        def create(*args,**kwargs):
+            r={}
+            for i in range(len(args)):
+                r[self.args[i]]=args[i]
+            def res(i):
+                mm=kwargs.copy()
+                for k in r:
+                    mm[k]=r[k]
+                mm["input"]=i
+                return clazz(**mm)
+            return res
+        self.clazz=create
 
     def positional(self):
         return self.args
