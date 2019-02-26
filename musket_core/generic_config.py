@@ -136,6 +136,7 @@ class GenericTaskConfig:
         self.batch = 8
         self.all = atrs
         self.imports=[]
+        self.preprocessing=None
         self.verbose = 1
         self.noTrain = False
         self.saveLast = False
@@ -191,7 +192,7 @@ class GenericTaskConfig:
     def inject_task_specific_transforms(self, ds, transforms):
         return ds
 
-    def kfold(self, ds, indeces=None,batch=None)-> datasets.ImageKFoldedDataSet:
+    def kfold(self, ds, indeces=None,batch=None)-> datasets.DefaultKFoldedDataSet:
         if self.testSplit>0:
             train,test=datasets.split(ds,self.testSplit,self.testSplitSeed)
             pass
@@ -340,9 +341,6 @@ class GenericImageTaskConfig(GenericTaskConfig):
 
     def __init__(self,**atrs):
         super().__init__(**atrs)
-
-
-
 
 
     def _update_from_config(self, v, val):

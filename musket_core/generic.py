@@ -9,31 +9,6 @@ import musket_core.net_declaration as net
 
 
 
-def createSequence(seq):
-    layers=configloader.load("layers")
-    layerMap={}
-    pName=[]
-    first=True
-
-    input=None
-    for v in seq:
-
-        layer=layers.instantiate(v,True)[0]
-        name= v["name"] if "name" in v else layer.name
-
-        inputs=v["inputs"] if "inputs" in v else pName
-
-        prev=layerMap[pName] if isinstance(inputs, str) else [layerMap[l]for l in inputs]
-
-        if first:
-            ls = layer
-            input=layer
-        else: ls = layer(prev)
-        layerMap[name]=ls
-        first=False
-        pName=name
-
-    return keras.Model(input,layerMap[pName])
 
 def _shape(x):
     if isinstance(x,list) or isinstance(x,tuple):
@@ -115,6 +90,8 @@ class GenericPipeline(generic.GenericTaskConfig):
         return np.array(res)
 
     def fit(self, dataset, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction=None):
+        if self.preprocessing is not None:
+            dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing, self.imports)
         predItem=dataset[0]
         utils.save_yaml(self.path+".shapes",(_shape(predItem.x),_shape(predItem.y)))
         super().fit(dataset,subsample,foldsToExecute,start_from_stage,drawingFunction)

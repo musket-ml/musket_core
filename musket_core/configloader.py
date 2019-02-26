@@ -2,6 +2,7 @@ import importlib
 import os
 import yaml
 import inspect
+
 class Module:
 
     def __init__(self,dict):
@@ -129,17 +130,16 @@ class PythonType(AbstractType):
 class PythonFunction(AbstractType):
 
     def __init__(self,s:inspect.Signature,clazz):
-        args=[p for p in s.parameters if "input" not in p]
+        if hasattr(clazz,"args"):
+            args=[p for p in clazz.args if "input" not in p]
+        else: args=[p for p in s.parameters if "input" not in p]
         self.args=args
 
         def create(*args,**kwargs):
-            r={}
+            mm = kwargs.copy()
             for i in range(len(args)):
-                r[self.args[i]]=args[i]
+                mm[self.args[i]]=args[i]
             def res(i):
-                mm=kwargs.copy()
-                for k in r:
-                    mm[k]=r[k]
                 mm["input"]=i
                 return clazz(**mm)
             return res

@@ -4,11 +4,6 @@ import keras
 import musket_core.templating as tp
 layers=configloader.load("layers")
 
-
-
-import inspect
-import tensorflow as tf
-
 def take_input(layers,declarations,config,outputs,linputs,pName,withArgs):
 
     def a(args):
@@ -66,6 +61,33 @@ def split_dot_normalize(layers,declarations,config,outputs,linputs,pName,withArg
     m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
     return m,keras.layers.Dot(normalize=True)
 
+
+
+class Cache:
+
+    def __init__(self,parent):
+        self.parent=parent
+        self.k={}
+
+
+    def __getitem__(self, item):
+        if item in self.k:
+            return self.k[item]
+
+        v=self.parent[item]
+        self.k[item]=v
+        return v
+
+    def __len__(self):
+        return len(self.parent)
+
+def cache(layers,declarations,config,outputs,linputs,pName,withArgs):
+    def ccc(input):
+        return Cache(input)
+
+    return ccc
+
+
 builtins={
     "split": split,
     "split-concat": split_concat,
@@ -78,7 +100,8 @@ builtins={
     "split-dot": split_dot,
     "split-dot-normalize": split_dot_normalize,
     "seq":seq,
-    "input": take_input
+    "input": take_input,
+    "cache": cache
 }
 for i in range(20):
     builtins["repeat("+str(i)+")"]=repeat(i)
@@ -98,6 +121,8 @@ class Layers:
         gnum=gnum+1
         nums={}
         for layer in layers_yaml:
+            if isinstance(layer,str):
+                layer={ layer:{} }
             layerImpl=None
             key=list(layer.keys())[0]
             config = layer[key]
@@ -333,6 +358,9 @@ class Declarations:
         m=self.instantiate(name,inputs)
         return keras.Model(inputs,m)
 
+    def preprocess(self,name,inputs):
+        return self.instantiate(name,inputs)
+
 
 def create_model(path,inputs,name="net")->keras.Model:
     n=load_yaml(path)
@@ -340,8 +368,18 @@ def create_model(path,inputs,name="net")->keras.Model:
     out=d.model(name, inputs)
     return out
 
+def get_declarations(path)->keras.Model:
+    n=load_yaml(path)
+    d=Declarations(n["declarations"])
+    return d
+
 def create_model_from_config(n,inputs,name="net",imports=[])->keras.Model:
     d=Declarations(n)
     for x in imports: layers.register(x)
     out=d.model(name, inputs)
+    return out
+def create_preprocessor_from_config(n,inputs,name="net",imports=[])->keras.Model:
+    d=Declarations(n)
+    for x in imports: layers.register(x)
+    out=d.preprocess(name, inputs)
     return out

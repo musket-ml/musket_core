@@ -1,0 +1,6 @@
+#Basic example with sequencial model
+declarations:
+  net:
+      - tokenize: {}
+      - word2vec: {}
+      - cache: {}
