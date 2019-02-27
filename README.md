@@ -80,7 +80,7 @@ declarations:
 ```            
 
 ### Manually controlling data flow
-```
+```yaml
   net:
     inputs: [i1,i2]
     outputs: [d1,d2]
