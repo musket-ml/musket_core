@@ -19,6 +19,12 @@ types:
         items:
           type: integer
         (meta.positional): true
+  GaussianNoise:
+    type : Layer
+    properties:
+      stddev:
+        type: float
+        (meta.positional): true
   LSTM:
     type: Layer
     properties:
@@ -26,6 +32,7 @@ types:
         type: integer
         (meta.positional): true
       return_sequences?:
+        (meta.positional): true
         type: boolean
       return_state?:
         type: boolean

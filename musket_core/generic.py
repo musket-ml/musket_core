@@ -32,6 +32,10 @@ class GenericPipeline(generic.GenericTaskConfig):
         m=net.create_model_from_config(self.declarations,inputs,self.architecture,self.imports)
         return m
 
+    def predict_on_batch(self, mdl, ttflips, batch):
+
+        res = mdl.predict(np.array(batch.images))
+        return res
 
     def evaluateAll(self,ds, fold:int,stage=-1,negatives="real",ttflips=None,batchSize=32):
         folds = self.kfold(ds, range(0, len(ds)),batch=batchSize)
@@ -46,7 +50,7 @@ class GenericPipeline(generic.GenericTaskConfig):
                     x, y, b = f
                     z = self.predict_on_batch(m,ttflips,b)
                     ids=b.data[0]
-                    b.results=z;
+                    b.results=z
                     b.ground_truth=b.data[1]
                     yield b
                     num=num+len(z)
@@ -68,9 +72,17 @@ class GenericPipeline(generic.GenericTaskConfig):
                 lastFullValLabels = np.append(lastFullValLabels, v.ground_truth, axis=0)
         return lastFullValPred,lastFullValLabels
 
+    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
+        mdl = self.load_model(fold, stage)
+        if self.preprocessing is not None:
+            dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing, self.imports)
+        for original_batch in datasets.batch_generator(dataset, batch_size, limit):
+            res = self.predict_on_batch(mdl, ttflips, original_batch)
+            original_batch.results=res
+            yield original_batch
 
     def predict_in_dataset(self, dataset, fold, stage, cb, data, limit=-1, batch_size=32, ttflips=False):
-        with tqdm.tqdm(total=len(dataset), unit="files", desc="classification of images from " + str(dataset)) as pbar:
+        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
             for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
                 b=v
                 for i in range(len(b.data)):
@@ -78,16 +90,20 @@ class GenericPipeline(generic.GenericTaskConfig):
                     cb(id,b.results[i],data)
                 pbar.update(batch_size)
 
-    def predict_all_to_array(self, dataset, fold, stage, limit=-1, batch_size=32, ttflips=False):
+
+
+    def predict_all_to_array_with_ids(self, dataset, fold, stage, limit=-1, batch_size=32, ttflips=False):
         res=[]
-        with tqdm.tqdm(total=len(dataset), unit="files", desc="classification of images from " + str(dataset)) as pbar:
+        ids=[]
+        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
             for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
                 b=v
                 for i in range(len(b.data)):
                     id=b.data[i]
+                    ids.append(id)
                     res.append(b.results[i])
                 pbar.update(batch_size)
-        return np.array(res)
+        return np.array(res),ids
 
     def fit(self, dataset, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction=None):
         if self.preprocessing is not None:
@@ -98,5 +114,5 @@ class GenericPipeline(generic.GenericTaskConfig):
 
 def parse(path) -> GenericPipeline:
     cfg = configloader.parse("generic", path)
-    cfg.path = path;
+    cfg.path = path
     return cfg
