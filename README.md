@@ -39,6 +39,21 @@ alternatively:
 ```
 
 ## Reusable modules
+```
+#Basic example with sequencial model
+declarations:
+  c2d:
+    parameters: [size, pool]
+    body:
+      - Conv1D: [100,size,relu]
+      - Conv1D: [100,size,relu]
+      - Conv1D: [100,size,relu]
+      - MaxPool1D: pool
+  net:
+      - c2d: [4,4]
+      - c2d: [4,4]
+      - Dense: [4, sigmoid]
+```
 
 ## Controlling Data Flow
 
