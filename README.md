@@ -13,9 +13,59 @@ callbacks:
     write_graph: True
     update_freq: batch
 ```    
+```yaml
+imports: [ layers, preprocessors ]
+declarations:
+  collapseConv:
+    parameters: [ filters,size, pool]
+    body:
+      - conv1d: [filters,size,relu ]
+      - conv1d: [filters,size,relu ]
+      - batchNormalization: {}
+      - collapse: pool
+  net:
+    #- gaussianNoise: 0.0001
+    - repeat(2):
+      - collapseConv: [ 20, 7, 10 ]
 
-
+    - cudnnlstm: [40, true ]
+    - cudnnlstm: [40, true ]
+    - attention: 718
+    - dense: [3, sigmoid]
+  preprocess:
+     - rescale: 10
+     - get_delta_from_average
+     - cache
+preprocessing: preprocess
+testSplit: 0.4
+architecture: net
+optimizer: Adam #Adam optimizer is a good default choice
+batch: 12 #Our batch size will be 16
+metrics: #We would like to track some metrics
+  - binary_accuracy
+  - matthews_correlation
+primary_metric: val_binary_accuracy #and the most interesting metric is val_binary_accuracy
+callbacks: #Let's configure some minimal callbacks
+  EarlyStopping:
+    patience: 100
+    monitor: val_binary_accuracy
+    verbose: 1
+  ReduceLROnPlateau:
+    patience: 8
+    factor: 0.5
+    monitor: val_binary_accuracy
+    mode: auto
+    cooldown: 5
+    verbose: 1
+loss: binary_crossentropy #We use simple binary_crossentropy loss
+stages:
+  - epochs: 100 #Let's go for 100 epochs
+  - epochs: 100 #Let's go for 100 epochs
+  - epochs: 100 #Let's go for 100 epochs
+  ```
 # Network Definitions
+
+
 
 ## Defining simple network
 
