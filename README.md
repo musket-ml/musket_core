@@ -165,3 +165,39 @@ preprocess:
      - get_delta_from_average
      - cache
 ```
+
+```python
+import numpy as np
+from musket_core import preprocessing
+
+def moving_average(input, n=1000) :
+    ret = np.cumsum(input, dtype=float, axis=0)
+    ret[n:] = ret[n:] - ret[:-n]
+    ret[0:n] = ret[-n:]
+    return ret / n
+
+@preprocessing.dataset_preprocessor
+def get_delta_from_average(input):
+    m = moving_average(input[:, :])
+    m1 = moving_average(input[:, :],100)
+    #m2 = moving_average(input[:, :], 10000)
+    d = input[:, :] - m
+    d1 = input[:, :] - m1
+    #d2 = input[:, :] - m2
+
+    input=input/input.max()
+    d1 = d1 / d1.max()
+   # d2 = d2 / d2.max()
+    d = d / d.max()
+    return np.concatenate([d,d1,input])
+
+@preprocessing.dataset_preprocessor
+def rescale(input,size):
+    mean=np.mean(np.reshape(input, (input.shape[0] // size ,size, 3)), axis=1)
+    max=np.max(np.reshape(input, (input.shape[0] // size, size, 3)), axis=1)
+    min = np.min(np.reshape(input, (input.shape[0] // size, size, 3)), axis=1)
+    return np.concatenate([mean,max,min])
+```
+
+
+
