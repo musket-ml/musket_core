@@ -28,6 +28,16 @@ callbacks:
       - dense: [2,softmax]      
 ```
 
+alternatively:
+
+
+```yaml
+   conv1D: 
+      filters:100
+      kernel_size: 4
+      activation: relu      
+```
+
 ## Reusable modules
 
 ## Controlling Data Flow
