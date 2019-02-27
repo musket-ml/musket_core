@@ -17,10 +17,17 @@ callbacks:
 
 # Network Definitions
 
-##Defining simple network
+## Defining simple network
 
-##Reusable modules
+## Reusable modules
 
-##Data Flow
+## Controlling Data Flow
 
-##Plugin external definitions
+### Simple Data Flow constructions
+
+### Manually controlling data flow
+
+## Plugin external definitions
+
+
+# Data Preprocessing
