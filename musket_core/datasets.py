@@ -1146,10 +1146,10 @@ class SubDataSet:
         return len(self.indexes)
 
 def split(ds,testSplit,testSplitSeed):
-    rn=range(0,len(ds))
+    rn=list(range(0,len(ds)))
     random.seed(testSplitSeed)
     random.shuffle(rn)
-    dm=round(1-len(ds)*testSplit)
+    dm=round(len(ds)-len(ds)*testSplit)
     return SubDataSet(ds,rn[:dm]),SubDataSet(ds,rn[dm:])
 
 

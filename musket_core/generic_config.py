@@ -212,9 +212,17 @@ class GenericTaskConfig:
     def inject_task_specific_transforms(self, ds, transforms):
         return ds
 
+    def getHoldout(self,ds):
+        if self.testSplit>0:
+            train,test=datasets.split(ds,self.testSplit,self.testSplitSeed)
+            return test
+            pass
+        raise ValueError("This configuration does not have holdout")
+
     def kfold(self, ds, indeces=None,batch=None)-> datasets.DefaultKFoldedDataSet:
         if self.testSplit>0:
             train,test=datasets.split(ds,self.testSplit,self.testSplitSeed)
+            ds=train
             pass
         if batch is None:
             batch=self.batch
@@ -362,7 +370,7 @@ class GenericTaskConfig:
         dn = os.path.dirname(self.path)
         if os.path.exists(os.path.join(dn, "summary.yaml")):
             raise ValueError("Experiment is already finished!!!!")
-        folds = self.kfold(dataset, range(0, len(dataset)))
+        folds = self.kfold(dataset, None)
         for i in range(len(folds.folds)):
             if foldsToExecute:
                 if not i in foldsToExecute:
