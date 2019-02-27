@@ -31,6 +31,7 @@ keras.utils.get_custom_objects()["iou_loss"]= musket_core.losses.iou_coef_loss
 keras.utils.get_custom_objects()["dice_loss"]= musket_core.losses.dice_coef_loss
 keras.utils.get_custom_objects()["jaccard_loss"]= musket_core.losses.jaccard_distance_loss
 keras.utils.get_custom_objects()["focal_loss"]= musket_core.losses.focal_loss
+keras.utils.get_custom_objects().update({'matthews_correlation': musket_core.losses.matthews_correlation})
 dataset_augmenters={
 
 }

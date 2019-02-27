@@ -890,6 +890,10 @@ class DefaultKFoldedDataSet:
         self.positive[x]=self.ds.isPositive(x);
         return self.positive[x];
 
+    def generator(self,foldNum, isTrain=True,negatives="all",returnBatch=False):
+        indexes = self.sampledIndexes(foldNum, isTrain, negatives)
+        yield from self.generator_from_indexes(indexes,isTrain,returnBatch)
+
     def sampledIndexes(self, foldNum, isTrain, negatives):
         indexes = self.indexes(foldNum, isTrain)
         if negatives == 'none':
@@ -950,9 +954,7 @@ class ImageKFoldedDataSet(DefaultKFoldedDataSet):
             train = fold[0]
             np.random.shuffle(train)
 
-    def generator(self,foldNum, isTrain=True,negatives="all",returnBatch=False):
-        indexes = self.sampledIndexes(foldNum, isTrain, negatives)
-        yield from self.generator_from_indexes(indexes,isTrain,returnBatch)
+
 
     def load(self,foldNum, isTrain=True,negatives="all",ln=16):
         indexes = self.sampledIndexes(foldNum, isTrain, negatives)
