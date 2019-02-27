@@ -1151,3 +1151,10 @@ def split(ds,testSplit,testSplitSeed):
     random.shuffle(rn)
     dm=round(1-len(ds)*testSplit)
     return SubDataSet(ds,rn[:dm]),SubDataSet(ds,rn[dm:])
+
+
+def get_targets_as_array(d):
+    preds=[]
+    for i in range(len(d)):
+        preds.append(d[i].y)
+    return np.array(preds)

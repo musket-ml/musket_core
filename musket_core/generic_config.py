@@ -130,6 +130,25 @@ def create_with(names: [str], fr: dict):
         copy_if_exist(v, fr, res)
     return res;
 
+class ScoreAndTreshold:
+
+    def __init__(self,score,treshold):
+        self.score=score
+        self.treshold=treshold
+
+
+    def __str__(self):
+        return "score:"+str(self.score)+": treshold:"+str(self.treshold)
+
+def threshold_search(y_true, y_proba,func):
+    best_threshold = 0
+    best_score = 0
+    for threshold in tqdm.tqdm([i * 0.01 for i in range(100)]):
+        score = func(y_true.astype(np.float64), (y_proba > threshold))
+        if score > best_score:
+            best_threshold = threshold
+            best_score = score
+    return ScoreAndTreshold(best_score,best_threshold)
 
 class GenericTaskConfig:
 
@@ -215,9 +234,40 @@ class GenericTaskConfig:
             pass
         return kf
 
+    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
+        raise ValueError("Not implemented")
+
+    def predict_all_to_array(self, dataset, fold, stage, limit=-1, batch_size=32, ttflips=False):
+        res=[]
+        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
+            for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
+                b=v
+                for i in range(len(b.data)):
+                    res.append(b.results[i])
+                pbar.update(batch_size)
+        return np.array(res)
+
+    def find_treshold(self,ds,fold,func,stage=0):
+        predicted = self.predict_all_to_array(ds, fold, stage)
+        vl = datasets.get_targets_as_array(ds)
+        return threshold_search(vl, predicted,func)
+
+    def find_optimal_treshold_by_validation(self,ds,func):
+        tresh = []
+        for fold in range(self.folds_count):
+            val = self.validation(ds, fold)
+            tr = self.find_treshold(val, fold, func)
+            print("Fold:"+str(fold)+":"+str(tr))
+            tresh.append(tr.treshold)
+        tr = np.mean(np.array(tresh))
+        return tr
+
 
     def createAndCompile(self, lr=None, loss=None)->keras.Model:
         return self.compile(self.createNet(), self.createOptimizer(lr=lr), loss=loss)
+
+    def createNet(self):
+        raise ValueError("Not implemented")
 
     def validation(self,ds,foldNum):
         ids=self.kfold(ds).indexes(foldNum,False)

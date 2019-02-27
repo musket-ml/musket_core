@@ -90,16 +90,7 @@ class GenericPipeline(generic.GenericTaskConfig):
                     cb(id,b.results[i],data)
                 pbar.update(batch_size)
 
-    def predict_all_to_array(self, dataset, fold, stage, limit=-1, batch_size=32, ttflips=False):
-        res=[]
-        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
-            for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
-                b=v
-                for i in range(len(b.data)):
-                    id=b.data[i]
-                    res.append(b.results[i])
-                pbar.update(batch_size)
-        return np.array(res)
+
 
     def predict_all_to_array_with_ids(self, dataset, fold, stage, limit=-1, batch_size=32, ttflips=False):
         res=[]
