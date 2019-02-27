@@ -108,3 +108,10 @@ declarations:
 
 
 # Data Preprocessing
+
+```yaml
+preprocess:
+     - rescale: 10
+     - get_delta_from_average
+     - cache
+```
