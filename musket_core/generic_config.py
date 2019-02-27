@@ -300,7 +300,7 @@ class GenericTaskConfig:
                 if os.path.exists(ec.metricsPath()):
                     try:
                         fr=pd.read_csv(ec.metricsPath())
-                        res.append((i,s,fr[metric].max()))
+                        res.append(TaskConfigInfo(i,s,fr[metric].max(),fr["lr"].min()))
                     except:
                         pass
         return res
@@ -334,7 +334,13 @@ class GenericTaskConfig:
     def _adapt_before_fit(self, dataset):
         return dataset
 
+class TaskConfigInfo:
 
+    def __init__(self,fold,stage,best,lr):
+        self.fold = fold
+        self.stage = stage
+        self.best = best
+        self.lr = lr
 
 
 class GenericImageTaskConfig(GenericTaskConfig):
@@ -561,6 +567,14 @@ class Stage:
         if 'unfreeze_encoder' in self.dict and not self.dict['unfreeze_encoder']:
             self.freeze(model)
 
+        prevInfo = None
+        if self.cfg.resume:
+            allBest = self.cfg.info()
+            filtered = list(filter(lambda x: x.stage == ec.stage and x.fold == ec.fold, allBest))
+            if len(filtered) > 0:
+                prevInfo = filtered[0]
+                self.lr = prevInfo.lr
+
         if self.loss or self.lr:
             self.cfg.compile(model, self.cfg.createOptimizer(self.lr), self.loss)
         cb = [] + self.cfg.callbacks
@@ -571,13 +585,8 @@ class Stage:
         if 'extra_callbacks' in self.dict:
             cb = cb + configloader.parse("callbacks", self.dict['extra_callbacks'])
         kepoch=-1
-        best = None
         cb.append(KFoldCallback(kf))
         if self.cfg.resume:
-            allBest = self.cfg.info()
-            filtered = list(filter(lambda x: x[1] == ec.stage and x[0] == ec.fold, allBest))
-            if len(filtered) > 0:
-                best = filtered[0]
             kepoch=maxEpoch(ec.metricsPath())
             if kepoch!=-1:
                 if os.path.exists(ec.weightsPath()):
@@ -595,8 +604,8 @@ class Stage:
 
             mcp = keras.callbacks.ModelCheckpoint(ec.weightsPath(), save_best_only=True,
                                                          monitor=self.cfg.primary_metric, mode=md, verbose=1)
-            if best != None:
-                mcp.best = best[2]
+            if prevInfo != None:
+                mcp.best = prevInfo.best
 
             cb.append(mcp)
 
@@ -623,8 +632,8 @@ class Stage:
 
             amcp = alt.AltModelCheckpoint(ec.weightsPath(), model.layers[-2], save_best_only=True,
                                                 monitor=self.cfg.primary_metric, mode=md, verbose=1)
-            if best != None:
-                amcp.best = best[2]
+            if prevInfo != None:
+                amcp.best = prevInfo.best
 
             cb.append(amcp)
         else:
