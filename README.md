@@ -39,7 +39,7 @@ alternatively:
 ```
 
 ## Reusable modules
-```
+```yaml
 #Basic example with sequencial model
 declarations:
   c2d:
