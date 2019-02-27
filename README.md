@@ -19,6 +19,15 @@ callbacks:
 
 ## Defining simple network
 
+```yaml
+   net:
+      - conv1D: [100,4,relu]
+      - conv1D: [100,4,relu]
+      - conv1D: [100,4,relu]
+      - maxPool1D: 8
+      - dense: [2,softmax]      
+```
+
 ## Reusable modules
 
 ## Controlling Data Flow
