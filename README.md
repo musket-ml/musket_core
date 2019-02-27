@@ -13,3 +13,14 @@ callbacks:
     write_graph: True
     update_freq: batch
 ```    
+
+
+# Network Definitions
+
+##Defining simple network
+
+##Reusable modules
+
+##Data Flow
+
+##Plugin external definitions
