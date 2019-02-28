@@ -15,6 +15,7 @@ import traceback
 import random
 import cv2 as cv
 import scipy
+from musket_core import utils
 
 AUGMENTER_QUEUE_LIMIT=10
 USE_MULTIPROCESSING=False
@@ -834,7 +835,7 @@ LOADER_THREADED=True
 
 
 class DefaultKFoldedDataSet:
-    def __init__(self,ds,indexes=None,aug=None,transforms=None,folds=5,rs=33,batchSize=16,stratified=True):
+    def __init__(self,ds,indexes=None,aug=None,transforms=None,folds=5,rs=33,batchSize=16,stratified=True,groupFunc=None):
         self.ds=ds;
         if aug==None:
             aug=[]
@@ -854,7 +855,7 @@ class DefaultKFoldedDataSet:
             self.folds=getattr(ds,"folds");
         else:
             if stratified:
-                self.folds=[v for v in self.kf.split(indexes,[ds[i].y for i in indexes])]
+                self.folds=[v for v in self.kf.split(indexes,dataset_classes(ds,groupFunc))]
             else: self.folds = [v for v in self.kf.split(indexes)]
 
     def clear_train(self):
@@ -950,6 +951,10 @@ class DefaultKFoldedDataSet:
     def numBatches(self,fold,negatives,subsample):
         train_indexes = self.sampledIndexes(fold, True, negatives)
         return len(train_indexes)//(round(subsample*self.batchSize))
+
+
+    def save(self,path):
+        utils.save_yaml(path,self.folds)
 
 
 class ImageKFoldedDataSet(DefaultKFoldedDataSet):
@@ -1150,12 +1155,28 @@ class SubDataSet:
     def __len__(self):
         return len(self.indexes)
 
-def split(ds,testSplit,testSplitSeed):
+def split(ds,testSplit,testSplitSeed,stratified=False,groupFunc=None):
+
     rn=list(range(0,len(ds)))
+    if stratified:
+        data_classes = dataset_classes(ds, groupFunc)
+        vals=ms.StratifiedShuffleSplit(4,testSplit,random_state=testSplitSeed).split(rn,data_classes)
+        for v in vals:
+            return SubDataSet(ds, v[0]), SubDataSet(ds,v[1])
+
     random.seed(testSplitSeed)
     random.shuffle(rn)
     dm=round(len(ds)-len(ds)*testSplit)
     return SubDataSet(ds,rn[:dm]),SubDataSet(ds,rn[dm:])
+
+
+def dataset_classes(ds, groupFunc):
+    if groupFunc != None:
+        data_classes = groupFunc(ds)
+    else:
+        data_classes = np.array([ds[i].y for i in range(len(ds))]);
+        data_classes = data_classes.mean(axis=1) > 0
+    return data_classes
 
 
 def get_targets_as_array(d):

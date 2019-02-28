@@ -13,6 +13,7 @@ from musket_core import losses, configloader
 import keras.optimizers as opt
 from musket_core.lr_finder import LRFinder
 from musket_core.logger import CSVLogger
+from musket_core import utils
 import musket_core.multigpu_checkpoint as alt
 from keras.callbacks import  LambdaCallback
 import keras.backend as K
@@ -155,6 +156,7 @@ class GenericTaskConfig:
     def __init__(self,**atrs):
         self.batch = 8
         self.all = atrs
+        self.groupFunc=None
         self.imports=[]
         self.stratified=False
         self.preprocessing=None
@@ -222,7 +224,13 @@ class GenericTaskConfig:
 
     def kfold(self, ds, indeces=None,batch=None)-> datasets.DefaultKFoldedDataSet:
         if self.testSplit>0:
-            train,test=datasets.split(ds,self.testSplit,self.testSplitSeed)
+            if os.path.exists(self.path + ".holdout_split"):
+                trI,hI = utils.load_yaml(self.path + ".folds_split")
+                train=datasets.SubDataSet(ds,trI)
+                test = datasets.SubDataSet(ds,hI)
+            else:
+                train,test=datasets.split(ds,self.testSplit,self.testSplitSeed,self.stratified,self.groupFunc)
+                utils.save_yaml(self.path + ".holdout_split",(train.indexes,test.indexes))
             ds=train
             pass
         if batch is None:
@@ -230,7 +238,11 @@ class GenericTaskConfig:
         if indeces is None: indeces=range(0,len(ds))
         transforms = [] + self.transforms
         ds = self.inject_task_specific_transforms(ds, transforms)
-        kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count,stratified=self.stratified)
+        if os.path.exists(self.path+".folds_split"):
+             folds=utils.load_yaml(self.path+".folds_split")
+             ds.folds=folds
+        kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count,stratified=self.stratified,groupFunc=self.groupFunc)
+        kf.save(self.path+".folds_split")
         if self.noTrain:
             kf.clear_train()
         if self.extra_train_data is not None:
@@ -257,15 +269,21 @@ class GenericTaskConfig:
         return np.array(res)
 
     def find_treshold(self,ds,fold,func,stage=0):
-        predicted = self.predict_all_to_array(ds, fold, stage)
+
+        if isinstance(stage,list) or isinstance(stage,tuple):
+            pa = []
+            for i in stage:
+                pa.append(self.predict_all_to_array(ds, fold, i))
+            predicted = np.mean(np.array(pa),axis=0)
+        else: predicted = self.predict_all_to_array(ds, fold, stage)
         vl = datasets.get_targets_as_array(ds)
         return threshold_search(vl, predicted,func)
 
-    def find_optimal_treshold_by_validation(self,ds,func):
+    def find_optimal_treshold_by_validation(self,ds,func,stages=0):
         tresh = []
         for fold in range(self.folds_count):
             val = self.validation(ds, fold)
-            tr = self.find_treshold(val, fold, func)
+            tr = self.find_treshold(val, fold, func,stages)
             print("Fold:"+str(fold)+":"+str(tr))
             tresh.append(tr.treshold)
         tr = np.mean(np.array(tresh))
