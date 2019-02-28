@@ -282,6 +282,10 @@ class GenericTaskConfig:
         ids=self.kfold(ds).indexes(foldNum,False)
         return datasets.SubDataSet(ds,ids)
 
+    def train(self,ds,foldNum):
+        ids=self.kfold(ds).indexes(foldNum,True)
+        return datasets.SubDataSet(ds,ids)
+
     def createOptimizer(self, lr=None):
         r = getattr(opt, self.optimizer)
         ds = create_with(["lr", "clipnorm", "clipvalue"], self.all)
