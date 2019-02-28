@@ -834,7 +834,7 @@ LOADER_THREADED=True
 
 
 class DefaultKFoldedDataSet:
-    def __init__(self,ds,indexes=None,aug=None,transforms=None,folds=5,rs=33,batchSize=16):
+    def __init__(self,ds,indexes=None,aug=None,transforms=None,folds=5,rs=33,batchSize=16,stratified=True):
         self.ds=ds;
         if aug==None:
             aug=[]
@@ -846,11 +846,16 @@ class DefaultKFoldedDataSet:
         self.transforms=transforms
         self.batchSize=batchSize
         self.positive={}
+        if stratified:
+            self.kf=ms.StratifiedKFold(folds,shuffle=True,random_state=rs)
         self.kf=ms.KFold(folds,shuffle=True,random_state=rs);
+
         if hasattr(ds,"folds"):
             self.folds=getattr(ds,"folds");
         else:
-            self.folds = [v for v in self.kf.split(indexes)]
+            if stratified:
+                self.folds=[v for v in self.kf.split(indexes,[ds[i].y for i in indexes])]
+            else: self.folds = [v for v in self.kf.split(indexes)]
 
     def clear_train(self):
         nf = []

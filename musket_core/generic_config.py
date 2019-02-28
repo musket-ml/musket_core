@@ -156,6 +156,7 @@ class GenericTaskConfig:
         self.batch = 8
         self.all = atrs
         self.imports=[]
+        self.stratified=False
         self.preprocessing=None
         self.verbose = 1
         self.noTrain = False
@@ -229,7 +230,7 @@ class GenericTaskConfig:
         if indeces is None: indeces=range(0,len(ds))
         transforms = [] + self.transforms
         ds = self.inject_task_specific_transforms(ds, transforms)
-        kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count)
+        kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count,stratified=self.stratified)
         if self.noTrain:
             kf.clear_train()
         if self.extra_train_data is not None:
