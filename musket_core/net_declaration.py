@@ -1,3 +1,4 @@
+from collections.abc import Hashable
 from musket_core import configloader
 from musket_core.utils import load_yaml
 import keras
@@ -202,7 +203,7 @@ class Layers:
                 if isinstance(config,list) and not isBuildin:
                     all_refs=True
                     for v in config:
-                        if v in self.layerMap or v in linputs:
+                        if not isinstance(v,Hashable) or  v in self.layerMap or v in linputs:
                             pass
                         else:
                             all_refs=False

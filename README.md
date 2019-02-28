@@ -13,9 +13,59 @@ callbacks:
     write_graph: True
     update_freq: batch
 ```    
+```yaml
+imports: [ layers, preprocessors ]
+declarations:
+  collapseConv:
+    parameters: [ filters,size, pool]
+    body:
+      - conv1d: [filters,size,relu ]
+      - conv1d: [filters,size,relu ]
+      - batchNormalization: {}
+      - collapse: pool
+  net:
+    #- gaussianNoise: 0.0001
+    - repeat(2):
+      - collapseConv: [ 20, 7, 10 ]
 
-
+    - cudnnlstm: [40, true ]
+    - cudnnlstm: [40, true ]
+    - attention: 718
+    - dense: [3, sigmoid]
+  preprocess:
+     - rescale: 10
+     - get_delta_from_average
+     - cache
+preprocessing: preprocess
+testSplit: 0.4
+architecture: net
+optimizer: Adam #Adam optimizer is a good default choice
+batch: 12 #Our batch size will be 16
+metrics: #We would like to track some metrics
+  - binary_accuracy
+  - matthews_correlation
+primary_metric: val_binary_accuracy #and the most interesting metric is val_binary_accuracy
+callbacks: #Let's configure some minimal callbacks
+  EarlyStopping:
+    patience: 100
+    monitor: val_binary_accuracy
+    verbose: 1
+  ReduceLROnPlateau:
+    patience: 8
+    factor: 0.5
+    monitor: val_binary_accuracy
+    mode: auto
+    cooldown: 5
+    verbose: 1
+loss: binary_crossentropy #We use simple binary_crossentropy loss
+stages:
+  - epochs: 100 #Let's go for 100 epochs
+  - epochs: 100 #Let's go for 100 epochs
+  - epochs: 100 #Let's go for 100 epochs
+  ```
 # Network Definitions
+
+
 
 ## Defining simple network
 
@@ -79,6 +129,21 @@ declarations:
             - Conv2D: [channels,1]            
 ```            
 
+### Repeat and With
+
+```yaml
+declarations:
+  convBlock:
+    parameters: [channels]
+    with:
+      padding: same
+    body:
+      - repeat(5):
+        - Conv2D: [channels*_,1]
+  net:
+      - convBlock: [120]
+```
+
 ### Manually controlling data flow
 ```yaml
   net:
@@ -115,3 +180,39 @@ preprocess:
      - get_delta_from_average
      - cache
 ```
+
+```python
+import numpy as np
+from musket_core import preprocessing
+
+def moving_average(input, n=1000) :
+    ret = np.cumsum(input, dtype=float, axis=0)
+    ret[n:] = ret[n:] - ret[:-n]
+    ret[0:n] = ret[-n:]
+    return ret / n
+
+@preprocessing.dataset_preprocessor
+def get_delta_from_average(input):
+    m = moving_average(input[:, :])
+    m1 = moving_average(input[:, :],100)
+    #m2 = moving_average(input[:, :], 10000)
+    d = input[:, :] - m
+    d1 = input[:, :] - m1
+    #d2 = input[:, :] - m2
+
+    input=input/input.max()
+    d1 = d1 / d1.max()
+   # d2 = d2 / d2.max()
+    d = d / d.max()
+    return np.concatenate([d,d1,input])
+
+@preprocessing.dataset_preprocessor
+def rescale(input,size):
+    mean=np.mean(np.reshape(input, (input.shape[0] // size ,size, 3)), axis=1)
+    max=np.max(np.reshape(input, (input.shape[0] // size, size, 3)), axis=1)
+    min = np.min(np.reshape(input, (input.shape[0] // size, size, 3)), axis=1)
+    return np.concatenate([mean,max,min])
+```
+
+
+
