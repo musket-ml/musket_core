@@ -129,6 +129,21 @@ declarations:
             - Conv2D: [channels,1]            
 ```            
 
+### Repeat and With
+
+```yaml
+declarations:
+  convBlock:
+    parameters: [channels]
+    with:
+      padding: same
+    body:
+      - repeat(5):
+        - Conv2D: [channels*_,1]
+  net:
+      - convBlock: [120]
+```
+
 ### Manually controlling data flow
 ```yaml
   net:
