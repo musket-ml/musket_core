@@ -108,6 +108,19 @@ def unpack_config(initial_config, from_dir):
     if "output_path" in config.keys():
         config["outputs"] = get_simple_mask_dataset("dummy", os.path.join(from_dir, config.pop("output_path")))["outputs"]
 
+    config["outputs"] = config.pop("outputs", [])
+
+    bindings = []
+
+    for item in (config["inputs"] + config["outputs"]):
+        bindings += item["bindings"]
+
+    for binding in bindings:
+        if os.path.isabs(binding["path"]):
+            continue
+
+        binding["path"] = os.path.join(from_dir, binding["path"])
+
     return config
 
 def get_negative_mask_dataset(input_path):
@@ -141,4 +154,3 @@ def get_simple_mask_dataset(input_path, output_path):
     result["outputs"][0]["bindings"][0]["path"] = output_path
 
     return result
-
