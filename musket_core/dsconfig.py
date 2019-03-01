@@ -1,4 +1,8 @@
+import os
+
 import copy
+
+from typing import Dict, List
 
 config_defaults = {
     "outputs": []
@@ -67,7 +71,7 @@ simple_mask_dataset = {
     "inputs": [{
         "name": "default",
 
-        "data_type": "float32",
+        "data_type": "uint8",
 
         "bindings": [{
             "reader": "RGBA",
@@ -82,7 +86,7 @@ simple_mask_dataset = {
     "outputs": [{
         "name": "default",
 
-        "data_type": "uint8",
+        "data_type": "bool",
 
         "bindings": [{
             "reader": "monochrome",
@@ -94,6 +98,30 @@ simple_mask_dataset = {
         }]
     }]
 }
+
+def unpack_config(initial_config, from_dir):
+    config: Dict = copy.deepcopy(initial_config)
+
+    if "input_path" in config.keys():
+        config["inputs"] = get_simple_mask_dataset(os.path.join(from_dir, config.pop("input_path")), "dummy")["inputs"]
+
+    if "output_path" in config.keys():
+        config["outputs"] = get_simple_mask_dataset("dummy", os.path.join(from_dir, config.pop("output_path")))["outputs"]
+
+    config["outputs"] = config.pop("outputs", [])
+
+    bindings = []
+
+    for item in (config["inputs"] + config["outputs"]):
+        bindings += item["bindings"]
+
+    for binding in bindings:
+        if os.path.isabs(binding["path"]):
+            continue
+
+        binding["path"] = os.path.join(from_dir, binding["path"])
+
+    return config
 
 def get_negative_mask_dataset(input_path):
     result = copy.deepcopy(negative_mask_dataset)

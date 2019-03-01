@@ -17,6 +17,9 @@ import cv2 as cv
 import scipy
 from musket_core import utils
 
+import musket_core.datasources as datasources
+import musket_core.dsconfig as dsconfig
+
 AUGMENTER_QUEUE_LIMIT=10
 USE_MULTIPROCESSING=False
 
@@ -1140,6 +1143,24 @@ class CropAndSplit:
     def __len__(self):
         return len(self.ds)*self.parts*self.parts
 
+class DS_Wrapper:
+    def __init__(self, datasource_cfg, from_directory, other_sets):
+        abs_path = os.path.abspath(from_directory)
+
+        dirname = os.path.dirname(abs_path)
+
+        self.datasource = datasources.GenericDataSource(dsconfig.unpack_config(datasource_cfg, dirname))
+
+    def __len__(self):
+        return len(self.datasource)
+
+    def __getitem__(self, item):
+        ds_item = self.datasource[item]
+
+        return PredictionItem(ds_item.id, ds_item.inputs[0], ds_item.outputs[0])
+
+    def isPositive(self, item):
+        return True
 
 class SubDataSet:
     def __init__(self,orig,indexes):

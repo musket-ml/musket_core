@@ -6,6 +6,9 @@ import csv
 import keras
 import tqdm
 import pandas as pd
+
+import musket_core.datasources as datasources
+
 from keras.utils import multi_gpu_model
 from musket_core.quasymodels import AnsembleModel,BatchCrop
 import musket_core.datasets as datasets
@@ -397,8 +400,11 @@ class GenericTaskConfig:
                         pass
         return res
 
-    def fit(self, dataset, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction = None):
-        dataset = self._adapt_before_fit(dataset)
+    def fit(self, dataset_ = None, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction = None):
+        if dataset_:
+            dataset = self._adapt_before_fit(dataset_)
+        else:
+            dataset = self.parse_dataset()
 
         dn = os.path.dirname(self.path)
         if os.path.exists(os.path.join(dn, "summary.yaml")):
@@ -425,6 +431,21 @@ class GenericTaskConfig:
 
     def _adapt_before_fit(self, dataset):
         return dataset
+
+    def parse_dataset(self):
+        ds_config = self.pickup_ds_config()
+
+        return datasets.DS_Wrapper(ds_config, self.path, self.datasets)
+
+    def pickup_ds_config(self):
+        ds_name = self.fit_with
+
+        return self.datasets[ds_name]
+
+    def clean(self, cleaned):
+        cleaned.pop("datasets", None)
+        cleaned.pop("fit_with", None)
+        cleaned.pop("aaa", None)
 
 class TaskConfigInfo:
 

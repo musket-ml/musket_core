@@ -3,7 +3,7 @@ import os
 import numpy as np
 import imageio
 
-import dsconfig
+import musket_core.dsconfig as dsconfig
 
 from typing import List, Dict
 
@@ -147,9 +147,7 @@ class DataSourceItem:
         self.outputs = outputs
 
 class GenericDataSource:
-    def __init__(self, config: Dict, unwrap = False):
-        self.unwrap = unwrap
-
+    def __init__(self, config: Dict):
         self.config = self.parse_config(config)
 
         self.ids = self.resolve_ids()
@@ -175,9 +173,6 @@ class GenericDataSource:
 
         for output in self.config["outputs"]:
             outputs.append(self.read_io_item(id, output))
-
-        if self.unwrap:
-            return DataSourceItem(id, inputs[0], outputs[0])
 
         return DataSourceItem(id, inputs, outputs)
 
@@ -262,14 +257,3 @@ class ColorMaskDataSet(GenericDataSource):
 class NegativeMaskDataSet(GenericDataSource):
     def __init__(self, input_path,):
         GenericDataSource.__init__(self, dsconfig.get_negative_mask_dataset(input_path), True)
-
-#gds = ColorMaskDataSet("./picsart/train", "./picsart/train", [[210, 208, 195], [211, 209, 196], [210, 206, 194]])
-
-# gds = NegativeMaskDataSet("./picsart/train")
-#
-# for i in range(10):
-#     item = gds[i]
-#
-#     o = item.outputs.astype(np.uint8) * 255
-#
-#     imageio.imsave("./dstst/" + str(i) + ".png", o)
