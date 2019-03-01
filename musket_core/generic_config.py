@@ -435,12 +435,10 @@ class GenericTaskConfig:
     def parse_dataset(self):
         ds_config = self.pickup_ds_config()
 
-        return datasets.DS_Wrapper(ds_config, self.path, self.datasets)
+        return datasets.DS_Wrapper(self.fit_with, ds_config, self.path)
 
     def pickup_ds_config(self):
-        ds_name = self.fit_with
-
-        return self.datasets[ds_name]
+        return self.datasets
 
     def clean(self, cleaned):
         cleaned.pop("datasets", None)

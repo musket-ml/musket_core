@@ -5,7 +5,9 @@ import copy
 from typing import Dict, List
 
 config_defaults = {
-    "outputs": []
+    "outputs": [],
+    "inputs": [],
+    "children": False
 }
 
 io_defaults = {
@@ -99,20 +101,42 @@ simple_mask_dataset = {
     }]
 }
 
-def unpack_config(initial_config, from_dir):
-    config: Dict = copy.deepcopy(initial_config)
+def unpack_config(name, config, from_dir):
+    initial_config = config[name]
 
-    if "input_path" in config.keys():
-        config["inputs"] = get_simple_mask_dataset(os.path.join(from_dir, config.pop("input_path")), "dummy")["inputs"]
+    if type(initial_config) is list:
+        initial_config = {
+            "children": initial_config
+        }
 
-    if "output_path" in config.keys():
-        config["outputs"] = get_simple_mask_dataset("dummy", os.path.join(from_dir, config.pop("output_path")))["outputs"]
+    cfg: Dict = copy.deepcopy(initial_config)
 
-    config["outputs"] = config.pop("outputs", [])
+    if "input_path" in cfg.keys():
+        cfg["inputs"] = get_simple_mask_dataset(os.path.join(from_dir, cfg.pop("input_path")), "dummy")["inputs"]
+
+    if "output_path" in cfg.keys():
+        cfg["outputs"] = get_simple_mask_dataset("dummy", os.path.join(from_dir, cfg.pop("output_path")))["outputs"]
+
+    cfg["inputs"] = cfg.pop("inputs", [])
+    cfg["outputs"] = cfg.pop("outputs", [])
+    cfg["children"] = cfg.pop("children", False)
+
+    children = cfg["children"]
+
+    if children:
+        unpacked_children = []
+
+        for item in children:
+            if item == name:
+                continue
+
+            unpacked_children.append(unpack_config(item, config, from_dir))
+
+        cfg["children"] = unpacked_children
 
     bindings = []
 
-    for item in (config["inputs"] + config["outputs"]):
+    for item in (cfg["inputs"] + cfg["outputs"]):
         bindings += item["bindings"]
 
     for binding in bindings:
@@ -121,7 +145,7 @@ def unpack_config(initial_config, from_dir):
 
         binding["path"] = os.path.join(from_dir, binding["path"])
 
-    return config
+    return cfg
 
 def get_negative_mask_dataset(input_path):
     result = copy.deepcopy(negative_mask_dataset)

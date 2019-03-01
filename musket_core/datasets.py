@@ -1144,12 +1144,12 @@ class CropAndSplit:
         return len(self.ds)*self.parts*self.parts
 
 class DS_Wrapper:
-    def __init__(self, datasource_cfg, from_directory, other_sets):
+    def __init__(self, name, datasource_cfg, from_directory):
         abs_path = os.path.abspath(from_directory)
 
         dirname = os.path.dirname(abs_path)
 
-        self.datasource = datasources.GenericDataSource(dsconfig.unpack_config(datasource_cfg, dirname))
+        self.datasource = datasources.GenericDataSource(dsconfig.unpack_config(name, datasource_cfg, dirname))
 
     def __len__(self):
         return len(self.datasource)

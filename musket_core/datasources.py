@@ -150,14 +150,41 @@ class GenericDataSource:
     def __init__(self, config: Dict):
         self.config = self.parse_config(config)
 
-        self.ids = self.resolve_ids()
+        children = get_value("children", config, dsconfig.config_defaults)
 
-        pass
+        if not children:
+            self.ids = self.resolve_ids()
+
+            self.length = len(self.ids)
+
+            self.children = children
+        else:
+            self.children = [GenericDataSource(item) for item in children]
+
+            self.length = sum([len(item) for item in self.children])
 
     def __len__(self):
-        return len(self.ids)
+        return self.length
+
+    def from_composed(self, item):
+        i = item
+
+        for child in self.children:
+            l = len(child)
+
+            if i >= l:
+                i -= l
+
+                continue
+
+            return child[i]
+
+        return None
 
     def __getitem__(self, item):
+        if self.children:
+            return self.from_composed(item)
+
         id = self.ids[item]
 
         inputs = []
