@@ -103,6 +103,14 @@ types:
         (meta.positional): true
         type: string
   Flatten: Layer
+  Wrapper:
+    type: Layer
+    properties:
+      layer:
+        (meta.positional): true
+        type: Layer
+
+  Bidirectional: Wrapper
 
 
 
