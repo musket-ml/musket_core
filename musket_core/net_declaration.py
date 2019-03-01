@@ -203,7 +203,14 @@ class Layers:
                 if isinstance(config,list) and not isBuildin:
                     all_refs=True
                     for v in config:
-                        if not isinstance(v,Hashable) or  v in self.layerMap or v in linputs:
+                        if not isinstance(v, Hashable):
+                            if isinstance(v,list):
+                                for x in config:
+                                    if not isinstance(x, str):
+                                        all_refs = False
+                            else:
+                                all_refs = False
+                        elif v in self.layerMap or v in linputs:
                             pass
                         else:
                             all_refs=False
@@ -252,9 +259,9 @@ class Layers:
             if isinstance(inputArgs,dict):
                 if name in inputArgs:
                     return inputArgs[name]
-                if n in inputArgs:
+                if isinstance(n,Hashable) and n in inputArgs:
                     return inputArgs[n]
-            if n in tensorMap:
+            if isinstance(n,Hashable) and n in tensorMap:
                 return tensorMap[n]
 
             if n=="$input":

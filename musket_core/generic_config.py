@@ -215,7 +215,7 @@ class GenericTaskConfig:
     def inject_task_specific_transforms(self, ds, transforms):
         return ds
 
-    def getHoldout(self,ds):
+    def holdout(self, ds):
         if self.testSplit>0:
             train,test=datasets.split(ds,self.testSplit,self.testSplitSeed)
             return test
@@ -225,7 +225,7 @@ class GenericTaskConfig:
     def kfold(self, ds, indeces=None,batch=None)-> datasets.DefaultKFoldedDataSet:
         if self.testSplit>0:
             if os.path.exists(self.path + ".holdout_split"):
-                trI,hI = utils.load_yaml(self.path + ".folds_split")
+                trI,hI = utils.load_yaml(self.path + ".holdout_split")
                 train=datasets.SubDataSet(ds,trI)
                 test = datasets.SubDataSet(ds,hI)
             else:
@@ -287,6 +287,11 @@ class GenericTaskConfig:
             print("Fold:"+str(fold)+":"+str(tr))
             tresh.append(tr.treshold)
         tr = np.mean(np.array(tresh))
+        return tr
+
+    def find_optimal_treshold_by_holdout(self,ds,func,stages=0):
+        hl=self.holdout(ds)
+        tr = self.find_treshold(hl, list(range(self.folds_count)), func,stages)
         return tr
 
 
@@ -363,6 +368,11 @@ class GenericTaskConfig:
             mdl=[]
             for i in fold:
                 mdl.append(self.load_model(i,stage))
+            return AnsembleModel(mdl)
+        if isinstance(stage,list):
+            mdl=[]
+            for s in stage:
+                mdl.append(self.load_model(fold,s))
             return AnsembleModel(mdl)
         if stage == -1: stage = len(self.stages) - 1
         ec = ExecutionConfig(fold=fold, stage=stage, subsample=1.0, dr=os.path.dirname(self.path))

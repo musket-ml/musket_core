@@ -10,7 +10,7 @@ class Module:
         self.orig={}
         self.entry=None
         for v in dict["types"]:
-            t=Type(self, dict["types"][v]);
+            t=Type(v,self,dict["types"][v]);
             if t.entry:
                 self.entry=v;
             self.catalog[v.lower()]=t
@@ -27,7 +27,7 @@ class Module:
                 init=getattr(tp, "__init__")
                 gignature=inspect.signature(init)
                 typeName=x
-                tp=PythonType(gignature,tp)
+                tp=PythonType(typeName,gignature,tp)
                 self.catalog[typeName.lower()] = tp
                 self.catalog[typeName] = tp
                 self.orig[typeName.lower()] = typeName
@@ -78,6 +78,10 @@ class Module:
 
 class AbstractType:
 
+    def __init__(self):
+        self.name = None
+        self.type = None
+
     def positional(self):
         return []
 
@@ -86,6 +90,8 @@ class AbstractType:
 
     def custom(self):
         return []
+
+    def property(self, propName): None
 
     def constructArgs(self,dct,clearCustom=False):
         #for c in dct:
@@ -101,7 +107,13 @@ class AbstractType:
                 pos=self.positional()
                 argMap={}
                 for i in range(min(len(dct),len(pos))):
-                    argMap[pos[i]]=dct[i]
+                    prop = pos[i]
+                    value = dct[i]
+                    if self.module != None and prop.propRange in self.module.catalog:
+                        propRange = self.module.catalog[prop.propRange]
+                        if propRange.isAssignableFrom("Layer"):
+                            value = self.module.instantiate(value, True,{})[0]
+                    argMap[prop.name]=value
                 dct=argMap
                 pass
             if isinstance(dct, dict):
@@ -113,13 +125,27 @@ class AbstractType:
                 return r
         return dct
 
+    def isAssignableFrom(self, typeName):
+        if self.name == typeName:
+            return True
+        elif self.type == None:
+            return False
+        elif self.type == typeName:
+            return True
+        elif self.type.lower() in self.module.catalog:
+            return self.module.catalog[self.type.lower()].isAssignableFrom(typeName)
+        else:
+            return False
+
 
 class PythonType(AbstractType):
 
-    def __init__(self,s:inspect.Signature,clazz):
+    def __init__(self,type:str,s:inspect.Signature,clazz):
+        super(PythonType, self).__init__()
         args=[p for p in s.parameters][1:]
         self.args=args
         self.clazz=clazz
+        self.type = type
 
     def positional(self):
         return self.args
@@ -130,6 +156,7 @@ class PythonType(AbstractType):
 class PythonFunction(AbstractType):
 
     def __init__(self,s:inspect.Signature,clazz):
+        super(PythonFunction,self).__init__()
         if hasattr(clazz,"args"):
             args=[p for p in clazz.args if "input" not in p]
         else: args=[p for p in s.parameters if "input" not in p]
@@ -154,6 +181,23 @@ class PythonFunction(AbstractType):
 class Type(AbstractType):
 
 
+    def __init__(self,name:str,m:Module,dict):
+        super(Type,self).__init__()
+        self.name = name
+        self.module=m;
+        self.properties={};
+        self.entry="(meta.entry)" in dict
+        if type(dict)!=str:
+            self.type=dict["type"]
+            if 'properties' in dict:
+                for p in dict['properties']:
+                    pOrig=p;
+                    if p[-1]=='?':
+                        p=p[:-1]
+                    self.properties[p]=Property(p,self,dict['properties'][pOrig])
+        else:
+            self.type = dict
+        pass
 
     def alias(self,name:str):
         if name in self.properties:
@@ -168,8 +212,18 @@ class Type(AbstractType):
             c = c.union(self.module.catalog[self.type.lower()].custom())
         return c
 
+    def property(self, propName):
+        if propName == None:
+            return None
+        if propName in self.properties:
+            return self.properties[propName]
+        elif self.type.lower() in self.module.catalog:
+            return self.module.catalog[self.type.lower()].property(propName)
+        else:
+            return None
+
     def positional(self):
-        c= [v for v in self.properties if self.properties[v].positional]
+        c= [self.properties[v] for v in self.properties if self.properties[v].positional]
         if self.type.lower() in self.module.catalog:
             c = c+self.module.catalog[self.type.lower()].positional()
         return c
@@ -180,30 +234,22 @@ class Type(AbstractType):
             c = c+self.module.catalog[self.type.lower()].all()
         return c
 
-    def __init__(self,m:Module,dict):
-        self.module=m;
-        self.properties={};
-        self.entry="(meta.entry)" in dict
-        if type(dict)!=str:
-            self.type=dict["type"]
-            if 'properties' in dict:
-                for p in dict['properties']:
-                    pOrig=p;
-                    if p[-1]=='?':
-                        p=p[:-1]
-                    self.properties[p]=Property(self,dict['properties'][pOrig])
-        else:
-            self.type = dict
-        pass
 
 class Property:
-    def __init__(self,t:Type,dict):
+    def __init__(self,name:str,t:Type,dict):
+        self.name=name
         self.type=t;
         self.alias=None
         self.positional="(meta.positional)" in dict
         self.custom = "(meta.custom)" in dict
         if "(meta.alias)" in dict:
             self.alias=dict["(meta.alias)"]
+        if isinstance(dict, str):
+            self.propRange = dict
+        elif "type" in dict:
+            self.propRange = dict["type"]
+        else:
+            self.propRange = "string"
         pass
 
 loaded={}

@@ -1,0 +1,8 @@
+#Basic example with sequencial model
+declarations:
+  net:
+    - bidirectional:
+        - cudnnlstm: [1, true ]
+    - dense: [64, relu]
+    - dense: [2, sigmoid]
+
