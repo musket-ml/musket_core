@@ -77,7 +77,7 @@ class ImageDataReader(AbstractDataReader):
                 new_item.append(v)
 
             while len(new_item) < 4:
-                new_item.append(0)
+                new_item.append(255)
 
             result.append(new_item)
 
@@ -113,7 +113,7 @@ class ImageDataReader(AbstractDataReader):
 
         if self.cfg["reader"] == "RGBA":
             if result.shape[-1] == 3:
-                result = np.concatenate((result, np.zeros(result.shape[:-1] + (1,))), 2)
+                result = np.concatenate((result, np.zeros(result.shape[:-1] + (1,)) + 255), 2)
             if result.shape[-1] == 1:
                 result = np.concatenate((result, result, result, result), 2)
 
