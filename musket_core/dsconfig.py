@@ -7,7 +7,8 @@ from typing import Dict, List
 config_defaults = {
     "outputs": [],
     "inputs": [],
-    "children": False
+    "children": False,
+    "scores_path": False
 }
 
 io_defaults = {
@@ -110,6 +111,9 @@ def unpack_config(name, config, from_dir):
         }
 
     cfg: Dict = copy.deepcopy(initial_config)
+
+    if "scores_path" in cfg.keys():
+        cfg["scores_path"] = os.path.join(from_dir, cfg.pop("scores_path"))
 
     if "input_path" in cfg.keys():
         cfg["inputs"] = get_simple_mask_dataset(os.path.join(from_dir, cfg.pop("input_path")), "dummy")["inputs"]
