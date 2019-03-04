@@ -939,12 +939,16 @@ class DefaultKFoldedDataSet:
         tl,tg,train_g=self.generator_from_indexes(train_indexes)
         vl,vg,test_g = self.generator_from_indexes(test_indexes,isTrain=False)
         try:
+            v_steps = len(test_indexes)//(round(subsample*self.batchSize))
+
+            if v_steps < 1: v_steps = 1
+            
             model.fit_generator(train_g(), len(train_indexes)//(round(subsample*self.batchSize)),
                              epochs=numEpochs,
                              validation_data=test_g(),
                              callbacks=callbacks,
                              verbose=verbose,
-                             validation_steps=len(test_indexes)//(round(subsample*self.batchSize)),
+                             validation_steps=v_steps,
                              initial_epoch=initial_epoch)
         finally:
             tl.terminate()
