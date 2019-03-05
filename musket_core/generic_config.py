@@ -158,6 +158,7 @@ class GenericTaskConfig:
 
     def __init__(self,**atrs):
         self.batch = 8
+        self.holdoutArr=None
         self.all = atrs
         self.groupFunc=None
         self.imports=[]
@@ -220,20 +221,22 @@ class GenericTaskConfig:
         return ds
 
     def setHoldout(self, arr):
-        self.__holdout = arr
+        self.holdoutArr = arr
 
-    def __doGetHoldout(self, ds):
-        ho = self.__holdout
-        if ho != None:
-            train = list(set(range(1,len(ds))).difference(self.__holdout))
-            return train, ho
+    def doGetHoldout(self, ds):
+        ho = self.holdoutArr
+        if ho is not None:
+            train = list(set(range(1,len(ds))).difference(self.holdoutArr))
+
+            return datasets.SubDataSet(ds, train), datasets.SubDataSet(ds, ho)
+
         else:
             return datasets.split(ds, self.testSplit, self.testSplitSeed, self.stratified, self.groupFunc)
 
 
     def holdout(self, ds):
-        if self.testSplit>0:
-            train,test=self.__doGetHoldout(ds)
+        if self.testSplit>0 or self.holdoutArr is not None:
+            train,test=self.doGetHoldout(ds)
             return test
             pass
         raise ValueError("This configuration does not have holdout")
@@ -245,7 +248,7 @@ class GenericTaskConfig:
                 train=datasets.SubDataSet(ds,trI)
                 test = datasets.SubDataSet(ds,hI)
             else:
-                train,test=self.__doGetHoldout(ds)
+                train,test=self.doGetHoldout(ds)
                 utils.save_yaml(self.path + ".holdout_split",(train.indexes,test.indexes))
             ds=train
             pass
