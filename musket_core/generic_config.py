@@ -218,11 +218,14 @@ class GenericTaskConfig:
     def inject_task_specific_transforms(self, ds, transforms):
         return ds
 
+    def setHoldout(self, arr):
+        self.__holdout = arr
+
     def __doGetHoldout(self, ds):
-        holdout = self.holdout
-        if holdout != None:
-            train = list(set(range(1,len(ds))).difference(holdout))
-            return train, holdout
+        ho = self.__holdout
+        if ho != None:
+            train = list(set(range(1,len(ds))).difference(self.__holdout))
+            return train, ho
         else:
             return datasets.split(ds, self.testSplit, self.testSplitSeed, self.stratified, self.groupFunc)
 
