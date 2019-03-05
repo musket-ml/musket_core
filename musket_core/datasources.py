@@ -5,6 +5,8 @@ import imageio
 
 import musket_core.dsconfig as dsconfig
 
+import pandas
+
 from typing import List, Dict
 
 def get_data_reader(config):
@@ -75,7 +77,7 @@ class ImageDataReader(AbstractDataReader):
                 new_item.append(v)
 
             while len(new_item) < 4:
-                new_item.append(0)
+                new_item.append(255)
 
             result.append(new_item)
 
@@ -111,7 +113,7 @@ class ImageDataReader(AbstractDataReader):
 
         if self.cfg["reader"] == "RGBA":
             if result.shape[-1] == 3:
-                result = np.concatenate((result, np.zeros(result.shape[:-1] + (1,))), 2)
+                result = np.concatenate((result, np.zeros(result.shape[:-1] + (1,)) + 255), 2)
             if result.shape[-1] == 1:
                 result = np.concatenate((result, result, result, result), 2)
 
@@ -152,6 +154,8 @@ class GenericDataSource:
 
         children = get_value("children", config, dsconfig.config_defaults)
 
+        self.load_scores(get_value("scores_path", config, dsconfig.config_defaults))
+
         if not children:
             self.ids = self.resolve_ids()
 
@@ -165,6 +169,22 @@ class GenericDataSource:
 
     def __len__(self):
         return self.length
+
+    def load_scores(self, scores_path):
+        if scores_path:
+            self.scores = {}
+
+            scores = pandas.read_csv(scores_path)
+
+            s_range = self.config.pop("scores_range", [-99999999, 99999999])
+
+            self.min = s_range[0]
+            self.max = s_range[1]
+
+            for i in range(scores.shape[0]):
+                self.scores[str(scores["id"][i])] = scores["score"][i]
+        else:
+            self.scores = None
 
     def from_composed(self, item):
         i = item
@@ -238,6 +258,9 @@ class GenericDataSource:
 
         result.sort()
 
+        if self.scores:
+            result = [item for item in result if(item in self.scores.keys() and self.scores[item] >= self.min and self.scores[item] <= self.max)]
+
         return result
 
     def parse_config(self, config):
@@ -245,6 +268,9 @@ class GenericDataSource:
             "inputs": [],
             "outputs": []
         }
+
+        if "scores_range" in config.keys():
+            result["scores_range"] = config["scores_range"]
 
         for input in config["inputs"]:
             result["inputs"].append(self.parse_io_config(input))

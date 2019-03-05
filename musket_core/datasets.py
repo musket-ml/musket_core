@@ -126,9 +126,10 @@ def drawBatch(batch,path):
 def draw_test_batch(batch,path):
     cells = []
     for i in range(0, len(batch.segmentation_maps_aug)):
-        cells.append(batch.images_aug[i][:,:,0:3])
-        cells.append(batch.segmentation_maps_aug[i].draw_on_image(batch.images_aug[i][:,:,0:3]))  # column 2
-        cells.append(batch.heatmaps_aug[i].draw_on_image(batch.images_aug[i][:,:,0:3])[0])  # column 2
+        iPic = batch.images_aug[i][:, :, 0:3].astype(np.uint8)
+        cells.append(iPic)
+        cells.append(batch.segmentation_maps_aug[i].draw_on_image(iPic))  # column 2
+        cells.append(batch.heatmaps_aug[i].draw_on_image(iPic)[0])  # column 2
     # Convert cells to grid image and save.
     grid_image = imgaug.draw_grid(cells, cols=3)
     imageio.imwrite(path, grid_image)
@@ -938,12 +939,16 @@ class DefaultKFoldedDataSet:
         tl,tg,train_g=self.generator_from_indexes(train_indexes)
         vl,vg,test_g = self.generator_from_indexes(test_indexes,isTrain=False)
         try:
+            v_steps = len(test_indexes)//(round(subsample*self.batchSize))
+
+            if v_steps < 1: v_steps = 1
+            
             model.fit_generator(train_g(), len(train_indexes)//(round(subsample*self.batchSize)),
                              epochs=numEpochs,
                              validation_data=test_g(),
                              callbacks=callbacks,
                              verbose=verbose,
-                             validation_steps=len(test_indexes)//(round(subsample*self.batchSize)),
+                             validation_steps=v_steps,
                              initial_epoch=initial_epoch)
         finally:
             tl.terminate()

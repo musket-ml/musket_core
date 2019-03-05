@@ -144,6 +144,23 @@ declarations:
       - convBlock: [120]
 ```
 
+### Wrapper layers
+
+```yaml
+  net:
+    #- gaussianNoise: 0.0001
+
+    #- collapseConv: [ 20, 7, 10 ]
+    #- collapseConv: [ 20, 7, 10 ]
+    - bidirectional:
+        - cudnnlstm: [30, true ]
+    - bidirectional:
+        - cudnnlstm: [50, true ]
+    - attention: 200
+    - dense: [64, relu]
+    - dense: [3, sigmoid]
+```    
+
 ### Manually controlling data flow
 ```yaml
   net:

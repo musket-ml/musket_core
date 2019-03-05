@@ -459,7 +459,6 @@ class GenericTaskConfig:
     def clean(self, cleaned):
         cleaned.pop("datasets", None)
         cleaned.pop("fit_with", None)
-        cleaned.pop("aaa", None)
 
 class TaskConfigInfo:
 
