@@ -219,9 +219,18 @@ class GenericTaskConfig:
     def inject_task_specific_transforms(self, ds, transforms):
         return ds
 
+    def __doGetHoldout(self, ds):
+        holdout = self.holdout
+        if holdout != None:
+            train = list(set(range(1,len(ds))).difference(holdout))
+            return train, holdout
+        else:
+            return datasets.split(ds, self.testSplit, self.testSplitSeed, self.stratified, self.groupFunc)
+
+
     def holdout(self, ds):
         if self.testSplit>0:
-            train,test=datasets.split(ds,self.testSplit,self.testSplitSeed)
+            train,test=self.__doGetHoldout(ds)
             return test
             pass
         raise ValueError("This configuration does not have holdout")
@@ -233,7 +242,7 @@ class GenericTaskConfig:
                 train=datasets.SubDataSet(ds,trI)
                 test = datasets.SubDataSet(ds,hI)
             else:
-                train,test=datasets.split(ds,self.testSplit,self.testSplitSeed,self.stratified,self.groupFunc)
+                train,test=self.__doGetHoldout(ds)
                 utils.save_yaml(self.path + ".holdout_split",(train.indexes,test.indexes))
             ds=train
             pass
