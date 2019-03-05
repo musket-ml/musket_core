@@ -292,6 +292,22 @@ class GenericTaskConfig:
         tr = np.mean(np.array(tresh))
         return tr
 
+    def find_optimal_treshold_by_validation2(self,ds,func,stages=0):
+        tresh = []
+
+        all=[]
+        allTargets=[]
+        for fold in range(self.folds_count):
+            val = self.validation(ds, fold)
+            preds=self.predict_all_to_array(val,fold,stages,batch_size=128)
+            targets=datasets.get_targets_as_array(val)
+            all.append(preds)
+            allTargets.append(targets)
+
+        tr = threshold_search(np.concatenate(allTargets,axis=0),np.concatenate(all,axis=0),func)
+        print(tr)
+        return tr.treshold
+
     def find_optimal_treshold_by_holdout(self,ds,func,stages=0):
         hl=self.holdout(ds)
         tr = self.find_treshold(hl, list(range(self.folds_count)), func,stages)
