@@ -69,6 +69,8 @@ class Cache:
     def __init__(self,parent):
         self.parent=parent
         self.k={}
+        if hasattr(parent,"folds"):
+            self.folds=getattr(parent,"folds");
 
 
     def __getitem__(self, item):
