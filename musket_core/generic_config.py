@@ -164,6 +164,7 @@ class GenericTaskConfig:
         self.stratified=False
         self.preprocessing=None
         self.verbose = 1
+        self.fit_with=None
         self.noTrain = False
         self.saveLast = False
         self.folds_count = 5
@@ -429,10 +430,11 @@ class GenericTaskConfig:
         return res
 
     def fit(self, dataset_ = None, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction = None):
-        if dataset_:
-            dataset = self._adapt_before_fit(dataset_)
-        else:
-            dataset = self.parse_dataset()
+        if dataset_ is None:
+          dataset = self.parse_dataset()
+        else: dataset=dataset_
+
+        dataset = self._adapt_before_fit(dataset)
 
         dn = os.path.dirname(self.path)
         if os.path.exists(os.path.join(dn, "summary.yaml")):
@@ -485,7 +487,6 @@ class GenericImageTaskConfig(GenericTaskConfig):
 
     def __init__(self,**atrs):
         super().__init__(**atrs)
-
 
     def _update_from_config(self, v, val):
         if v == 'augmentation' and val is not None:
