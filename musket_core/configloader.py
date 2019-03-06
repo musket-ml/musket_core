@@ -81,6 +81,7 @@ class AbstractType:
     def __init__(self):
         self.name = None
         self.type = None
+        self.module=None
 
     def positional(self):
         return []
@@ -113,7 +114,9 @@ class AbstractType:
                         propRange = self.module.catalog[prop.propRange]
                         if propRange.isAssignableFrom("Layer"):
                             value = self.module.instantiate(value, True,{})[0]
-                    argMap[prop.name]=value
+                    if isinstance(prop,str):
+                        argMap[prop]=value
+                    else: argMap[prop.name]=value
                 dct=argMap
                 pass
             if isinstance(dct, dict):
@@ -167,7 +170,8 @@ class PythonFunction(AbstractType):
             for i in range(len(args)):
                 mm[self.args[i]]=args[i]
             def res(i):
-                mm["input"]=i
+                if i is not None:
+                    mm["input"]=i
                 return clazz(**mm)
             return res
         self.clazz=create

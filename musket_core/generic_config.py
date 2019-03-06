@@ -8,7 +8,7 @@ import tqdm
 import pandas as pd
 
 import musket_core.datasources as datasources
-
+from musket_core.utils import ensure
 from keras.utils import multi_gpu_model
 from musket_core.quasymodels import AnsembleModel,BatchCrop
 import musket_core.datasets as datasets
@@ -24,7 +24,7 @@ import imgaug
 import musket_core
 from musket_core.clr_callback import CyclicLR
 keras.callbacks.CyclicLR= CyclicLR
-
+from musket_core import predictions
 keras.utils.get_custom_objects()["macro_f1"]= musket_core.losses.macro_f1
 keras.utils.get_custom_objects()["f1_loss"]= musket_core.losses.f1_loss
 keras.utils.get_custom_objects()["dice"]= musket_core.losses.dice
@@ -50,11 +50,7 @@ class Rotate90(imgaug.augmenters.Affine):
 
 imgaug.augmenters.Rotate90 = Rotate90
 
-def ensure(directory):
-    try:
-        os.makedirs(directory);
-    except:
-        pass
+
 
 def maxEpoch(file):
     if not os.path.exists(file):
@@ -145,6 +141,13 @@ class ScoreAndTreshold:
         return "score:"+str(self.score)+": treshold:"+str(self.treshold)
 
 def threshold_search(y_true, y_proba,func):
+    if isinstance(func,str):
+        func_=keras.metrics.get(func)
+        def wrapped(x,y):
+            v1= K.constant(x)
+            v2 = K.constant(y)
+            return K.eval(func_(v1,v2))
+        func=wrapped
     best_threshold = 0
     best_score = 0
     for threshold in tqdm.tqdm([i * 0.01 for i in range(100)]):
@@ -154,6 +157,16 @@ def threshold_search(y_true, y_proba,func):
             best_score = score
     return ScoreAndTreshold(best_score,best_threshold)
 
+def eval_metric(y_true,y_proba,func):
+    if isinstance(func,str):
+        func_=keras.metrics.get(func)
+        def wrapped(x,y):
+            v1= K.constant(x)
+            v2 = K.constant(y)
+            return K.eval(func_(v1,v2))
+        func=wrapped
+    return func(y_true,y_proba)
+
 class GenericTaskConfig:
 
     def __init__(self,**atrs):
@@ -161,10 +174,11 @@ class GenericTaskConfig:
         self.all = atrs
         self.groupFunc=None
         self.imports=[]
+        self._dataset=None
         self.stratified=False
         self.preprocessing=None
         self.verbose = 1
-        self.fit_with=None
+        self.dataset=None
         self.noTrain = False
         self.saveLast = False
         self.folds_count = 5
@@ -189,6 +203,7 @@ class GenericTaskConfig:
         self.augmentation=[]
         self.extra_train_data=None
         self.dataset_augmenter=None
+        self.datasets=None
         self.architecture=None
         self.encoder_weights = None
         self.activation = None
@@ -220,22 +235,20 @@ class GenericTaskConfig:
         return ds
 
     def __doGetHoldout(self, ds):
-        holdout = self.holdout
-        if holdout != None:
-            train = list(set(range(1,len(ds))).difference(holdout))
-            return train, holdout
-        else:
-            return datasets.split(ds, self.testSplit, self.testSplitSeed, self.stratified, self.groupFunc)
+        return datasets.split(ds, self.testSplit, self.testSplitSeed, self.stratified, self.groupFunc)
 
-
-    def holdout(self, ds):
+    def holdout(self, ds=None):
+        if ds is None:
+            ds=self.get_dataset()
         if self.testSplit>0:
             train,test=self.__doGetHoldout(ds)
             return test
             pass
         raise ValueError("This configuration does not have holdout")
 
-    def kfold(self, ds, indeces=None,batch=None)-> datasets.DefaultKFoldedDataSet:
+    def kfold(self, ds=None, indeces=None,batch=None)-> datasets.DefaultKFoldedDataSet:
+        if ds is None:
+            ds=self.get_dataset()
         if self.testSplit>0:
             if os.path.exists(self.path + ".holdout_split"):
                 trI,hI = utils.load_yaml(self.path + ".holdout_split")
@@ -271,7 +284,13 @@ class GenericTaskConfig:
     def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
         raise ValueError("Not implemented")
 
-    def predict_all_to_array(self, dataset, fold, stage, limit=-1, batch_size=32, ttflips=False):
+    def predict_all_to_array(self, dataset, fold=None, stage=None, limit=-1, batch_size=32, ttflips=False):
+        if fold is None:
+            fold=list(range(self.folds_count))
+        if stage is None:
+            stage=list(range(len(self.stages)))
+        if isinstance(dataset,str):
+            dataset=self.get_dataset(dataset)
         res=[]
         with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
             for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
@@ -280,6 +299,9 @@ class GenericTaskConfig:
                     res.append(b.results[i])
                 pbar.update(batch_size)
         return np.array(res)
+
+    def predictions(self,fold=None,stage=None):
+        return musket_core.predictions.get_predictions(self,fold,stage)
 
     def find_treshold(self,ds,fold,func,stage=0):
 
@@ -292,36 +314,33 @@ class GenericTaskConfig:
         vl = datasets.get_targets_as_array(ds)
         return threshold_search(vl, predicted,func)
 
-    def find_optimal_treshold_by_validation(self,ds,func,stages=0):
+    def find_optimal_treshold_by_validation(self,func,stages=None):
         tresh = []
         for fold in range(self.folds_count):
-            val = self.validation(ds, fold)
-            tr = self.find_treshold(val, fold, func,stages)
-            print("Fold:"+str(fold)+":"+str(tr))
+            arr = predictions.get_validation_prediction(self,fold,stages)
+            val = self.validation( fold)
+            targets = datasets.get_targets_as_array(val)
+            tr = threshold_search(targets,arr , func)
             tresh.append(tr.treshold)
         tr = np.mean(np.array(tresh))
         return tr
 
-    def find_optimal_treshold_by_validation2(self,ds,func,stages=0):
-        tresh = []
-
+    def find_optimal_treshold_by_validation2(self,func,stages=None,ds=None,):
         all=[]
         allTargets=[]
         for fold in range(self.folds_count):
             val = self.validation(ds, fold)
-            preds=self.predict_all_to_array(val,fold,stages,batch_size=128)
+            preds=predictions.get_validation_prediction(self,fold,stages)
             targets=datasets.get_targets_as_array(val)
             all.append(preds)
             allTargets.append(targets)
 
         tr = threshold_search(np.concatenate(allTargets,axis=0),np.concatenate(all,axis=0),func)
-        print(tr)
         return tr.treshold
 
-    def find_optimal_treshold_by_holdout(self,ds,func,stages=0):
-        hl=self.holdout(ds)
-        tr = self.find_treshold(hl, list(range(self.folds_count)), func,stages)
-        return tr
+    def find_optimal_treshold_by_holdout(self,func,stages=None):
+        hl=predictions.get_holdout_prediction(self,None,stages)
+        return threshold_search(datasets.get_targets_as_array(self.holdout()), hl, func).treshold
 
 
     def createAndCompile(self, lr=None, loss=None)->keras.Model:
@@ -330,7 +349,12 @@ class GenericTaskConfig:
     def createNet(self):
         raise ValueError("Not implemented")
 
-    def validation(self,ds,foldNum):
+    def validation(self,ds=None,foldNum=0):
+        if ds is None:
+            ds = self.get_dataset()
+        if isinstance(ds,int):
+            foldNum=ds
+            ds=self.get_dataset()
         ids=self.kfold(ds).indexes(foldNum,False)
         return datasets.SubDataSet(ds,ids)
 
@@ -347,7 +371,7 @@ class GenericTaskConfig:
 
     def skip_stage(self, i, model, s, subsample):
         st: Stage = self.stages[s]
-        ec = ExecutionConfig(fold=i, stage=s, subsample=subsample, dr=os.path.dirname(self.path))
+        ec = ExecutionConfig(fold=i, stage=s, subsample=subsample, dr=self.directory())
         if os.path.exists(ec.weightsPath()):
             model.load_weights(ec.weightsPath())
             if 'unfreeze_encoder' in st.dict and st.dict['unfreeze_encoder']:
@@ -357,7 +381,7 @@ class GenericTaskConfig:
         return Stage(x,self)
 
     def lr_find(self, d, foldsToExecute=None,stage=0,subsample=1.0,start_lr=0.000001,end_lr=1.0,epochs=5):
-        dn = os.path.dirname(self.path)
+        dn = self.directory()
         if os.path.exists(os.path.join(dn, "summary.yaml")):
             raise ValueError("Experiment is already finished!!!!")
         folds = self.kfold(d)
@@ -372,7 +396,7 @@ class GenericTaskConfig:
                     self.skip_stage(i, model, s, subsample)
                     continue
                 st: Stage = self.stages[s]
-                ec = ExecutionConfig(fold=i, stage=s, subsample=subsample, dr=os.path.dirname(self.path))
+                ec = ExecutionConfig(fold=i, stage=s, subsample=subsample, dr=self.directory())
                 return st.lr_find(folds, model, ec,start_lr,end_lr,epochs)
 
 
@@ -404,7 +428,7 @@ class GenericTaskConfig:
                 mdl.append(self.load_model(fold,s))
             return AnsembleModel(mdl)
         if stage == -1: stage = len(self.stages) - 1
-        ec = ExecutionConfig(fold=fold, stage=stage, subsample=1.0, dr=os.path.dirname(self.path))
+        ec = ExecutionConfig(fold=fold, stage=stage, subsample=1.0, dr=self.directory())
         model = self.createAndCompile()
         model.load_weights(ec.weightsPath(),False)
         return model
@@ -417,7 +441,7 @@ class GenericTaskConfig:
         for i in range(ln):
             for s in range(0, len(self.stages)):
                 st: Stage = self.stages[s]
-                ec = ExecutionConfig(fold=i, stage=s, dr=os.path.dirname(self.path))
+                ec = ExecutionConfig(fold=i, stage=s, dr=self.directory())
                 if os.path.exists(ec.metricsPath()):
                     try:
                         fr=pd.read_csv(ec.metricsPath())
@@ -426,14 +450,32 @@ class GenericTaskConfig:
                         pass
         return res
 
+    def directory(self):
+        return os.path.dirname(self.path)
+
+    def get_dataset(self,dataSetName=None):
+        if dataSetName is not None:
+            if dataSetName=="holdout":
+                return self.holdout(self.get_dataset())
+            return self.parse_dataset(dataSetName)
+
+
+        if self._dataset is not None:
+            return self._dataset
+        if self.dataset is not None:
+            self._dataset=self.parse_dataset()
+            return self._dataset
+        raise ValueError("Data set is not defined for this config")
+
     def fit(self, dataset_ = None, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction = None):
         if dataset_ is None:
           dataset = self.parse_dataset()
         else: dataset=dataset_
 
         dataset = self._adapt_before_fit(dataset)
+        self._dataset=dataset
 
-        dn = os.path.dirname(self.path)
+        dn = self.directory()
         if os.path.exists(os.path.join(dn, "summary.yaml")):
             raise ValueError("Experiment is already finished!!!!")
         folds = self.kfold(dataset, None)
@@ -447,14 +489,56 @@ class GenericTaskConfig:
                     self.skip_stage(i, model, s, subsample)
                     continue
                 st: Stage = self.stages[s]
-                ec = ExecutionConfig(fold=i, stage=s, subsample=subsample, dr=os.path.dirname(self.path),drawingFunction=drawingFunction)
+                ec = ExecutionConfig(fold=i, stage=s, subsample=subsample, dr=self.directory(), drawingFunction=drawingFunction)
                 st.execute(folds, model, ec)
+        self.generateReports(foldsToExecute, subsample)
 
+
+
+    def generateReports(self, foldsToExecute=None, subsample=1.0):
+        dn = self.directory()
         with open(os.path.join(dn, "summary.yaml"), "w") as f:
+            initial = {"completed": True, "cfgName": os.path.basename(self.path), "subsample": subsample,
+                       "folds": foldsToExecute}
+            metrics = self.createSummary(foldsToExecute,subsample)
+            for k in metrics:
+                initial[k] = metrics[k]
             yaml.dump(
-                {"completed": True, "cfgName": os.path.basename(self.path), "subsample": subsample,
-                 "folds": foldsToExecute},
+                initial,
                 f)
+
+    def createSummary(self,foldsToExecute, subsample):
+
+        stagesStat=[]
+
+        metric = self.primary_metric
+        if "val_" in metric:
+            metric=metric[4:]
+        for stage in range(len(self.stages)):
+            ms={}
+            tr=self.find_optimal_treshold_by_validation2(metric, [stage])
+            tr0 = self.find_optimal_treshold_by_validation(metric, [stage])
+            for m in self.metrics:
+               ms[m]=predictions.cross_validation_stat(self,m,[stage])
+
+               if self.testSplit > 0:
+                   ms[m + "_holdout"] = predictions.holdout_stat(self, m, [stage])
+               if self.testSplit > 0:
+
+                   ms[m + "_holdout_with_optimal_treshold"] = predictions.holdout_stat(self, m, [stage],tr)
+                   ms[m + "_holdout_with_optimal_treshold_mean"] = predictions.holdout_stat(self, m, [stage], tr0)
+            stagesStat.append(ms)
+
+        all={}
+        tr = self.find_optimal_treshold_by_validation2(metric)
+        tr0 = self.find_optimal_treshold_by_validation(metric)
+        for m in self.metrics:
+            all[m] = predictions.cross_validation_stat(self, m)
+            if self.testSplit > 0:
+                all[m + "_holdout"] = predictions.holdout_stat(self, m)
+            all[m + "_holdout_with_optimal_treshold"] = predictions.holdout_stat(self, m, None, tr)
+            all[m + "_holdout_with_optimal_treshold_mean"] = predictions.holdout_stat(self, m, None, tr0)
+        return {"stages":stagesStat,"allStages":all}
 
     def _adapt_before_fit(self, dataset):
         return dataset
@@ -462,14 +546,14 @@ class GenericTaskConfig:
     def parse_dataset(self):
         ds_config = self.pickup_ds_config()
 
-        return datasets.DS_Wrapper(self.fit_with, ds_config, self.path)
+        return datasets.DS_Wrapper(self.dataset, ds_config, self.path)
 
     def pickup_ds_config(self):
         return self.datasets
 
     def clean(self, cleaned):
         cleaned.pop("datasets", None)
-        cleaned.pop("fit_with", None)
+        cleaned.pop("dataset", None)
 
 class TaskConfigInfo:
 

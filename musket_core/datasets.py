@@ -1169,6 +1169,8 @@ class DS_Wrapper:
 
 class SubDataSet:
     def __init__(self,orig,indexes):
+        if isinstance(orig,int) or orig is None or isinstance(orig,list):
+            raise ValueError("Dataset is expected")
         self.ds=orig
         self.indexes=indexes
 

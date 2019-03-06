@@ -346,9 +346,12 @@ class Declarations:
         return self.declarationMap[item]
 
     def instantiate(self,name,inputs):
-        v=self[name].instantiate(self)
-
-        inp=self[name].inputs
+        if isinstance(name,dict):
+            v=Declaration([name]).instantiate(self)
+            inp=[]
+        else:
+            v=self[name].instantiate(self)
+            inp=self[name].inputs
         if len(inp)>0:
             if isinstance(inputs,list):
                 pMap = {}
@@ -381,13 +384,20 @@ def get_declarations(path)->keras.Model:
     d=Declarations(n["declarations"])
     return d
 
+
 def create_model_from_config(n,inputs,name="net",imports=[])->keras.Model:
     d=Declarations(n)
     for x in imports: layers.register(x)
     out=d.model(name, inputs)
     return out
+
 def create_preprocessor_from_config(n,inputs,name="net",imports=[])->keras.Model:
     d=Declarations(n)
     for x in imports: layers.register(x)
     out=d.preprocess(name, inputs)
+    return out
+def create_dataset_from_config(n,name="net",imports=[])->keras.Model:
+    d=Declarations(n)
+    for x in imports: layers.register(x)
+    out=d.preprocess(name, None)
     return out
