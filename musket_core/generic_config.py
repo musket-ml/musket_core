@@ -171,6 +171,7 @@ class GenericTaskConfig:
 
     def __init__(self,**atrs):
         self.batch = 8
+        self.holdoutArr=None
         self.all = atrs
         self.groupFunc=None
         self.imports=[]
@@ -234,14 +235,23 @@ class GenericTaskConfig:
     def inject_task_specific_transforms(self, ds, transforms):
         return ds
 
-    def __doGetHoldout(self, ds):
-        return datasets.split(ds, self.testSplit, self.testSplitSeed, self.stratified, self.groupFunc)
+    def setHoldout(self, arr):
+        self.holdoutArr = arr
 
-    def holdout(self, ds=None):
-        if ds is None:
-            ds=self.get_dataset()
-        if self.testSplit>0:
-            train,test=self.__doGetHoldout(ds)
+    def doGetHoldout(self, ds):
+        ho = self.holdoutArr
+        if ho is not None:
+            train = list(set(range(1,len(ds))).difference(self.holdoutArr))
+
+            return datasets.SubDataSet(ds, train), datasets.SubDataSet(ds, ho)
+
+        else:
+            return datasets.split(ds, self.testSplit, self.testSplitSeed, self.stratified, self.groupFunc)
+
+
+    def holdout(self, ds):
+        if self.testSplit>0 or self.holdoutArr is not None:
+            train,test=self.doGetHoldout(ds)
             return test
             pass
         raise ValueError("This configuration does not have holdout")
