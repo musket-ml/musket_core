@@ -1,8 +1,10 @@
 from collections.abc import Hashable
 from musket_core import configloader
-from musket_core.utils import load_yaml
+from musket_core.utils import load_yaml,save,load
 import keras
 import musket_core.templating as tp
+from musket_core.caches import *
+
 layers=configloader.load("layers")
 
 def take_input(layers,declarations,config,outputs,linputs,pName,withArgs):
@@ -63,34 +65,6 @@ def split_dot_normalize(layers,declarations,config,outputs,linputs,pName,withArg
     return m,keras.layers.Dot(normalize=True)
 
 
-
-class Cache:
-
-    def __init__(self,parent):
-        self.parent=parent
-        self.k={}
-        if hasattr(parent,"folds"):
-            self.folds=getattr(parent,"folds");
-
-
-    def __getitem__(self, item):
-        if item in self.k:
-            return self.k[item]
-
-        v=self.parent[item]
-        self.k[item]=v
-        return v
-
-    def __len__(self):
-        return len(self.parent)
-
-def cache(layers,declarations,config,outputs,linputs,pName,withArgs):
-    def ccc(input):
-        return Cache(input)
-
-    return ccc
-
-
 builtins={
     "split": split,
     "split-concat": split_concat,
@@ -104,7 +78,8 @@ builtins={
     "split-dot-normalize": split_dot_normalize,
     "seq":seq,
     "input": take_input,
-    "cache": cache
+    "cache": cache,
+    "disk-cache": diskcache
 }
 for i in range(20):
     builtins["repeat("+str(i)+")"]=repeat(i)
@@ -402,4 +377,5 @@ def create_dataset_from_config(n,name="net",imports=[])->keras.Model:
     d=Declarations(n)
     for x in imports: layers.register(x)
     out=d.preprocess(name, None)
+    out.name=str(name)
     return out
