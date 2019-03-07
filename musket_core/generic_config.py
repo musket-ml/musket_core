@@ -7,6 +7,7 @@ import keras
 import tqdm
 import pandas as pd
 
+import musket_core.datasources as datasources
 from musket_core.utils import ensure
 from keras.utils import multi_gpu_model
 from musket_core.quasymodels import AnsembleModel,BatchCrop

@@ -166,6 +166,8 @@ class PythonFunction(AbstractType):
         self.args=args
 
         def create(*args,**kwargs):
+            if len(args) == 1 and args[0] is None:
+                args = []
             mm = kwargs.copy()
             for i in range(len(args)):
                 mm[self.args[i]]=args[i]
