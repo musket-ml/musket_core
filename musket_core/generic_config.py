@@ -249,7 +249,9 @@ class GenericTaskConfig:
             return datasets.split(ds, self.testSplit, self.testSplitSeed, self.stratified, self.groupFunc)
 
 
-    def holdout(self, ds):
+    def holdout(self, ds=None):
+        if ds is None:
+            ds = self.get_dataset()
         if self.testSplit>0 or self.holdoutArr is not None:
             train,test=self.doGetHoldout(ds)
             return test
