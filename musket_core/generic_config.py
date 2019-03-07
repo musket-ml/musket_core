@@ -143,12 +143,14 @@ def threshold_search(y_true, y_proba,func):
     if isinstance(func,str):
         func_=keras.metrics.get(func)
         def wrapped(x,y):
+
             v1= K.constant(x)
             v2 = K.constant(y)
             return K.eval(func_(v1,v2))
         func=wrapped
     best_threshold = 0
     best_score = 0
+    K.clear_session()
     for threshold in tqdm.tqdm([i * 0.01 for i in range(100)]):
         score = func(y_true.astype(np.float64), (y_proba > threshold))
         if score > best_score:
@@ -160,6 +162,7 @@ def eval_metric(y_true,y_proba,func):
     if isinstance(func,str):
         func_=keras.metrics.get(func)
         def wrapped(x,y):
+
             v1= K.constant(x)
             v2 = K.constant(y)
             return K.eval(func_(v1,v2))
