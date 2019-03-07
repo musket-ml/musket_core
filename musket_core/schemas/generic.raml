@@ -30,6 +30,9 @@ types:
     properties:
       testSplit?: number
       testSplitSeed?: number
+      inference_batch?:
+         type: integer
+         default: 32
       stratified?: boolean
       folds_count?:
         type: integer

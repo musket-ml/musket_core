@@ -181,6 +181,7 @@ class GenericTaskConfig:
         self.verbose = 1
         self.dataset=None
         self.noTrain = False
+        self.inference_batch=32
         self.saveLast = False
         self.folds_count = 5
         self.add_to_train = None
@@ -251,7 +252,7 @@ class GenericTaskConfig:
 
     def holdout(self, ds=None):
         if ds is None:
-            ds = self.get_dataset()
+            ds=self.get_dataset()
         if self.testSplit>0 or self.holdoutArr is not None:
             train,test=self.doGetHoldout(ds)
             return test
@@ -267,7 +268,7 @@ class GenericTaskConfig:
                 train=datasets.SubDataSet(ds,trI)
                 test = datasets.SubDataSet(ds,hI)
             else:
-                train,test=self.__doGetHoldout(ds)
+                train,test=self.doGetHoldout(ds)
                 utils.save_yaml(self.path + ".holdout_split",(train.indexes,test.indexes))
             ds=train
             pass
@@ -296,7 +297,9 @@ class GenericTaskConfig:
     def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
         raise ValueError("Not implemented")
 
-    def predict_all_to_array(self, dataset, fold=None, stage=None, limit=-1, batch_size=32, ttflips=False):
+    def predict_all_to_array(self, dataset, fold=None, stage=None, limit=-1, batch_size=None, ttflips=False):
+        if batch_size is None:
+            batch_size=self.inference_batch
         if fold is None:
             fold=list(range(self.folds_count))
         if stage is None:
@@ -520,9 +523,7 @@ class GenericTaskConfig:
                 f)
 
     def createSummary(self,foldsToExecute, subsample):
-
         stagesStat=[]
-
         metric = self.primary_metric
         if "val_" in metric:
             metric=metric[4:]
@@ -540,7 +541,6 @@ class GenericTaskConfig:
                    ms[m + "_holdout_with_optimal_treshold"] = predictions.holdout_stat(self, m, [stage],tr)
                    ms[m + "_holdout_with_optimal_treshold_mean"] = predictions.holdout_stat(self, m, [stage], tr0)
             stagesStat.append(ms)
-
         all={}
         tr = self.find_optimal_treshold_by_validation2(metric)
         tr0 = self.find_optimal_treshold_by_validation(metric)
@@ -608,10 +608,12 @@ class GenericImageTaskConfig(GenericTaskConfig):
             val = [self.createStage(x) for x in val]
         return val
 
-    def predict_on_directory(self, path, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
+    def predict_on_directory(self, path, fold=0, stage=0, limit=-1, batch_size=None, ttflips=False):
         return self.predict_on_dataset(datasets.DirectoryDataSet(path), fold, stage, limit, batch_size, ttflips)
 
-    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
+    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=None, ttflips=False):
+        if batch_size is None:
+            batch_size=self.inference_batch
         mdl = self.load_model(fold, stage)
         if self.crops is not None:
             mdl=BatchCrop(self.crops,mdl)
@@ -691,7 +693,9 @@ class GenericImageTaskConfig(GenericTaskConfig):
             ds = datasets.WithBackgrounds(ds, self.bgr)
         return ds
 
-    def predict_on_directory_with_model(self, mdl, path, limit=-1, batch_size=32, ttflips=False):
+    def predict_on_directory_with_model(self, mdl, path, limit=-1, batch_size=None, ttflips=False):
+        if batch_size is None:
+            batch_size=self.inference_batch
         ta = self.transformAugmentor()
         with tqdm.tqdm(total=len(dir_list(path)), unit="files", desc="classifying positive  images from " + path) as pbar:
             for v in datasets.batch_generator(datasets.DirectoryDataSet(path), batch_size, limit):

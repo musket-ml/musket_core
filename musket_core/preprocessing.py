@@ -8,8 +8,11 @@ class PreprocessedDataSet:
         self.parent=parent
         self.func=func
         self.kw=kwargs
+
         if hasattr(parent,"folds"):
             self.folds=getattr(parent,"folds");
+        if hasattr(parent, "name"):
+            self.name=parent.name+self.func.__name__+str(kwargs)
         pass
 
     def __getitem__(self, item):
