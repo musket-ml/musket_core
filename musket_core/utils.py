@@ -11,7 +11,7 @@ def save_yaml(path,data):
         return yaml.dump(data,f)
 
 def load(path):
-    with open(path, "r") as f:
+    with open(path, "rb") as f:
         return pickle.load(f);
 
 def save(path,data):
