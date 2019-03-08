@@ -47,20 +47,21 @@ def cache(layers,declarations,config,outputs,linputs,pName,withArgs):
 
 def diskcache(layers,declarations,config,outputs,linputs,pName,withArgs):
     def ccc(input):
-        name="data"
-        id="dataset"
-        if hasattr(input,"name"):
-            id=getattr(input,"name")
-            name=id.replace("{","").replace("[","").replace("]","").replace("}","").replace(" ","").replace(",","").replace("\'","").replace(":","")
-        if os.path.exists(name):
-            data=load(name)
-        else:
-            X=[]
-            Y=[]
-            for i in tqdm.tqdm(range(len(input)),"building disk cache for:"+id):
-                X.append(input[i].x)
-                Y.append(input[i].y)
-            data=(np.array(X), np.array(Y))
-        save(name,data)
-        return DiskCache(input,data)
+            name="data"
+            id="dataset"
+            if hasattr(input,"name"):
+                id=getattr(input,"name")
+                name=id.replace("{","").replace("[","").replace("]","").replace("}","").replace(" ","").replace(",","").replace("\'","").replace(":","")
+            if os.path.exists(name):
+                data=load(name)
+                return DiskCache(input, data)
+            else:
+                X=[]
+                Y=[]
+                for i in tqdm.tqdm(range(len(input)),"building disk cache for:"+id):
+                    X.append(input[i].x)
+                    Y.append(input[i].y)
+                data=(np.array(X), np.array(Y))
+            save(name,data)
+            return DiskCache(input,data)
     return ccc
