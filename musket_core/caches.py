@@ -1,6 +1,6 @@
 import os
 from musket_core.datasets import PredictionItem
-from musket_core.utils import load,save
+from musket_core.utils import load,save,readArray,dumpArray
 import tqdm
 import numpy as np
 class Cache:
@@ -47,21 +47,46 @@ def cache(layers,declarations,config,outputs,linputs,pName,withArgs):
 
 def diskcache(layers,declarations,config,outputs,linputs,pName,withArgs):
     def ccc(input):
-            name="data"
-            id="dataset"
-            if hasattr(input,"name"):
-                id=getattr(input,"name")
-                name=id.replace("{","").replace("[","").replace("]","").replace("}","").replace(" ","").replace(",","").replace("\'","").replace(":","")
-            if os.path.exists(name):
-                data=load(name)
-                return DiskCache(input, data)
-            else:
-                X=[]
-                Y=[]
-                for i in tqdm.tqdm(range(len(input)),"building disk cache for:"+id):
-                    X.append(input[i].x)
-                    Y.append(input[i].y)
-                data=(np.array(X), np.array(Y))
-            save(name,data)
-            return DiskCache(input,data)
+        name = "data"
+        id = "dataset"
+        l = len(input)
+
+        if hasattr(input, "name"):
+            id = getattr(input, "name")
+            name = id.replace("{", "").replace("[", "").replace("]", "").replace("}", "").replace(" ", "").replace(",","\'", "").replace(":", "")
+
+        i0 = input[0]
+        i0x = i0.x
+        i0y = i0.y
+        shapeX = np.concatenate(([l], i0x.shape))
+        shapeY = np.concatenate(([l], i0y.shape))
+        data = None
+        if os.path.exists(name):
+            if not os.path.isdir(name):
+                #old style
+                data = load(name)
+            elif os.path.exists(name + "/x_0.npy"):
+                data = (np.zeros(shapeX, i0x.dtype), np.zeros(shapeY, i0y.dtype))
+                try:
+                    readArray(data[0], name + "/x_", ".npy", l)
+                except ValueError:
+                    raise ValueError(f"Stored X has unexpected size for dataset '{name}'. Path: " + name)
+
+                try:
+                    readArray(data[1], name + "/y_", ".npy", l)
+                except ValueError:
+                    raise ValueError(f"Stored Y has unexpected size for dataset '{name}'. Path: " + name)
+
+        if data is None:
+            data = (np.zeros(shapeX, i0x.dtype), np.zeros(shapeY, i0y.dtype))
+            for i in tqdm.tqdm(range(l), "building disk cache for:" + id):
+                data[0][i] = input[i].x
+                data[1][i] = input[i].y
+
+            if not os.path.isdir(name):
+                os.mkdir(name)
+            dumpArray(data[0], name + "/x_", ".npy")
+            dumpArray(data[1], name + "/y_", ".npy")
+
+        return DiskCache(input, data)
     return ccc
