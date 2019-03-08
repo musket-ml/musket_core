@@ -1,8 +1,9 @@
 import argparse
 import sys
 import os
+import random
 from keras import backend as K
-from musket_core.utils import save_yaml,load_yaml
+from musket_core.utils import save_yaml,load_yaml,ensure
 from musket_core import generic
 import threading
 import queue
@@ -36,8 +37,6 @@ class Consumer(threading.Thread):
              finally:
                  self.respond.put(exp.path)
 
-
-
 class Experiment:
 
     def __init__(self,path):
@@ -59,10 +58,23 @@ class Experiment:
     def isStarted(self):
         return os.path.exists(self.path+"/started.yaml")
 
+
+    def config(self):
+        return load_yaml(self.path + "/config.yaml")
+
+    def dumpTo(self,path,extra):
+        c=self.config()
+        for k in extra:
+            c[k]=extra[k]
+        return save_yaml(path + "/config_concrete.yaml",c)
+
     def fit(self):
         try:
             save_yaml(self.path + "/started.yaml", True)
-            cfg = generic.parse(self.path + "/config.yaml")
+            if os.path.exists(self.path + "/config.yaml"):
+                cfg = generic.parse(self.path + "/config.yaml")
+            else:
+                cfg = generic.parse(self.path + "/config_concrete.yaml")
             cfg.fit()
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -72,6 +84,27 @@ class Experiment:
             print(exc_type)
             save_yaml(self.path+"/error.yaml",[str(exc_value),str(traceback.format_exc()),str(exc_type)])
 
+    def cloneTo(self,path):
+        ensure(path)
+
+
+    def apply(self):
+        m=self.config()
+
+        if "num_seeds" in m:
+            paths = []
+            for i in range(m["num_seeds"]):
+                i_ = self.path + "/" + str(i)
+                ensure(i_)
+                if Experiment(i_).isCompleted():
+                    continue
+
+                s=random.randint(0,100000)
+                self.dumpTo(i_, {"testSplitSeed":s})
+                paths.append(Experiment(i_))
+            return paths
+        return [self]
+
 
 def gather_work(path,e:[Experiment]):
     for d in os.listdir(path):
@@ -80,8 +113,8 @@ def gather_work(path,e:[Experiment]):
             gather_work(fp,e)
         if d=="config.yaml":
             if not os.path.exists(path + "/summary.yaml") and not os.path.exists(path + "/started.yaml"):
-                os.remove(path + "/summary.yaml")
-            e.append(Experiment(path))
+                pi=Experiment(path).apply()
+                for v in pi: e.append(v)
 
 def main():
     parser = argparse.ArgumentParser(description='Analize experiment metrics.')
