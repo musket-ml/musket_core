@@ -113,12 +113,16 @@ class GenericPipeline(generic.GenericTaskConfig):
             fw = self.datasets[name]
         if self.dataset is not None:
             dataset = net.create_dataset_from_config(self.declarations, fw,  self.imports)
+            if self.preprocessing is not None:
+                dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing,
+                                                              self.imports)
             return dataset
         return None
 
     def fit(self, dataset=None, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction=None):
         if dataset is None:
           dataset = self.parse_dataset()
+        self._dataset = dataset
         if self.preprocessing is not None:
             dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing, self.imports)
         predItem=dataset[0]

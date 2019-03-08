@@ -4,7 +4,7 @@ from musket_core.utils import load_yaml,save,load
 import keras
 import musket_core.templating as tp
 from musket_core.caches import *
-
+from musket_core import datasets
 layers=configloader.load("layers")
 
 def take_input(layers,declarations,config,outputs,linputs,pName,withArgs):
@@ -368,12 +368,20 @@ def create_model_from_config(n,inputs,name="net",imports=[])->keras.Model:
     out=d.model(name, inputs)
     return out
 
-def create_preprocessor_from_config(n,inputs,name="net",imports=[])->keras.Model:
+def create_preprocessor_from_config(n,inputs,name="net",imports=[]):
     d=Declarations(n)
     for x in imports: layers.register(x)
+    if hasattr(inputs,"_preprocessed"):
+        return inputs
+    if isinstance(inputs,datasets.SubDataSet):
+        if hasattr(inputs.ds, "_preprocessed"):
+            return inputs
+
     out=d.preprocess(name, inputs)
+
+    out._preprocessed=True
     return out
-def create_dataset_from_config(n,name="net",imports=[])->keras.Model:
+def create_dataset_from_config(n,name="net",imports=[]):
     d=Declarations(n)
     for x in imports: layers.register(x)
     out=d.preprocess(name, None)
