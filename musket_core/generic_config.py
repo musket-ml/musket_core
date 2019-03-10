@@ -8,6 +8,8 @@ import tqdm
 import pandas as pd
 
 import musket_core.datasources as datasources
+import musket_core.tasks as tasks
+
 from musket_core.utils import ensure
 from keras.utils import multi_gpu_model
 from musket_core.quasymodels import AnsembleModel,BatchCrop
@@ -558,6 +560,47 @@ class GenericTaskConfig:
     def _adapt_before_fit(self, dataset):
         return dataset
 
+    def eval_tasks(self):
+        path = os.path.dirname(os.path.abspath(self.path))
+
+        callbacks = tasks.load_task_sets(path, self.import_tasks)
+
+        ds_config = self.pickup_ds_config()
+
+        run_tasks = self.run_tasks
+
+        tasks_set_id = 0
+
+        for item in run_tasks:
+            tasks_set = item["tasks"]
+
+            dataset_id = item["dataset"]
+
+            fold = item["fold"]
+            stage = item["stage"]
+
+            dataset = datasets.DS_Wrapper(dataset_id, ds_config, self.path)
+
+            task_runners = {}
+
+            for ts in tasks_set:
+                task_runners[ts] = tasks.create_task_runner(ts, tasks_set_id, item.get("parameters", {}), path, callbacks)
+
+            for predictions in self.predict_on_dataset(dataset, fold, stage, batch_size=self.batch):
+                count = 0
+
+                for id in predictions.data:
+                    ds_item = dataset.item_by_id(id)
+
+                    ds_item.p = predictions.segmentation_maps_aug[count].arr
+
+                    for task_name in tasks_set:
+                        tasks.eval_task_for_item(ds_item, task_name, task_runners)
+
+                    count += 1
+
+            tasks_set_id += 1
+
     def parse_dataset(self):
         ds_config = self.pickup_ds_config()
 
@@ -569,6 +612,8 @@ class GenericTaskConfig:
     def clean(self, cleaned):
         cleaned.pop("datasets", None)
         cleaned.pop("dataset", None)
+        cleaned.pop("run_tasks", None)
+        cleaned.pop("import_tasks", None)
 
 class TaskConfigInfo:
 

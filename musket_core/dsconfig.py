@@ -171,6 +171,7 @@ def get_color_mask_dataset(input_path, output_path, labels, bind = None):
     result["inputs"][0]["bindings"][0]["path"] = input_path
     result["outputs"][0]["bindings"][0]["path"] = output_path
     result["outputs"][0]["bindings"][0]["bind"] = result_bind
+
     result["outputs"][0]["bindings"][0]["treat"]["colors"] = labels
 
     return result

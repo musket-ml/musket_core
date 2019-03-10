@@ -1164,6 +1164,11 @@ class DS_Wrapper:
 
         return PredictionItem(ds_item.id, ds_item.inputs[0], ds_item.outputs[0])
 
+    def item_by_id(self, id):
+        item = self.datasource.ids.index(id)
+
+        return self[item]
+
     def isPositive(self, item):
         return True
 

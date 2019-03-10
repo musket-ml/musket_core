@@ -143,10 +143,11 @@ DATA_READERS = {
 }
 
 class DataSourceItem:
-    def __init__(self, id, inputs: List, outputs: List):
+    def __init__(self, id, inputs: List, outputs: List, predictions = None):
         self.id = id
         self.inputs = inputs
         self.outputs = outputs
+        self.predictions = predictions
 
 class GenericDataSource:
     def __init__(self, config: Dict):
