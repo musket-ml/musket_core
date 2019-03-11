@@ -1,110 +1,9 @@
 import argparse
 import sys
+from musket_core.experiment import Experiment
+from musket_core.parralel import get_executor
 import os
-import random
-from keras import backend as K
-from musket_core.utils import save_yaml,load_yaml,ensure
-from musket_core import generic
-import threading
-import queue
-import tensorflow as tf
-import traceback
-
-class Consumer(threading.Thread):
-    def __init__(self, queue,num,respond,num_gpus):
-        threading.Thread.__init__(self)
-        self._queue = queue
-        self.num=num
-        self.num_gpus=num_gpus
-        self.respond=respond
-
-    def run(self):
-         while True:
-             exp = self._queue.get()
-             try:
-
-               if exp is None:
-                   break
-               else:
-                   print("Performing:"+exp.path)
-                   config = tf.ConfigProto()
-                   sess = tf.Session(config=config)
-                   with sess.as_default():
-                       with tf.device("/gpu:"+str(self.num%2)):
-                           exp.fit()
-                           print(exp.metrics())
-                           K.clear_session()
-             finally:
-                 self.respond.put(exp.path)
-
-class Experiment:
-
-    def __init__(self,path):
-        self.path=path
-
-    def cleanup(self):
-        if os.path.exists(self.path + "/predictions"):
-            for pr in os.listdir(self.path + "/predictions"):
-                os.remove(self.path + "/predictions/" + pr)
-
-    def metrics(self):
-        if os.path.exists(self.path+"/summary.yaml"):
-            return load_yaml(self.path+"/summary.yaml")
-        return {}
-
-    def isCompleted(self):
-        return os.path.exists(self.path+"/summary.yaml")
-
-    def isStarted(self):
-        return os.path.exists(self.path+"/started.yaml")
-
-
-    def config(self):
-        return load_yaml(self.path + "/config.yaml")
-
-    def dumpTo(self,path,extra):
-        c=self.config()
-        for k in extra:
-            c[k]=extra[k]
-        return save_yaml(path + "/config_concrete.yaml",c)
-
-    def fit(self):
-        try:
-            save_yaml(self.path + "/started.yaml", True)
-            if os.path.exists(self.path + "/config.yaml"):
-                cfg = generic.parse(self.path + "/config.yaml")
-            else:
-                cfg = generic.parse(self.path + "/config_concrete.yaml")
-            cfg.fit()
-        except:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            print(self.path)
-            print(exc_value)
-            print(traceback.format_exc())
-            print(exc_type)
-            save_yaml(self.path+"/error.yaml",[str(exc_value),str(traceback.format_exc()),str(exc_type)])
-
-    def cloneTo(self,path):
-        ensure(path)
-
-
-    def apply(self):
-        m=self.config()
-
-        if "num_seeds" in m:
-            paths = []
-            for i in range(m["num_seeds"]):
-                i_ = self.path + "/" + str(i)
-                ensure(i_)
-                if Experiment(i_).isCompleted():
-                    continue
-
-                s=random.randint(0,100000)
-                self.dumpTo(i_, {"testSplitSeed":s})
-                paths.append(Experiment(i_))
-            return paths
-        return [self]
-
+from musket_core import hyper
 
 def gather_work(path,e:[Experiment]):
     for d in os.listdir(path):
@@ -115,6 +14,17 @@ def gather_work(path,e:[Experiment]):
             if not os.path.exists(path + "/summary.yaml") and not os.path.exists(path + "/started.yaml"):
                 pi=Experiment(path).apply()
                 for v in pi: e.append(v)
+
+
+def gather_stat(path):
+    for d in os.listdir(path):
+        fp=os.path.join(path, d)
+        if os.path.isdir(fp):
+            gather_stat(fp)
+        if d=="config.yaml":
+            if not os.path.exists(path + "/summary.yaml") and not os.path.exists(path + "/started.yaml") or True:
+                ex=Experiment(path)
+                ex.result()
 
 def main():
     parser = argparse.ArgumentParser(description='Analize experiment metrics.')
@@ -129,22 +39,15 @@ def main():
     sys.path.insert(0, os.path.join(inf,"modules"))
     expDir=os.path.join(inf,"experiments")
     todo=[]
-    q = queue.Queue()
-    q1 = queue.Queue()
-    workers = [Consumer(q, num,q1,args.num_gpus) for num in range(args.num_workers)]
-    for w in workers:
-        w.setDaemon(True)
-        w.start()
+    e=get_executor(args.num_workers,args.num_gpus)
 
     gather_work(expDir,todo)
-    for exp in todo:
-        exp.cleanup()
-        q.put(exp)
-    completed=[]
-    while True:
-        if len(completed)==len(todo):
-            break
-        completed.append(q1.get())
+    hasHyper=[e for e in todo if e.hyperparameters() is not None]
+    noHyper=[e for e in todo if e.hyperparameters() is  None]
+    e.execute(noHyper)
+    for h in hasHyper:
+        hyper.optimize(h,e)
+    gather_stat(expDir)
     exit(0)
     pass
 if __name__ == '__main__':
