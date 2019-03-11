@@ -53,7 +53,7 @@ def diskcache(layers,declarations,config,outputs,linputs,pName,withArgs):
 
         if hasattr(input, "name"):
             id = getattr(input, "name")
-            name = id.replace("{", "").replace("[", "").replace("]", "").replace("}", "").replace(" ", "").replace(",","\'", "").replace(":", "")
+            name = id.replace("{", "").replace("[", "").replace("]", "").replace("}", "").replace(" ", "").replace(",","").replace("\'","").replace(":", "")
 
         i0 = input[0]
         i0x = i0.x
