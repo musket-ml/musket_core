@@ -592,12 +592,16 @@ class GenericTaskConfig:
                 for id in predictions.data:
                     ds_item = dataset.item_by_id(id)
 
-                    ds_item.p = predictions.segmentation_maps_aug[count].arr
+                    ds_item.p_y = predictions.segmentation_maps_aug[count].arr
+                    ds_item.p_x = predictions.images_aug[count]
 
                     for task_name in tasks_set:
                         tasks.eval_task_for_item(ds_item, task_name, task_runners)
 
                     count += 1
+
+            for runner in task_runners.values():
+                runner.end()
 
             tasks_set_id += 1
 
