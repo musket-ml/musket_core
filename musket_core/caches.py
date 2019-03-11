@@ -69,12 +69,12 @@ def diskcache(layers,declarations,config,outputs,linputs,pName,withArgs):
             elif os.path.exists(f"{name}/x_0.{ext}"):
                 data = (np.zeros(shapeX, i0x.dtype), np.zeros(shapeY, i0y.dtype))
                 try:
-                    readArray(data[0], f"{name}/x_", ext, l)
+                    readArray(data[0], f"{name}/x_", ext, "Loading X cache...", l)
                 except ValueError:
                     raise ValueError(f"Stored X has unexpected size for dataset '{name}'. Path: " + name)
 
                 try:
-                    readArray(data[1], f"{name}/y_", ext, l)
+                    readArray(data[1], f"{name}/y_", ext, "Loading Y cache...", l)
                 except ValueError:
                     raise ValueError(f"Stored Y has unexpected size for dataset '{name}'. Path: " + name)
 
@@ -86,8 +86,8 @@ def diskcache(layers,declarations,config,outputs,linputs,pName,withArgs):
 
             if not os.path.isdir(name):
                 os.mkdir(name)
-            dumpArray(data[0], f"{name}/x_", ext)
-            dumpArray(data[1], f"{name}/y_", ext)
+            dumpArray(data[0], f"{name}/x_", ext, "Saving X cache...")
+            dumpArray(data[1], f"{name}/y_", ext, "Saving Y cache...")
 
         return DiskCache(input, data)
     return ccc
