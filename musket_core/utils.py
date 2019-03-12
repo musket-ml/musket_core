@@ -26,13 +26,13 @@ def ensure(directory):
 
 def readArray(_arr, pathPrefix:str, ext:str, expextedSize=None):
 
-    list = _arr if isinstance(_arr, list) else [_arr]
+    lst = _arr if isinstance(_arr, list) else [_arr]
 
     if not ext.startswith("."):
         ext = "." + ext
 
     ind = 0
-    for arr in list:
+    for arr in lst:
         arrInd = 0
         while arrInd < len(arr) and os.path.exists(pathPrefix + str(ind) + ext):
             y = load(pathPrefix + str(ind) + ext)
@@ -46,13 +46,13 @@ def readArray(_arr, pathPrefix:str, ext:str, expextedSize=None):
 
 def dumpArray(_arr, pathPrefix:str, ext:str, blockSize =1024 * 1024 * 512):
 
-    list = _arr if isinstance(_arr, list) else [ _arr ]
+    lst = _arr if isinstance(_arr, list) else [ _arr ]
 
     if not ext.startswith("."):
         ext = "." + ext
 
     ind = 0
-    for arr in list:
+    for arr in lst:
         l = len(arr)
         i0 = arr[0]
         itemSize = i0.size * i0.dtype.itemsize
