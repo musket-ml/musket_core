@@ -57,8 +57,12 @@ def diskcache(layers,declarations,config,outputs,linputs,pName,withArgs):
 
         i0 = input[0]
         i0x = i0.x
+        xIsList = isinstance(i0x,list)
         i0y = i0.y
-        shapeX = np.concatenate(([l], i0x.shape))
+        if not xIsList:
+            shapeX = np.concatenate(([l], i0x.shape))
+        else:
+            shapeX = list(map(lambda x: np.concatenate(([l], x.shape)), i0x))
         shapeY = np.concatenate(([l], i0y.shape))
         data = None
         ext = "dscache"
@@ -67,7 +71,10 @@ def diskcache(layers,declarations,config,outputs,linputs,pName,withArgs):
                 #old style
                 data = load(name)
             elif os.path.exists(f"{name}/x_0.{ext}"):
-                data = (np.zeros(shapeX, i0x.dtype), np.zeros(shapeY, i0y.dtype))
+                if not xIsList:
+                    data = (np.zeros(shapeX, i0x.dtype), np.zeros(shapeY, i0y.dtype))
+                else:
+                    data = (list(map(lambda x: np.zeros(x, i0x[0].dtype), shapeX)), np.zeros(shapeY, i0y.dtype))
                 try:
                     readArray(data[0], f"{name}/x_", ext, "Loading X cache...", l)
                 except ValueError:
@@ -79,9 +86,17 @@ def diskcache(layers,declarations,config,outputs,linputs,pName,withArgs):
                     raise ValueError(f"Stored Y has unexpected size for dataset '{name}'. Path: " + name)
 
         if data is None:
-            data = (np.zeros(shapeX, i0x.dtype), np.zeros(shapeY, i0y.dtype))
+            if not xIsList:
+                data = (np.zeros(shapeX, i0x.dtype), np.zeros(shapeY, i0y.dtype))
+            else:
+                data = (list(map(lambda x: np.zeros(x,i0x[0].dtype), shapeX)), np.zeros(shapeY, i0y.dtype))
+
             for i in tqdm.tqdm(range(l), "building disk cache for:" + id):
-                data[0][i] = input[i].x
+                if not xIsList:
+                    data[0][i] = input[i].x
+                else:
+                    for j in range(len(shapeX)):
+                        data[0][j][i] = input[i].x[j]
                 data[1][i] = input[i].y
 
             if not os.path.isdir(name):
