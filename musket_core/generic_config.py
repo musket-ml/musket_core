@@ -7,9 +7,10 @@ import keras
 import tqdm
 import pandas as pd
 
-import musket_core.datasources as datasources
+import musket_core.image_datasets
+import musket_core.splits
 import musket_core.tasks as tasks
-
+from musket_core.image_datasets import WithBackgrounds,Backgrounds,CropAndSplit
 from musket_core.utils import ensure
 from keras.utils import multi_gpu_model
 from musket_core.quasymodels import AnsembleModel,BatchCrop
@@ -253,7 +254,7 @@ class GenericTaskConfig:
             return datasets.SubDataSet(ds, train), datasets.SubDataSet(ds, ho)
 
         else:
-            return datasets.split(ds, self.testSplit, self.testSplitSeed, self.stratified, self.groupFunc)
+            return musket_core.splits.split(ds, self.testSplit, self.testSplitSeed, self.stratified, self.groupFunc)
 
 
     def holdout(self, ds=None):
@@ -505,7 +506,7 @@ class GenericTaskConfig:
         self._dataset=dataset
 
         dn = self.directory()
-        if os.path.exists(os.path.join(dn, "3summary.yaml")):
+        if os.path.exists(os.path.join(dn, "summary.yaml")):
             raise ValueError("Experiment is already finished!!!!")
         folds = self.kfold(dataset, None)
         for i in range(len(folds.folds)):
@@ -588,7 +589,7 @@ class GenericTaskConfig:
             fold = item["fold"]
             stage = item["stage"]
 
-            dataset = datasets.DS_Wrapper(dataset_id, ds_config, self.path)
+            dataset = musket_core.image_datasets.DS_Wrapper(dataset_id, ds_config, self.path)
 
             task_runners = {}
 
@@ -617,7 +618,7 @@ class GenericTaskConfig:
     def parse_dataset(self):
         ds_config = self.pickup_ds_config()
 
-        return datasets.DS_Wrapper(self.dataset, ds_config, self.path)
+        return musket_core.image_datasets.DS_Wrapper(self.dataset, ds_config, self.path)
 
     def pickup_ds_config(self):
         return self.datasets
@@ -654,7 +655,7 @@ class GenericImageTaskConfig(GenericTaskConfig):
                     aug = bgr["augmenters"]
                     aug = configloader.parse("augmenters", aug)
                     aug = imgaug.augmenters.Sequential(aug)
-                self.bgr = datasets.Backgrounds(bgr["path"], erosion=erosion, augmenters=aug)
+                self.bgr = Backgrounds(bgr["path"], erosion=erosion, augmenters=aug)
                 self.bgr.rate = bgr["rate"]
                 del val["BackgroundReplacer"]
             val = configloader.parse("augmenters", val)
@@ -689,7 +690,7 @@ class GenericImageTaskConfig(GenericTaskConfig):
 
     def _adapt_before_fit(self, dataset):
         if self.crops is not None:
-            dataset = datasets.CropAndSplit(dataset, self.crops)
+            dataset = CropAndSplit(dataset, self.crops)
         return dataset
 
     def update(self,batch,res):
@@ -751,7 +752,7 @@ class GenericImageTaskConfig(GenericTaskConfig):
     def inject_task_specific_transforms(self, ds, transforms):
         transforms.append(imgaug.augmenters.Scale({"height": self.shape[0], "width": self.shape[1]}))
         if self.bgr is not None:
-            ds = datasets.WithBackgrounds(ds, self.bgr)
+            ds = WithBackgrounds(ds, self.bgr)
         return ds
 
     def predict_on_directory_with_model(self, mdl, path, limit=-1, batch_size=None, ttflips=False):

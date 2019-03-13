@@ -60,7 +60,7 @@ def readArray(_arr, pathPrefix:str, ext:str, expextedSize=None):
     if expextedSize is not None and expextedSize != arrInd:
         raise ValueError(f"Expected size {expextedSize} bot got {arrInd}")
 
-def dumpArray(_arr, pathPrefix:str, ext:str, blockSize =1024 * 1024 * 512):
+def dumpArray(_arr, pathPrefix:str, ext:str, message,blockSize =1024 * 1024 * 512):
 
     lst = _arr if isinstance(_arr, list) else [ _arr ]
 
