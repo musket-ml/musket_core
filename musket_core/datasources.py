@@ -65,7 +65,7 @@ class ImageDataReader(AbstractDataReader):
                 self.exts[id] = ext
 
     def get_ids(self):
-        return self.ids
+        return self.ids[0:100]
 
     def fill_alpha(self, list):
         result = []
