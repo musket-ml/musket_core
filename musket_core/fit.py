@@ -56,7 +56,7 @@ def main():
 
     hasHyper=[e for e in todo if e.hyperparameters() is not None]
     noHyper=[e for e in todo if e.hyperparameters() is  None]
-    #e.execute(noHyper)
+    e.execute(noHyper)
     for h in hasHyper:
         hyper.optimize(h,e)
     gather_stat(expDir,args.name,args.force_recalc)
