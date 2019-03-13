@@ -6,6 +6,7 @@ import musket_core.templating as tp
 from musket_core.caches import *
 from musket_core import datasets
 layers=configloader.load("layers")
+import importlib
 
 def take_input(layers,declarations,config,outputs,linputs,pName,withArgs):
 
@@ -387,3 +388,10 @@ def create_dataset_from_config(n,name="net",imports=[]):
     out=d.preprocess(name, None)
     out.name=str(name)
     return out
+
+def create_test_time_aug(name,imports=[]):
+    for x in imports:
+        mod=importlib.import_module(x)
+        if hasattr(mod,name):
+            return getattr(mod,name)
+    return None

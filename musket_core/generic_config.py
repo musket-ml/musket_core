@@ -181,6 +181,7 @@ class GenericTaskConfig:
         self.groupFunc=None
         self.imports=[]
         self._dataset=None
+        self.testTimeAugmentation=None
         self.stratified=False
         self.preprocessing=None
         self.verbose = 1
@@ -258,6 +259,11 @@ class GenericTaskConfig:
     def holdout(self, ds=None):
         if ds is None:
             ds=self.get_dataset()
+        if os.path.exists(self.path + ".holdout_split"):
+            trI,hI = utils.load_yaml(self.path + ".holdout_split")
+            train=datasets.SubDataSet(ds,trI)
+            test = datasets.SubDataSet(ds,hI)
+            return test
         if self.testSplit>0 or self.holdoutArr is not None:
             train,test=self.doGetHoldout(ds)
             return test
@@ -282,11 +288,14 @@ class GenericTaskConfig:
         if indeces is None: indeces=range(0,len(ds))
         transforms = [] + self.transforms
         ds = self.inject_task_specific_transforms(ds, transforms)
+        split_loaded=False
         if os.path.exists(self.path+".folds_split"):
              folds=utils.load_yaml(self.path+".folds_split")
+             split_loaded=True
              ds.folds=folds
         kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count,stratified=self.stratified,groupFunc=self.groupFunc)
-        kf.save(self.path+".folds_split")
+        if not split_loaded:
+            kf.save(self.path+".folds_split")
         if self.noTrain:
             kf.clear_train()
         if self.extra_train_data is not None:
@@ -320,8 +329,8 @@ class GenericTaskConfig:
                 pbar.update(batch_size)
         return np.array(res)
 
-    def predictions(self,fold=None,stage=None):
-        return musket_core.predictions.get_predictions(self,fold,stage)
+    def predictions(self,name,fold=None,stage=None):
+        return musket_core.predictions.get_predictions(self,name,fold,stage)
 
     def find_treshold(self,ds,fold,func,stage=0):
 
@@ -402,7 +411,7 @@ class GenericTaskConfig:
 
     def lr_find(self, d, foldsToExecute=None,stage=0,subsample=1.0,start_lr=0.000001,end_lr=1.0,epochs=5):
         dn = self.directory()
-        if os.path.exists(os.path.join(dn, "summary.yaml")):
+        if os.path.exists(os.path.join(dn, "3summary.yaml")):
             raise ValueError("Experiment is already finished!!!!")
         folds = self.kfold(d)
 
@@ -496,7 +505,7 @@ class GenericTaskConfig:
         self._dataset=dataset
 
         dn = self.directory()
-        if os.path.exists(os.path.join(dn, "summary.yaml")):
+        if os.path.exists(os.path.join(dn, "3summary.yaml")):
             raise ValueError("Experiment is already finished!!!!")
         folds = self.kfold(dataset, None)
         for i in range(len(folds.folds)):
@@ -547,13 +556,13 @@ class GenericTaskConfig:
                    #ms[m + "_holdout_with_optimal_treshold_mean"] = predictions.holdout_stat(self, m, [stage], tr0)
             stagesStat.append(ms)
         all={}
-        #tr = self.find_optimal_treshold_by_validation2(metric)
+        tr = self.find_optimal_treshold_by_validation2(metric)
         #tr0 = self.find_optimal_treshold_by_validation(metric)
         for m in self.metrics:
             all[m] = predictions.cross_validation_stat(self, m)
             if self.testSplit > 0 or self.holdoutArr is not None:
                 all[m + "_holdout"] = predictions.holdout_stat(self, m)
-                #all[m + "_holdout_with_optimal_treshold"] = predictions.holdout_stat(self, m, None, tr)
+                all[m + "_holdout_with_optimal_treshold"] = predictions.holdout_stat(self, m, None, tr)
                 #all[m + "_holdout_with_optimal_treshold_mean"] = predictions.holdout_stat(self, m, None, tr0)
         return {"stages":stagesStat,"allStages":all}
 

@@ -17,6 +17,8 @@ class Experiment:
         if os.path.exists(self.path + "/predictions"):
             for pr in os.listdir(self.path + "/predictions"):
                 os.remove(self.path + "/predictions/" + pr)
+        if os.path.exists(self.path + "/summary.yaml"):
+            os.remove(self.path + "/summary.yaml")
 
     def metrics(self):
         if os.path.exists(self.path+"/summary.yaml"):
@@ -32,17 +34,39 @@ class Experiment:
         ps= config["hyperparameters"] if "hyperparameters" in config else None
         return ps
 
-    def result(self):
+    def generateMetrics(self):
+        cfg = self.parse_config()
+        cfg.generateReports()
+
+    def parse_config(self):
+        if os.path.exists(self.path + "/config.yaml"):
+            cfg = generic.parse(self.path + "/config.yaml")
+
+        else:
+            cfg = generic.parse(self.path + "/config_concrete.yaml")
+        return cfg
+
+    def result(self,forseRecalc=False):
         pi = self.apply(True)
+        if forseRecalc:
+            self.cleanup()
+        m=self.metrics()
+        if len(m)>0:
+            return m
         if len(pi) > 1:
             vals = []
             for i in pi:
-                if i.isCompleted():
+                if i.isCompleted() or True:
+                    if forseRecalc:
+                        i.cleanup()
+                    i.generateMetrics()
                     m = i.metrics()
                     pm = i.config()["primary_metric"]
                     if "val_" in pm:
                         pm = pm[4:]
                     mv = m["allStages"][pm + "_holdout"]
+                    if "aggregation_metric" in i.config():
+                        mv = m["allStages"][i.config()["aggregation_metric"]]
                     vals.append(mv)
             m = np.mean(vals)
             save_yaml(self.path + "/summary.yaml",
@@ -80,11 +104,7 @@ class Experiment:
         try:
             self.cleanup()
             save_yaml(self.path + "/started.yaml", True)
-            if os.path.exists(self.path + "/config.yaml"):
-                cfg = generic.parse(self.path + "/config.yaml")
-
-            else:
-                cfg = generic.parse(self.path + "/config_concrete.yaml")
+            cfg = self.parse_config()
             cfg.fit()
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()

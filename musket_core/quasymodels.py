@@ -14,6 +14,24 @@ class AnsembleModel:
             rm=rm+res[r];
         return rm/float(len(self.models));
 
+
+class TestTimeAugModel:
+    def __init__(self, model,augFunction):
+        self.model=model
+        self.aug=augFunction
+
+    def predict(self,data):
+        res=[]
+        aug = self.aug(data)
+        for v in aug:
+            res.append(self.model.predict(v))
+
+        rm=res[0]
+        for r in range(1,len(aug)):
+            rm=rm+res[r]
+        return rm/float(len(aug))
+
+
 def crop(x, y,x1,y1, image):
     return image[:,y:y1, x:x1, :]
 

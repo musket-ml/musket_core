@@ -1,18 +1,34 @@
 import yaml
 import pickle
 import os
+from threading import Lock
+
+
+_l=Lock()
+
 
 def load_yaml(path):
-    with open(path, "r") as f:
-        return yaml.load(f);
+    _l.acquire()
+    try:
+        with open(path, "r") as f:
+            return yaml.load(f);
+    finally:
+        _l.release()
+
 
 def save_yaml(path,data):
-    with open(path, "w") as f:
-        return yaml.dump(data,f)
+    _l.acquire()
+    try:
+        with open(path, "w") as f:
+            return yaml.dump(data,f)
+    finally:
+        _l.release()
+
 
 def load(path):
     with open(path, "rb") as f:
         return pickle.load(f);
+
 
 def save(path,data):
     with open(path, "wb") as f:

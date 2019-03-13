@@ -2,10 +2,12 @@ import musket_core.generic_config as generic
 import musket_core.datasets as datasets
 import musket_core.configloader as configloader
 import musket_core.utils as utils
+
 import numpy as np
 import keras
 import tqdm
 import musket_core.net_declaration as net
+import musket_core.quasymodels as qm
 
 
 
@@ -74,6 +76,8 @@ class GenericPipeline(generic.GenericTaskConfig):
 
     def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
         mdl = self.load_model(fold, stage)
+        if self.testTimeAugmentation is not None:
+            mdl=qm.TestTimeAugModel(mdl,net.create_test_time_aug(self.testTimeAugmentation,self.imports))
         if self.preprocessing is not None:
             dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing, self.imports)
         for original_batch in datasets.batch_generator(dataset, batch_size, limit):

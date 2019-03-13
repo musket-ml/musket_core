@@ -17,7 +17,8 @@ class Prediction:
         ensure(self.cfg.directory()+"/predictions")
         path = self.cfg.directory() + "/predictions/" + self.name + str(self.stage) + str(self.fold) + ".npy"
         if os.path.exists(path):
-            return np.load(path)
+            rr= np.load(path)
+            return rr
         ds=None
         if self.name=="holdout":
             ds=self.cfg.holdout()
@@ -65,7 +66,7 @@ def cross_validation_stat(cfg, metric,stage=None,treshold=0.5):
     return stat(metrics)
 
 def holdout_stat(cfg, metric,stage=None,treshold=0.5):
-    val=get_holdout_prediction(cfg,stage)>treshold
+    val=get_holdout_prediction(cfg,None,stage)>treshold
     vt=datasets.get_targets_as_array(cfg.holdout())
     eval_metric = generic_config.eval_metric(vt, val, metric)
     return float(np.mean(eval_metric))
