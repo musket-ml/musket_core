@@ -166,6 +166,9 @@ class Layers:
                 layerImpl = layers.instantiate(layer, True,withArgs)[0]
                 if "name" in layer:
                     name = layer["name"]
+                elif isinstance(config,dict) and "name" in config:
+                    name = config["name"]
+                    layerImpl.name = name
                 else:
                     if hasattr(layerImpl,"name"):
                         name=layerImpl.name

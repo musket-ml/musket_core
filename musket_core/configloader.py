@@ -24,13 +24,16 @@ class Module:
         for x in dir(pyMod):
             tp=getattr(pyMod,x)
             if inspect.isclass(tp):
-                init=getattr(tp, "__init__")
-                gignature=inspect.signature(init)
-                typeName=x
-                tp=PythonType(typeName,gignature,tp)
-                self.catalog[typeName.lower()] = tp
-                self.catalog[typeName] = tp
-                self.orig[typeName.lower()] = typeName
+                if x in self.catalog:
+                    tp = self.catalog[x]
+                else:
+                    init=getattr(tp, "__init__")
+                    gignature=inspect.signature(init)
+                    typeName=x
+                    tp=PythonType(typeName,gignature,tp)
+                    self.catalog[typeName.lower()] = tp
+                    self.catalog[typeName] = tp
+                    self.orig[typeName.lower()] = typeName
             if inspect.isfunction(tp):
                 gignature = inspect.signature(tp)
                 typeName = x
@@ -110,7 +113,7 @@ class AbstractType:
                 for i in range(min(len(dct),len(pos))):
                     prop = pos[i]
                     value = dct[i]
-                    if self.module != None and prop.propRange in self.module.catalog:
+                    if self.module != None  and isinstance(prop,Property) and prop.propRange in self.module.catalog:
                         propRange = self.module.catalog[prop.propRange]
                         if propRange.isAssignableFrom("Layer"):
                             value = self.module.instantiate(value, True,{})[0]
