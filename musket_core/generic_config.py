@@ -581,6 +581,8 @@ class GenericTaskConfig:
         tasks_set_id = 0
 
         for item in run_tasks:
+            print("task set: " + str(tasks_set_id))
+
             tasks_set = item["tasks"]
 
             dataset_id = item["dataset"]
@@ -590,29 +592,39 @@ class GenericTaskConfig:
 
             dataset = datasets.DS_Wrapper(dataset_id, ds_config, self.path)
 
-            task_runners = {}
-
-            for ts in tasks_set:
-                task_runners[ts] = tasks.create_task_runner(ts, tasks_set_id, item.get("parameters", {}), path, callbacks)
-
-            for predictions in self.predict_on_dataset(dataset, fold, stage, batch_size=self.batch):
-                count = 0
-
-                for id in predictions.data:
-                    ds_item = dataset.item_by_id(id)
-
-                    ds_item.p_y = predictions.segmentation_maps_aug[count].arr
-                    ds_item.p_x = predictions.images_aug[count]
-
-                    for task_name in tasks_set:
-                        tasks.eval_task_for_item(ds_item, task_name, task_runners)
-
-                    count += 1
-
-            for runner in task_runners.values():
-                runner.end()
+            with tqdm.tqdm(total=len(dataset)) as pbar:
+                self.eval_task_set(item, tasks_set, tasks_set_id, path, dataset, fold, stage, callbacks, pbar)
 
             tasks_set_id += 1
+    
+    def eval_task_set(self, task_item, tasks_set, tasks_set_id, path, dataset, fold, stage, callbacks, progress_bar):
+        task_runners = {}
+
+        for ts in tasks_set:
+            print("\t" + ts)
+
+            task_runners[ts] = tasks.create_task_runner(ts, tasks_set_id, task_item.get("parameters", {}), path, callbacks)
+
+        print()
+
+        for predictions in self.predict_on_dataset(dataset, fold, stage, batch_size=self.batch):
+            count = 0
+
+            for id in predictions.data:
+                ds_item = dataset.item_by_id(id)
+
+                ds_item.p_y = predictions.segmentation_maps_aug[count].arr
+                ds_item.p_x = predictions.images_aug[count]
+
+                for task_name in tasks_set:
+                    tasks.eval_task_for_item(ds_item, task_name, task_runners)
+
+                count += 1
+
+                progress_bar.update(1)
+
+        for runner in task_runners.values():
+            runner.end()
 
     def parse_dataset(self):
         ds_config = self.pickup_ds_config()
