@@ -34,7 +34,11 @@ class DiskCache:
 
 
     def __getitem__(self, item):
-        return PredictionItem(item,self.items[0][item],self.items[1][item])
+        isList = isinstance(self.items[0],list)
+        if isList:
+            return PredictionItem(item,list(map(lambda x: x[item], self.items[0])),self.items[1][item])
+        else:
+            return PredictionItem(item,self.items[0][item],self.items[1][item])
 
     def __len__(self):
         return len(self.parent)
@@ -90,6 +94,20 @@ def diskcache(layers,declarations,config,outputs,linputs,pName,withArgs):
                 data = (np.zeros(shapeX, i0x.dtype), np.zeros(shapeY, i0y.dtype))
             else:
                 data = (list(map(lambda x: np.zeros(x,i0x[0].dtype), shapeX)), np.zeros(shapeY, i0y.dtype))
+
+            # if not xIsList:
+            #     def func(i):
+            #         data[0][i] = input[i].x
+            #         data[1][i] = input[i].y
+            # else:
+            #     def func(i):
+            #         for j in range(len(shapeX)):
+            #             data[0][j][i] = input[i].x[j]
+            #             data[1][i] = input[i].y
+
+            # pool = Pool(4)
+            # zip(*pool.map(func, range(0, l)))
+
 
             for i in tqdm.tqdm(range(l), "building disk cache for:" + id):
                 if not xIsList:
