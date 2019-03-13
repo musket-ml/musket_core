@@ -40,7 +40,7 @@ def ensure(directory):
     except:
         pass
 
-def readArray(_arr, pathPrefix:str, ext:str, expextedSize=None):
+def readArray(_arr, pathPrefix:str, ext:str, message:str,expextedSize=None):
 
     lst = _arr if isinstance(_arr, list) else [_arr]
 
