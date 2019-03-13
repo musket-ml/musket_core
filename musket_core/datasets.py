@@ -295,9 +295,15 @@ class GenericDataSetSequence(keras.utils.Sequence):
                 i=i%l
             r=self.ds[self.indexes[i]]
             for j in range(xd):
-                batch_x[j].append(r.x[j])
+                r_x = r.x
+                if not isinstance(r_x, list):
+                    r_x = [ r_x ]
+                batch_x[j].append(r_x[j])
             for j in range(yd):
-                batch_y[j].append(r.y[j])
+                r_y = r.y
+                if not isinstance(r_y, list):
+                    r_y = [ r_y ]
+                batch_y[j].append(r_y[j])
         batch_x=[np.array(x) for x in batch_x]
         batch_y = [np.array(y) for y in batch_y]
         return batch_x,batch_y
