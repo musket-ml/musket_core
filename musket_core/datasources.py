@@ -119,7 +119,7 @@ class ImageDataReader(AbstractDataReader):
 
         if self.treat.type == "as_is":
             if self.treat.normalize:
-                return normalize(result)
+                return self.normalize(result)
 
             return result
 
