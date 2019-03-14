@@ -40,7 +40,10 @@ def matthews_correlation(y_true, y_pred):
 
     return numerator / (denominator + K.epsilon())
 
+def l2_loss(y_true, y_pred):
+    diff = y_true - y_pred
 
+    return K.sum(diff * diff)
 
 def f1_loss(y_true, y_pred):
     tp = K.sum(K.cast(y_true * y_pred, 'float'), axis=0)

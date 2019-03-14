@@ -40,6 +40,64 @@ class AbstractDataReader:
     def read(self, id):
         pass
 
+class CSVDataReader(AbstractDataReader):
+    def __init__(self, cfg: Dict):
+        self.cfg = cfg
+
+        self.headers = cfg["headers"]
+
+        self.values = self.load_values(cfg["path"])
+
+        self.treat = Treat(cfg["treat"], dsconfig.image_treat_defaults)
+
+    def load_values(self, scores_path):
+        result = {}
+
+        values = pandas.read_csv(scores_path)
+
+        size = len(self.headers)
+
+        for i in range(values.shape[0]):
+            item = np.zeros(size)
+
+            j = 0
+
+            for header in self.headers:
+                item[j] = values[header][i]
+
+                j += 1
+
+            result[str(values["id"][i])] = item
+
+        return result
+
+    def get_ids(self):
+        return self.values.keys()
+
+    def read(self, id):
+        result = self.values[id]
+
+        if self.treat.type == "as_is":
+            if self.treat.normalize:
+                return self.normalize(result)
+
+            return result
+
+        if self.treat.type == "binary_mask":
+            result = result > self.treat.threshold
+
+        if self.treat.normalize:
+            result = self.normalize(result)
+
+        return result
+
+    def normalize(self, data, value):
+        max = np.max(data)
+
+        if max > 0:
+            return self.treat.normalize * data / max
+        return data
+
 class ImageDataReader(AbstractDataReader):
     def __init__(self, cfg: Dict):
         self.cfg = cfg
@@ -65,7 +123,7 @@ class ImageDataReader(AbstractDataReader):
                 self.exts[id] = ext
 
     def get_ids(self):
-        return self.ids[0:100]
+        return self.ids
 
     def fill_alpha(self, list):
         result = []
@@ -139,7 +197,8 @@ class ImageDataReader(AbstractDataReader):
 
 DATA_READERS = {
     "monochrome": ImageDataReader,
-    "RGBA": ImageDataReader
+    "RGBA": ImageDataReader,
+    "CSV": CSVDataReader
 }
 
 class DataSourceItem:
