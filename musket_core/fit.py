@@ -1,28 +1,30 @@
+import os
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,3"
 import argparse
 import sys
 from musket_core.experiment import Experiment
 from musket_core.structure_constants import isNewExperementDir
 from musket_core.parralel import get_executor
-import os
 from musket_core import hyper
 
-def gather_work(path,e:[Experiment],name=""):
+def gather_work(path,e:[Experiment],name="",allow_resume=False):
 
     if isNewExperementDir(path):
         if len(name)>0 and name!=os.path.basename(path):
             return
         else:
-            pi = Experiment(path).apply()
+            pi = Experiment(path,allow_resume).apply()
             for v in pi: e.append(v)
         return
     for d in os.listdir(path):
         fp=os.path.join(path, d)
         if os.path.isdir(fp):
-            gather_work(fp,e)
+            gather_work(fp,e,name,allow_resume)
 
 
 
-def gather_stat(path,name="",forseRecalc=False, allowResume=False):
+def gather_stat(path,name="",forseRecalc=False):
 
     if isNewExperementDir(path):
         if len(name)>0 and name!=os.path.basename(path):
@@ -34,7 +36,7 @@ def gather_stat(path,name="",forseRecalc=False, allowResume=False):
     for d in os.listdir(path):
         fp=os.path.join(path, d)
         if os.path.isdir(fp):
-            gather_stat(fp)
+            gather_stat(fp,name,forseRecalc)
 
 def main():
     parser = argparse.ArgumentParser(description='Analize experiment metrics.')
@@ -57,14 +59,14 @@ def main():
     todo=[]
     e=get_executor(args.num_workers,args.num_gpus)
 
-    gather_work(expDir,todo,args.name)
+    gather_work(expDir,todo,args.name,args.allow_resume)
 
     hasHyper=[e for e in todo if e.hyperparameters() is not None]
     noHyper=[e for e in todo if e.hyperparameters() is  None]
     e.execute(noHyper)
     for h in hasHyper:
         hyper.optimize(h,e)
-    gather_stat(expDir,args.name,args.force_recalc,args.allow_resume)
+    gather_stat(expDir,args.name,args.force_recalc)
     exit(0)
     pass
 if __name__ == '__main__':
