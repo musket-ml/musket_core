@@ -9,9 +9,10 @@ from musket_core import generic
 
 class Experiment:
 
-    def __init__(self,path):
+    def __init__(self,path,allowResume = False):
         self.path=path
         self._cfg=None
+        self.allowResume = allowResume
 
     def cleanup(self):
         if os.path.exists(self.path + "/predictions"):
@@ -44,6 +45,8 @@ class Experiment:
 
         else:
             cfg = generic.parse(self.path + "/config_concrete.yaml")
+        if self.allowResume:
+            cfg.setAllowResume(self.allowResume)
         return cfg
 
     def result(self,forseRecalc=False):

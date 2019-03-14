@@ -21,7 +21,7 @@ def gather_work(path,e:[Experiment],name=""):
 
 
 
-def gather_stat(path,name="",forseRecalc=False):
+def gather_stat(path,name="",forseRecalc=False, allowResume=False):
     for d in os.listdir(path):
         fp=os.path.join(path, d)
         if os.path.isdir(fp):
@@ -45,6 +45,8 @@ def main():
                         help='number of workers')
     parser.add_argument('--force_recalc', type=bool, default=False,
                         help='force rebuild reports and predictions')
+    parser.add_argument('--allow_resume', type=bool, default=True,
+                        help='allow resuming previously failed experiments')
     args = parser.parse_args()
     inf=args.project
     sys.path.insert(0, os.path.join(inf,"modules"))
@@ -59,7 +61,7 @@ def main():
     e.execute(noHyper)
     for h in hasHyper:
         hyper.optimize(h,e)
-    gather_stat(expDir,args.name,args.force_recalc)
+    gather_stat(expDir,args.name,args.force_recalc,args.allow_resume)
     exit(0)
     pass
 if __name__ == '__main__':
