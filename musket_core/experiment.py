@@ -143,7 +143,7 @@ class Experiment:
 
                 s=random.randint(0,100000)
                 self.dumpTo(i_, {"testSplitSeed":s})
-                paths.append(Experiment(i_))
+                paths.append(Experiment(i_,self.allowResume))
             return paths
         return [self]
 
