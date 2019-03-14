@@ -398,3 +398,10 @@ def create_test_time_aug(name,imports=[]):
         if hasattr(mod,name):
             return getattr(mod,name)
     return None
+
+def create_dataset_transformer(name,imports=[]):
+    for x in imports:
+        mod=importlib.import_module(x)
+        if hasattr(mod,name):
+            return getattr(mod,name)
+    return None

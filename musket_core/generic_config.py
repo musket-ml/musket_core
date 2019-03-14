@@ -15,6 +15,7 @@ from musket_core.utils import ensure
 from keras.utils import multi_gpu_model
 from musket_core.quasymodels import AnsembleModel,BatchCrop
 import musket_core.datasets as datasets
+import musket_core.net_declaration as nd
 from musket_core import losses, configloader
 import keras.optimizers as opt
 from musket_core.lr_finder import LRFinder
@@ -160,7 +161,7 @@ def threshold_search(y_true, y_proba,func):
     K.clear_session()
     for threshold in tqdm.tqdm([i * 0.01 for i in range(100)]):
         score = func(y_true.astype(np.float64), (y_proba > threshold))
-        if score > best_score:
+        if np.mean(score) > np.mean(best_score):
             best_threshold = threshold
             best_score = score
     return ScoreAndTreshold(best_score,best_threshold)
@@ -206,6 +207,7 @@ class GenericTaskConfig:
         self.optimizer = None
         self.loss = None
         self.testSplit = 0
+        self.pretrain_transform=None
         self.testSplitSeed = 123
         self.path = None
         self.metrics = []
@@ -287,6 +289,8 @@ class GenericTaskConfig:
                 utils.save_yaml(self.path + ".holdout_split",(train.indexes,test.indexes))
             ds=train
             pass
+        if self.pretrain_transform is not None:
+            ds=nd.create_dataset_transformer(self.pretrain_transform,self.imports)(ds)
         if batch is None:
             batch=self.batch
         if indeces is None: indeces=range(0,len(ds))
