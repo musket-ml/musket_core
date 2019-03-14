@@ -21,6 +21,7 @@ from musket_core.lr_finder import LRFinder
 from musket_core.logger import CSVLogger
 from musket_core import utils
 import musket_core.multigpu_checkpoint as alt
+from musket_core.structure_constants import constructSummaryYamlPath
 from keras.callbacks import  LambdaCallback
 import keras.backend as K
 import imgaug
@@ -508,7 +509,7 @@ class GenericTaskConfig:
         self._dataset=dataset
 
         dn = self.directory()
-        if os.path.exists(os.path.join(dn, "summary.yaml")):
+        if os.path.exists(constructSummaryYamlPath(dn)):
             raise ValueError("Experiment is already finished!!!!")
         folds = self.kfold(dataset, None)
         for i in range(len(folds.folds)):
@@ -529,7 +530,7 @@ class GenericTaskConfig:
 
     def generateReports(self, foldsToExecute=None, subsample=1.0):
         dn = self.directory()
-        with open(os.path.join(dn, "summary.yaml"), "w") as f:
+        with open(constructSummaryYamlPath(dn), "w") as f:
             initial = {"completed": True, "cfgName": os.path.basename(self.path), "subsample": subsample,
                        "folds": foldsToExecute}
             metrics = self.createSummary(foldsToExecute,subsample)

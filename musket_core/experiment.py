@@ -1,4 +1,4 @@
-from musket_core.utils import save_yaml,load_yaml,ensure
+from musket_core.utils import save_yaml,load_yaml,ensure,delete_file
 import os
 import numpy as np
 import traceback
@@ -6,6 +6,7 @@ import random
 import sys
 from musket_core import generic
 
+from musket_core.structure_constants import constructPredictionsDirPath, constructSummaryYamlPath, constructInProgressYamlPath, constructConfigYamlPath, constructErrorYamlPath, constructConfigYamlConcretePath
 
 class Experiment:
 
@@ -15,15 +16,15 @@ class Experiment:
         self.allowResume = allowResume
 
     def cleanup(self):
-        if os.path.exists(self.path + "/predictions"):
-            for pr in os.listdir(self.path + "/predictions"):
-                os.remove(self.path + "/predictions/" + pr)
-        if os.path.exists(self.path + "/summary.yaml"):
-            os.remove(self.path + "/summary.yaml")
+        if os.path.exists(self.getPredictionsDirPath()):
+            for pr in os.listdir(self.getPredictionsDirPath()):
+                os.remove(f"{self.getPredictionsDirPath()}/{pr}")
+        if os.path.exists(self.getSummaryYamlPath()):
+            os.remove(self.getSummaryYamlPath())
 
     def metrics(self):
-        if os.path.exists(self.path+"/summary.yaml"):
-            return load_yaml(self.path+"/summary.yaml")
+        if os.path.exists(self.getSummaryYamlPath()):
+            return load_yaml(self.getSummaryYamlPath())
         return {}
 
     def final_metric(self):
@@ -40,11 +41,11 @@ class Experiment:
         cfg.generateReports()
 
     def parse_config(self):
-        if os.path.exists(self.path + "/config.yaml"):
-            cfg = generic.parse(self.path + "/config.yaml")
+        if os.path.exists(self.getConfigYamlPath()):
+            cfg = generic.parse(self.getConfigYamlPath())
 
         else:
-            cfg = generic.parse(self.path + "/config_concrete.yaml")
+            cfg = generic.parse(self.getConfigYamlConcretePath())
         if self.allowResume:
             cfg.setAllowResume(self.allowResume)
         return cfg
@@ -72,7 +73,7 @@ class Experiment:
                         mv = m["allStages"][i.config()["aggregation_metric"]]
                     vals.append(mv)
             m = np.mean(vals)
-            save_yaml(self.path + "/summary.yaml",
+            save_yaml(self.getSummaryYamlPath(),
                       {"mean": float(m), "max": float(np.max(vals)), "min": float(np.min(vals)),
                        "std": float(np.std(vals))})
             return float(m)
@@ -82,31 +83,38 @@ class Experiment:
         pass
 
     def isCompleted(self):
-        return os.path.exists(self.path+"/summary.yaml")
+        return os.path.exists(self.getSummaryYamlPath())
 
-    def isStarted(self):
-        return os.path.exists(self.path+"/started.yaml")
+    def isInProgress(self):
+        return os.path.exists(self.getInProgressYamlPath())
+
+    def setInProgress(self, val:bool):
+        if val and not self.isInProgress():
+            save_yaml(self.getInProgressYamlPath(), True)
+        elif not val and self.isInProgress():
+            delete_file(self.getInProgressYamlPath())
+
 
     def config(self):
         if self._cfg is not None:
             return self._cfg
-        if os.path.exists(self.path + "/config.yaml"):
-            self._cfg= load_yaml(self.path + "/config.yaml")
+        if os.path.exists(self.getConfigYamlPath()):
+            self._cfg= load_yaml(self.getConfigYamlPath())
 
         else:
-            self._cfg=load_yaml(self.path + "/config_concrete.yaml")
+            self._cfg=load_yaml(self.getConfigYamlConcretePath())
         return self._cfg
 
     def dumpTo(self,path,extra):
         c=self.config()
         for k in extra:
             c[k]=extra[k]
-        return save_yaml(path + "/config_concrete.yaml",c)
+        return save_yaml(constructConfigYamlConcretePath(path),c)
 
     def fit(self):
         try:
             self.cleanup()
-            save_yaml(self.path + "/started.yaml", True)
+            self.setInProgress(True)
             cfg = self.parse_config()
             cfg.fit()
         except:
@@ -115,7 +123,9 @@ class Experiment:
             print(exc_value)
             print(traceback.format_exc())
             print(exc_type)
-            save_yaml(self.path+"/error.yaml",[str(exc_value),str(traceback.format_exc()),str(exc_type)])
+            save_yaml(self.getErrorYamlPath(), [str(exc_value),str(traceback.format_exc()),str(exc_type)])
+        finally:
+            self.setInProgress(False)
 
 
     def apply(self,all=False):
@@ -136,3 +146,21 @@ class Experiment:
                 paths.append(Experiment(i_))
             return paths
         return [self]
+
+    def getSummaryYamlPath(self):
+        return constructSummaryYamlPath(self.path)
+
+    def getInProgressYamlPath(self):
+        return constructInProgressYamlPath(self.path)
+
+    def getConfigYamlPath(self):
+        return constructConfigYamlPath(self.path)
+
+    def getConfigYamlConcretePath(self):
+        return constructConfigYamlConcretePath(self.path)
+
+    def getErrorYamlPath(self):
+        return constructErrorYamlPath(self.path)
+
+    def getPredictionsDirPath(self):
+        return constructPredictionsDirPath(self.path)

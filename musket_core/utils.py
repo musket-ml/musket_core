@@ -34,6 +34,16 @@ def save(path,data):
     with open(path, "wb") as f:
         pickle.dump(data,f,pickle.HIGHEST_PROTOCOL)
 
+def delete_file(path:str, recursively = True):
+    if os.path.isdir(path):
+        if recursively:
+            for chPath in (os.path.join(path, f) for f in os.listdir(path)):
+                delete_file(chPath, True)
+        os.rmdir(path)
+    else:
+        os.unlink(path)
+
+
 def ensure(directory):
     try:
         os.makedirs(directory);

@@ -1,16 +1,17 @@
 import argparse
 import sys
 from musket_core.experiment import Experiment
+from musket_core.structure_constants import isNewExperementDir
 from musket_core.parralel import get_executor
 import os
 from musket_core import hyper
 
 def gather_work(path,e:[Experiment],name=""):
 
-    if os.path.exists(path+"/config.yaml"):
+    if isNewExperementDir(path):
         if len(name)>0 and name!=os.path.basename(path):
             return
-        if not os.path.exists(path + "/summary.yaml") and not os.path.exists(path + "/started.yaml"):
+        else:
             pi = Experiment(path).apply()
             for v in pi: e.append(v)
         return
@@ -22,16 +23,18 @@ def gather_work(path,e:[Experiment],name=""):
 
 
 def gather_stat(path,name="",forseRecalc=False, allowResume=False):
+
+    if isNewExperementDir(path):
+        if len(name)>0 and name!=os.path.basename(path):
+            return
+        else:
+            ex = Experiment(path)
+            ex.result(forseRecalc)
+
     for d in os.listdir(path):
         fp=os.path.join(path, d)
         if os.path.isdir(fp):
             gather_stat(fp)
-        if d=="config.yaml":
-            if len(name) > 0 and name != os.path.basename(path):
-                return
-            if not os.path.exists(path + "/summary.yaml") and not os.path.exists(path + "/started.yaml"):
-                ex=Experiment(path)
-                ex.result(forseRecalc)
 
 def main():
     parser = argparse.ArgumentParser(description='Analize experiment metrics.')

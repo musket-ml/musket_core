@@ -2,6 +2,7 @@ from musket_core import generic_config
 from musket_core.utils import ensure
 import os
 import numpy as np
+from musket_core.structure_constants import constructPredictionsDirPath
 from musket_core import datasets
 
 
@@ -14,8 +15,8 @@ class Prediction:
         self.name=name
 
     def calculate(self):
-        ensure(self.cfg.directory()+"/predictions")
-        path = self.cfg.directory() + "/predictions/" + self.name + str(self.stage) + str(self.fold) + ".npy"
+        ensure(constructPredictionsDirPath(self.cfg.directory()))
+        path = f"{constructPredictionsDirPath(self.cfg.directory())}/{self.name}{str(self.stage)}{str(self.fold)}.npy"
         if os.path.exists(path):
             rr= np.load(path)
             return rr
