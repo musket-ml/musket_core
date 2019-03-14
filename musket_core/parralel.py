@@ -20,10 +20,15 @@ class Consumer(threading.Thread):
                    break
                else:
                    print("Performing:"+exp.path)
-                   config = tf.ConfigProto()
+                   # config = tf.ConfigProto()
+                   config = tf.ConfigProto(
+                       gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
+                       # device_count = {'GPU': 1}
+                   )
+                   config.gpu_options.allow_growth = True
                    sess = tf.Session(config=config)
                    with sess.as_default():
-                       with tf.device("/gpu:"+str(self.num%2)):
+                       with tf.device("/gpu:"+str(self.num % self.num_gpus)):
                            exp.fit()
                            print(exp.metrics())
                            K.clear_session()
