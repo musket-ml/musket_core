@@ -32,9 +32,26 @@ def eval_(node,globals):
 
 def resolveTemplates(data,params):
     if isinstance(data, dict):
-        return { x:resolveTemplates(data[x],params) for x in data}
+        res={}
+        for x in data:
+
+            res[x]=resolveTemplates(data[x],params)
+        return res
     if isinstance(data,list):
-        return [resolveTemplates(x,params) for x in data]
+        res=[]
+        for x in data:
+            if isinstance(x,dict):
+                if len(x)==1:
+                    mn=list(x.keys())[0]
+                    if "if(" in mn:
+                        cond=mn[3:mn.index(")")]
+                        if params[cond]:
+                            res.append(resolveTemplates(x[mn], params))
+                            continue
+                        else:
+                            continue
+            res.append(resolveTemplates(x, params))
+        return res
     for param in params:
         if isinstance(data,str):
             if param in data:

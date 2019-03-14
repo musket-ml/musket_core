@@ -144,6 +144,21 @@ declarations:
       - convBlock: [120]
 ```
 
+### Conditional layers
+declarations:
+  c2d:
+    parameters: [size, pool,mp]
+    body:
+      - Conv1D: [100,size,relu]
+      - Conv1D: [100,size,relu]
+      - Conv1D: [100,size,relu]
+      - if(mp):
+          MaxPool1D: pool
+  net:
+      - c2d: [4,4,False]
+      - c2d: [4,4,True]
+      - Dense: [4, sigmoid]
+
 ### Wrapper layers
 
 ```yaml
