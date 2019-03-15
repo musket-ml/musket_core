@@ -145,6 +145,8 @@ declarations:
 ```
 
 ### Conditional layers
+
+```yaml
 declarations:
   c2d:
     parameters: [size, pool,mp]
@@ -158,6 +160,7 @@ declarations:
       - c2d: [4,4,False]
       - c2d: [4,4,True]
       - Dense: [4, sigmoid]
+```
 
 ### Shared Weights
 
