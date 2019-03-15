@@ -418,16 +418,16 @@ class DefaultKFoldedDataSet:
         self.transforms=transforms
         self.batchSize=batchSize
         self.positive={}
-        if stratified:
-            self.kf=ms.StratifiedKFold(folds,shuffle=True,random_state=rs)
-        self.kf=ms.KFold(folds,shuffle=True,random_state=rs);
 
         if hasattr(ds,"folds"):
             self.folds=getattr(ds,"folds");
         else:
             if stratified:
+                self.kf = ms.StratifiedKFold(folds, shuffle=True, random_state=rs)
                 self.folds=[v for v in self.kf.split(indexes,dataset_classes(ds,groupFunc))]
-            else: self.folds = [v for v in self.kf.split(indexes)]
+            else:
+                self.kf = ms.KFold(folds, shuffle=True, random_state=rs);
+                self.folds = [v for v in self.kf.split(indexes)]
 
     def clear_train(self):
         nf = []
