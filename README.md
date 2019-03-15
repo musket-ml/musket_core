@@ -159,6 +159,24 @@ declarations:
       - c2d: [4,4,True]
       - Dense: [4, sigmoid]
 
+### Shared Weights
+
+```yaml
+#Basic example with sequencial model
+declarations:
+  convBlock:
+    parameters: [channels]
+    shared: true
+    with:
+      padding: same
+    body:
+      - Conv2D: [channels,1]
+      - Conv2D: [channels,1]
+  net:
+      - convBlock: [3] #weights of convBlock will be shared between invocations
+      - convBlock: [3] #weights of convBlock will be shared between invocations
+```
+
 ### Wrapper layers
 
 ```yaml
