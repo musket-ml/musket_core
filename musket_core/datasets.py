@@ -305,7 +305,7 @@ class GenericDataSetSequence(keras.utils.Sequence):
                     r_y = [ r_y ]
                 batch_y[j].append(r_y[j])
         batch_x=[np.array(x) for x in batch_x]
-        batch_y = [np.array(y) for y in batch_y]
+        batch_y = np.array(batch_y[0]) if yd == 1 else [np.array(y) for y in batch_y]
         return batch_x,batch_y
 
 class SimplePNGMaskDataSet:
