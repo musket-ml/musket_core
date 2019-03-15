@@ -33,6 +33,8 @@ def split(layers,declarations,config,outputs,linputs,pName,withArgs):
     m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
     return m
 
+
+
 def split_concat(layers, declarations, config, outputs, linputs, pName, withArgs):
     m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
     return m,keras.layers.Concatenate()
@@ -106,7 +108,8 @@ class Layers:
             key=list(layer.keys())[0]
             config = layer[key]
             isBuildin=False
-            if key in builtins:
+            if key in builtins :
+
                 layerImpl =builtins[key](self,declarations,config,outputs,linputs,pName,withArgs)
                 if isinstance(layerImpl,list):
 

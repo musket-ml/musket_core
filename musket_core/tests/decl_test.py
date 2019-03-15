@@ -6,6 +6,8 @@ import keras
 class TestStringMethods(unittest.TestCase):
 
     def testNetCreation(self):
+        m1 = net_declaration.create_model("../examples/conditional.yaml", keras.layers.Input((200,  3)))
+        m1.summary()
         m1=net_declaration.create_model("../examples/example2.9.yaml",keras.layers.Input((200,200,3)))
         print(m1.summary())
         m1=net_declaration.create_model("../examples/example2.8.yaml",keras.layers.Input((200,200,3)))

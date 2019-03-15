@@ -39,7 +39,7 @@ class MetricsWriter:
 
     def write(self, name, data, metrics_calculator = None):
         self.write_by_name("id", data)
-        self.write_by_name(name, data)
+        self.write_by_name(name, data, metrics_calculator)
 
     def write_all(self, names, data, metrics_calculator = {}):
         self.write_by_name("id", data)
