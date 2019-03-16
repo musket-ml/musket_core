@@ -305,7 +305,7 @@ class GenericDataSetSequence(keras.utils.Sequence):
                     r_y = [ r_y ]
                 batch_y[j].append(r_y[j])
         batch_x=[np.array(x) for x in batch_x]
-        batch_y = [np.array(y) for y in batch_y]
+        batch_y = np.array(batch_y[0]) if yd == 1 else [np.array(y) for y in batch_y]
         return batch_x,batch_y
 
 class SimplePNGMaskDataSet:
@@ -418,16 +418,16 @@ class DefaultKFoldedDataSet:
         self.transforms=transforms
         self.batchSize=batchSize
         self.positive={}
-        if stratified:
-            self.kf=ms.StratifiedKFold(folds,shuffle=True,random_state=rs)
-        self.kf=ms.KFold(folds,shuffle=True,random_state=rs);
 
         if hasattr(ds,"folds"):
             self.folds=getattr(ds,"folds");
         else:
             if stratified:
+                self.kf = ms.StratifiedKFold(folds, shuffle=True, random_state=rs)
                 self.folds=[v for v in self.kf.split(indexes,dataset_classes(ds,groupFunc))]
-            else: self.folds = [v for v in self.kf.split(indexes)]
+            else:
+                self.kf = ms.KFold(folds, shuffle=True, random_state=rs);
+                self.folds = [v for v in self.kf.split(indexes)]
 
     def clear_train(self):
         nf = []

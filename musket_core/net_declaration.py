@@ -273,7 +273,10 @@ class Layers:
             return [tensorMap[x] for x in self.output]
 
     def __call__(self, *args, **kwargs):
-        return self.build(args)
+        x = args
+        if isinstance(args,tuple):
+            x = args[0]
+        return self.build(x)
 
 
 class Declaration:
