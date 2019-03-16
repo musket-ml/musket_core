@@ -31,6 +31,8 @@ types:
       rate:
         type: float
         (meta.positional): true
+  SpatialDropout1D:
+    type: Dropout
   LSTM:
     type: Layer
     properties:
@@ -46,7 +48,7 @@ types:
         type: boolean
   GlobalMaxPool1D:
     type: Layer
-  GlobalAveragePool1D:
+  GlobalAveragePooling1D:
     type: Layer
   BatchNormalization:
     type: Layer

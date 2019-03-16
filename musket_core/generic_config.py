@@ -558,19 +558,19 @@ class GenericTaskConfig:
 
                if self.testSplit > 0:
                    ms[m + "_holdout"] = predictions.holdout_stat(self, m, [stage])
-               if self.testSplit > 0:
-                   ms[m + "_holdout"] = predictions.holdout_stat(self, m)
+                   #if self.testSplit > 0:
+                   #ms[m + "_holdout"] = predictions.holdout_stat(self, m)
                    #ms[m + "_holdout_with_optimal_treshold"] = predictions.holdout_stat(self, m, [stage],tr)
                    #ms[m + "_holdout_with_optimal_treshold_mean"] = predictions.holdout_stat(self, m, [stage], tr0)
             stagesStat.append(ms)
         all={}
-        tr = self.find_optimal_treshold_by_validation2(metric)
+        #tr = self.find_optimal_treshold_by_validation2(metric)
         #tr0 = self.find_optimal_treshold_by_validation(metric)
         for m in self.metrics:
             all[m] = predictions.cross_validation_stat(self, m)
             if self.testSplit > 0 or self.holdoutArr is not None:
                 all[m + "_holdout"] = predictions.holdout_stat(self, m)
-                all[m + "_holdout_with_optimal_treshold"] = predictions.holdout_stat(self, m, None, tr)
+                #all[m + "_holdout_with_optimal_treshold"] = predictions.holdout_stat(self, m, None, tr)
                 #all[m + "_holdout_with_optimal_treshold_mean"] = predictions.holdout_stat(self, m, None, tr0)
         return {"stages":stagesStat,"allStages":all}
 
