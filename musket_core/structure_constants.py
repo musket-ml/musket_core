@@ -38,3 +38,6 @@ def constructPredictionsDirPath(path:str):
 
 def isNewExperementDir(dirPath:str):
     return os.path.exists(constructConfigYamlPath(dirPath)) and not os.path.exists(constructSummaryYamlPath(dirPath)) and not os.path.exists(constructInProgressYamlPath(dirPath))
+
+def isExperimentDir(dirPath:str):
+    return os.path.exists(constructConfigYamlPath(dirPath))

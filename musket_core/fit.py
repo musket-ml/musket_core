@@ -23,7 +23,6 @@ def gather_work(path,e:[Experiment],name="",allow_resume=False):
             gather_work(fp,e,name,allow_resume)
 
 
-
 def gather_stat(path,name="",forseRecalc=False):
 
     if isNewExperementDir(path):

@@ -15,6 +15,13 @@ def load_yaml(path):
     finally:
         _l.release()
 
+def load_string(path):
+    with open(path, 'r') as myfile:
+        data = myfile.read()
+        return data
+def save_string(path,data):
+    with open(path, 'w') as myfile:
+        myfile.write(data)
 
 def save_yaml(path,data):
     _l.acquire()

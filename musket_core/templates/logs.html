@@ -1,0 +1,76 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.6.3/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
+<div id="metrics" style="display:none">${metrics}
+</div>
+<div id="all">
+<script>
+    function main(results){
+    metrics=Object.keys(results.data[0])
+    rs=[]
+    for (i=0;i<metrics.length;i++){
+        m=metrics[i]
+
+        if (m.startsWith("val_")){
+            train=[]
+            val=[]
+            for (j=0;j<results.data.length;j++){
+
+                val.push(results.data[j][m.substring(4)])
+                train.push(results.data[j][m])
+            }
+            rs.push([m.substring(4),train,val])
+        }
+    }
+    return rs
+    }
+    function epoch(a){
+        return a["epoch"]
+    }
+    e=document.getElementById("metrics")
+    var results = Papa.parse(e.innerText, {
+
+	header: true,
+	dynamicTyping: true
+    });
+
+     function complete(results) {
+		ms=main(results)
+		for (i=0;i<ms.length;i++){
+		    name=ms[i][0]
+            train=ms[i][1]
+            val=ms[i][2]
+            h=cnv=document.createElement("h2")
+            h.innerHTML=name
+            document.getElementById("all").appendChild(h)
+            cnv=document.createElement("canvas")
+            document.getElementById("all").appendChild(cnv)
+            var ctx = cnv.getContext('2d');
+            var chart = new Chart(ctx, {
+    // The type of chart we want to create
+    type: 'line',
+
+    // The data for our dataset
+    data: {
+        labels: results.data.map(epoch),
+        datasets: [{
+            label: "Train",
+            //backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(255, 99, 132)',
+            data: train,
+        },
+        {
+            label: "Validation",
+            //backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(99, 99, 255)',
+            data: val,
+        }
+        ]
+    },
+    // Configuration options go here
+    options: {}
+});
+		}
+	}
+    complete(results)
+</script>
+</div>

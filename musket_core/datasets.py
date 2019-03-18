@@ -25,6 +25,13 @@ class PredictionItem:
         self.id=path
 
 
+class DataSet:
+    def __getitem__(self, item)->PredictionItem:
+        raise ValueError("Not implemented")
+
+    def __len__(self):
+        raise ValueError("Not implemented")
+
 class DataSetLoader:
     def __init__(self,dataset,indeces,batchSize=16,isTrain=True):
         self.dataset = dataset

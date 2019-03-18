@@ -1,18 +1,18 @@
-from musket_core.utils import save_yaml,load_yaml,ensure,delete_file
+from musket_core.utils import save_yaml,load_yaml,ensure,delete_file,load_string,save_string
 import os
 import numpy as np
 import traceback
 import random
 import sys
 from musket_core import generic
-
 from musket_core.structure_constants import constructPredictionsDirPath, constructSummaryYamlPath, constructInProgressYamlPath, constructConfigYamlPath, constructErrorYamlPath, constructConfigYamlConcretePath
 
 class Experiment:
 
-    def __init__(self,path,allowResume = False):
+    def __init__(self,path,allowResume = False,project=None):
         self.path=path
         self._cfg=None
+        self.project=project
         self.allowResume = allowResume
 
     def cleanup(self):
@@ -26,6 +26,12 @@ class Experiment:
         if os.path.exists(self.getSummaryYamlPath()):
             return load_yaml(self.getSummaryYamlPath())
         return {}
+
+
+    def name(self):
+        if self.project is not None:
+            return self.path[len(self.project.experimentsPath())+1:].replace("\\","/")
+        return os.path.basename(self.path)
 
     def final_metric(self):
         m=self.config()
@@ -50,11 +56,32 @@ class Experiment:
             cfg.setAllowResume(self.allowResume)
         return cfg
 
+    def log_path(self,fold,stage):
+        return os.path.join(self.path,"metrics","metrics-"+str(fold)+"."+str(stage)+".csv")
+
+    def report(self):
+        cf=self.parse_config()
+        path = os.path.join(os.path.dirname(__file__),"templates","logs.html")
+        template=load_string(path)
+        eex=self.apply()
+        for e in eex:
+            for i in range(cf.folds_count):
+                for j in range(len(cf.stages)):
+                    if os.path.exists(e.log_path(i,j)):
+                        m=load_string(e.log_path(i,j))
+                        ensure(os.path.join(e.path,"reports"))
+                        rp=os.path.join(e.path, "reports", "report-" + str(i) + "." + str(j) + ".html")
+                        save_string(rp,template.replace("${metrics}",m))
+
+
+
     def result(self,forseRecalc=False):
         pi = self.apply(True)
         if forseRecalc:
             self.cleanup()
         m=self.metrics()
+        if m is None:
+            return None
         if len(m)>0:
             return m
         if len(pi) > 1:
