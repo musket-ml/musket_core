@@ -239,6 +239,24 @@ class Experiment:
             return paths
         return [self]
 
+    def concrete(self, all=False):
+        if self.hyperparameters() is not None:
+            yaml=load_yaml(self.path+"/hyperopt.scores")
+            max=None
+            best=None
+            for v in yaml:
+                if max is None:
+                    best=v
+                    max=yaml[v]
+                if yaml[v]>max:
+                    best=v
+            if best is not None:
+                concretePath=os.path.join(self.path,"trial"+str(best-1))
+                return [Experiment(concretePath)]
+            return [self]
+
+        return [self.apply()]
+
     def getSummaryYamlPath(self):
         return constructSummaryYamlPath(self.path)
 

@@ -1,10 +1,15 @@
 from musket_core import experiment,structure_constants
 from musket_core import datasets,visualization,utils
+from musket_core import parralel
+
+import musket_core.generic
+import musket_core.generic_config
 from typing import Collection
 import os
 import sys
 import importlib
 import inspect
+
 
 def _all_experiments(path,e:[experiment.Experiment]):
     if structure_constants.isExperimentDir(path):
@@ -48,6 +53,47 @@ class WrappedVisualizer:
     def create(self,d:datasets.DataSet,path):
         utils.ensure(path)
         return visualization.Visualizer(self.func,path,d)
+
+
+
+class WrappedTask:
+    def __init__(self,name,func,sig):
+        self.name=name
+        self.sig=sig
+        self.func=func
+
+    def __str__(self):
+        return self.name+str(self.sig)
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def createConcreteTodo(self, exp, args, project):
+        def executeTask():
+            actualArgs={}
+            config=exp.parse_config()
+            for p in self.sig.parameters:
+                par=self.sig.parameters[p]
+                type=par.annotation
+                if issubclass(type,musket_core.generic_config.GenericTaskConfig):
+                    actualArgs[p]=config
+                elif issubclass(type,musket_core.datasets.DataSet):
+                    pass
+                else:
+                    if p in args:
+                        actualArgs[p]=args[p]
+            taskFolder=os.path.join(os.path.dirname(config.path),self.name)
+            utils.ensure(taskFolder)
+            os.chdir(taskFolder)
+            self.func(**actualArgs)
+        return parralel.Task(executeTask,True,name=self.name)
+
+    def createTodo(self,exp,args,project):
+        if args==None:
+            args={}
+        concrete=exp.concrete()
+        return [self.createConcreteTodo(v,args,project) for v in concrete]
+
 
 class WrappedDataSet(datasets.DataSet):
     def __init__(self,name,w:WrappedDataSetFactory,parameters,project):
@@ -190,10 +236,22 @@ class Project:
                             elements.append(WrappedDataSetFactory(name,vl,sig,self))
                     if hasattr(vl,"visualizer") and getattr(vl,"visualizer")==True:
                         elements.append(WrappedVisualizer(name,vl,sig))
+                    if hasattr(vl,"task") and getattr(vl,"task")==True:
+                        elements.append(WrappedTask(name, vl, sig))
         return elements
 
     def get_visualizers(self):
         return [x for x in self.elements() if isinstance(x,WrappedVisualizer)]
+
+    def get_tasks(self):
+        return [x for x in self.elements() if isinstance(x, WrappedTask)]
+
+    def get_task_by_name(self,name):
+        for t in self.get_tasks():
+            if t.name==name:
+                return t
+        return None
+
 
     def get_datasets(self):
         ds=set()

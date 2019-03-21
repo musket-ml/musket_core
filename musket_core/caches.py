@@ -54,8 +54,10 @@ def cache(layers,declarations,config,outputs,linputs,pName,withArgs):
 
     return ccc
 
+CACHE_DIR=""
 def diskcache(layers,declarations,config,outputs,linputs,pName,withArgs):
     def ccc(input):
+        global CACHE_DIR
         __lock__.acquire()
         try:
             name = "data"
@@ -65,7 +67,7 @@ def diskcache(layers,declarations,config,outputs,linputs,pName,withArgs):
             if hasattr(input, "name"):
                 id = getattr(input, "name")
                 name = id.replace("{", "").replace("[", "").replace("]", "").replace("}", "").replace(" ", "").replace(",","").replace("\'","").replace(":", "")
-
+            name=CACHE_DIR+name
             if name in storage:
                 return storage[name]
 

@@ -66,3 +66,8 @@ def create_task_runner(task_name, task_set_id, parameters, root, tasks_map: Dict
 
 def eval_task_for_item(item, task_name, tasks_runners: Dict[str, TaskRunner]):
     tasks_runners[task_name].run(item)
+
+
+def task(func):
+    func.task=True
+    return func

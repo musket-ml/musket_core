@@ -1,10 +1,10 @@
 import os
+from musket_core import caches
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,3"
 import argparse
 from musket_core.projects import Workspace
-from musket_core import caches
-from musket_core.tools import Launch,ProgressMonitor
+from musket_core.tools import TaskLaunch,ProgressMonitor
 
 
 def main():
@@ -25,12 +25,14 @@ def main():
                         help='force rebuild reports and predictions')
     parser.add_argument('--launch_tasks', type=bool, default=False,
                         help='launch associated tasks')
-    parser.add_argument('--only_report', type=bool, default=False,
-                        help='only generate reports')
+    parser.add_argument('--task', type=str, default="all",
+                        help='task names')
+
     parser.add_argument('--cache', type=str, default="",
                         help='cache directory')
+
     args = parser.parse_args()
-    caches.CACHE_DIR = args.cache
+    caches.CACHE_DIR=args.cache
     w=Workspace()
     project=w.project(args.project)
 
@@ -46,7 +48,7 @@ def main():
     else:
         experiments=[x for x in experiments if not x.isCompleted()]
 
-    l=Launch(args.gpus_per_net,args.num_gpus,args.num_workers,[x.path for x in experiments],args.allow_resume,args.only_report,args.launch_tasks)
+    l=TaskLaunch(args.gpus_per_net,args.num_gpus,args.num_workers,[x.path for x in experiments],args.allow_resume,args.task.split(","))
     l.perform(w,ProgressMonitor())
     exit(0)
     pass
