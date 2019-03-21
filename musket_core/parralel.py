@@ -58,8 +58,8 @@ class Task:
     def run(self):
         try:
             if self.needsTasks:
-                self.func(self)
-            else: self.func()
+                self.result=self.func(self)
+            else: self.result=self.func()
             self.completed=True
         except:
             self.aborted=True

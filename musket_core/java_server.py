@@ -1,6 +1,7 @@
 from py4j.clientserver import ClientServer, JavaParameters, PythonParameters,JavaGateway
 from musket_core import projects
 import yaml
+import io
 from musket_core import tools
 import sys
 
@@ -62,7 +63,7 @@ class Server(projects.Workspace):
 
     def __init__(self):
         super().__init__()
-
+        self.w=projects.Workspace()
         pass
 
     def project(self,path):
@@ -85,8 +86,8 @@ class Server(projects.Workspace):
         try:
             sys.stdout.write=newWrite
             sys.stderr.write=newErr
-
-            obj.perform(self,reporter)
+            results=obj.perform(self.w,reporter)
+            return yaml.dump(results)
         finally:
             sys.stdout.write=wor
             sys.stderr.write=wer

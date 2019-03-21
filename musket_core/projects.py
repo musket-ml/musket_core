@@ -69,7 +69,7 @@ class WrappedTask:
         return hash(str(self))
 
     def createConcreteTodo(self, exp, args, project):
-        def executeTask():
+        def executeTask(t):
             actualArgs={}
             config=exp.parse_config()
             for p in self.sig.parameters:
@@ -85,8 +85,10 @@ class WrappedTask:
             taskFolder=os.path.join(os.path.dirname(config.path),self.name)
             utils.ensure(taskFolder)
             os.chdir(taskFolder)
+
             self.func(**actualArgs)
-        return parralel.Task(executeTask,True,name=self.name)
+            t.results=taskFolder
+        return parralel.Task(executeTask,True,name=self.name,needs_tasks=True)
 
     def createTodo(self,exp,args,project):
         if args==None:

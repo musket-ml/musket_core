@@ -26,7 +26,7 @@ class ProgressMonitor:
 import yaml
 
 class TaskLaunch(yaml.YAMLObject):
-    yaml_tag = u'!com.onpositive.dside.ui.TaskLaunchConfiguration'
+    yaml_tag = u'!com.onpositive.dside.ui.TaskConfiguration'
 
     def __init__(self, gpusPerNet, numGpus, numWorkers, experiments, allowResume=False, onlyReports: bool = False,
                  tasks: [str] = ("all",),tasksArgs=None):
@@ -38,9 +38,13 @@ class TaskLaunch(yaml.YAMLObject):
         self.onlyReports = onlyReports
         self.tasks = tasks
         self.taskArgs=tasksArgs
+        if isinstance(self.tasks,str):
+            self.tasks=self.tasks.split(",")
         pass
 
     def perform(self,server,reporter:ProgressMonitor):
+        if isinstance(self.tasks,str):
+            self.tasks=self.tasks.split(",")
         workPerProject={}
         for e in self.experiments:
             inde=e.index("experiments")
@@ -51,7 +55,7 @@ class TaskLaunch(yaml.YAMLObject):
             else:
                 workPerProject[pp]=[localPath]
         executor = parralel.get_executor(self.numWorkers, self.numGpus)
-
+        rs=[]
         for projectPath in workPerProject:
             project=server.project(projectPath)
             experiments=[project.byFullPath(e) for e in workPerProject[projectPath]]
@@ -69,7 +73,14 @@ class TaskLaunch(yaml.YAMLObject):
                     t = project.get_task_by_name(task)
                     allTasks=allTasks+t.createTodo(exp,self.taskArgs,project)
             executor.execute(allTasks)
+            for x in allTasks:
+                err=None
+                if x.exception is not None:
+                    err=x.exception.log()
+                rs.append({"results":x.results,"exception":err})
+
         reporter.done()
+        return rs
 
 
 class Launch(yaml.YAMLObject):
