@@ -2,70 +2,49 @@ import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,3"
 import argparse
-import sys
-from musket_core.experiment import Experiment
-from musket_core.structure_constants import isNewExperementDir
-from musket_core.parralel import get_executor
-from musket_core import hyper
+from musket_core.projects import Workspace
+from musket_core.tools import Launch,ProgressMonitor
 
-def gather_work(path,e:[Experiment],name="",allow_resume=False):
-
-    if isNewExperementDir(path):
-        if len(name)>0 and name!=os.path.basename(path):
-            return
-        else:
-            pi = Experiment(path,allow_resume).apply()
-            for v in pi: e.append(v)
-        return
-    for d in os.listdir(path):
-        fp=os.path.join(path, d)
-        if os.path.isdir(fp):
-            gather_work(fp,e,name,allow_resume)
-
-
-def gather_stat(path,name="",forseRecalc=False):
-
-    if isNewExperementDir(path):
-        if len(name)>0 and name!=os.path.basename(path):
-            return
-        else:
-            ex = Experiment(path)
-            ex.result(forseRecalc)
-
-    for d in os.listdir(path):
-        fp=os.path.join(path, d)
-        if os.path.isdir(fp):
-            gather_stat(fp,name,forseRecalc)
 
 def main():
     parser = argparse.ArgumentParser(description='Analize experiment metrics.')
-    parser.add_argument('--project', type=str, default=".",
+    parser.add_argument('--project', type=str, required=True,
                         help='folder to search for experiments')
     parser.add_argument('--name', type=str, default="",
                         help='name of the experiment')
     parser.add_argument('--num_gpus', type=int, default=1,
                         help='number of gpus')
+    parser.add_argument('--gpus_per_net', type=int, default=1,
+                        help='number of gpus')
     parser.add_argument('--num_workers', type=int, default=1,
                         help='number of workers')
+    parser.add_argument('--allow_resume', type=bool, default=False,
+                        help='allow resuming of experiments')
     parser.add_argument('--force_recalc', type=bool, default=False,
                         help='force rebuild reports and predictions')
-    parser.add_argument('--allow_resume', type=bool, default=True,
-                        help='allow resuming previously failed experiments')
+    parser.add_argument('--launch_tasks', type=bool, default=False,
+                        help='launch associated tasks')
+    parser.add_argument('--only_report', type=bool, default=False,
+                        help='only generate reports')
     args = parser.parse_args()
-    inf=args.project
-    sys.path.insert(0, os.path.join(inf,"modules"))
-    expDir=os.path.join(inf,"experiments")
-    todo=[]
-    e=get_executor(args.num_workers,args.num_gpus)
 
-    gather_work(expDir,todo,args.name,args.allow_resume)
+    w=Workspace()
+    project=w.project(args.project)
 
-    hasHyper=[e for e in todo if e.hyperparameters() is not None]
-    noHyper=[e for e in todo if e.hyperparameters() is  None]
-    #e.execute(noHyper)
-    for h in hasHyper:
-        hyper.optimize(h,e)
-    gather_stat(expDir,args.name,args.force_recalc)
+    experiments=project.experiments()
+
+    if len(args.name)>0:
+        mmm=args.name.split(",")
+        res=[]
+        for x in experiments:
+            if x.name() in mmm:
+                res.append(x)
+        experiments=res
+    else:
+        experiments=[x for x in experiments if not x.isCompleted()]
+
+    l=Launch(args.gpus_per_net,args.num_gpus,args.num_workers,[x.path for x in experiments],args.allow_resume,args.only_report,args.launch_tasks)
+    l.perform(w,ProgressMonitor())
     exit(0)
     pass
 if __name__ == '__main__':

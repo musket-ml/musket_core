@@ -6,7 +6,7 @@ import csv
 import keras
 import tqdm
 import pandas as pd
-
+import typing
 import musket_core.image_datasets
 import musket_core.splits
 import musket_core.tasks as tasks
@@ -27,6 +27,7 @@ from keras.callbacks import  LambdaCallback
 import keras.backend as K
 import imgaug
 import musket_core
+import copy
 from musket_core.clr_callback import CyclicLR
 keras.callbacks.CyclicLR= CyclicLR
 from musket_core import predictions
@@ -41,7 +42,7 @@ keras.utils.get_custom_objects()["dice_loss"]= musket_core.losses.dice_coef_loss
 keras.utils.get_custom_objects()["jaccard_loss"]= musket_core.losses.jaccard_distance_loss
 keras.utils.get_custom_objects()["focal_loss"]= musket_core.losses.focal_loss
 keras.utils.get_custom_objects()["l2_loss"]= musket_core.losses.l2_loss
-
+from musket_core.parralel import  Task
 keras.utils.get_custom_objects().update({'matthews_correlation': musket_core.losses.matthews_correlation})
 dataset_augmenters={
 
@@ -177,6 +178,39 @@ def eval_metric(y_true,y_proba,func):
         func=wrapped
     return func(y_true,y_proba)
 
+
+class FoldWork:
+
+    def __init__(self,cfg,num,start_from_stage,subsample,drawingFunction,folds):
+        self.cfg=cfg
+        self.num=num
+        self.start_from_stage=start_from_stage
+        self.subsample=subsample
+        self.drawingFunction=drawingFunction
+        self.folds=folds
+
+    def __call__(self, *args, **kwargs):
+        model = self.cfg.createAndCompile()
+        cb=self.cfg.callbacks
+        for s in range(0, len(self.cfg.stages)):
+            if s < self.start_from_stage:
+                self.cfg.skip_stage(self.num, model, s, self.subsample)
+                continue
+            st: Stage = self.cfg.stages[s]
+            ec = ExecutionConfig(fold=self.num, stage=s, subsample=self.subsample, dr=self.cfg.directory(),
+                                 drawingFunction=self.drawingFunction)
+            st.execute(self.folds, model, ec,copy.deepcopy(cb))
+
+class ReportWork:
+    def __init__(self,cfg,foldsToExecute,subsample):
+        self.cfg=cfg
+        self.foldsToExecute=foldsToExecute
+        self.subsample=subsample
+
+    def __call__(self, *args, **kwargs):
+        self.cfg.generateReports(self.foldsToExecute, self.subsample)
+
+
 class GenericTaskConfig:
 
     def __init__(self,**atrs):
@@ -186,6 +220,7 @@ class GenericTaskConfig:
         self.groupFunc=None
         self.imports=[]
         self._dataset=None
+        self._reporter=None
         self.testTimeAugmentation=None
         self.stratified=False
         self.preprocessing=None
@@ -504,7 +539,7 @@ class GenericTaskConfig:
             return self._dataset
         raise ValueError("Data set is not defined for this config")
 
-    def fit(self, dataset_ = None, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction = None):
+    def fit(self, dataset_ = None, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction = None,parallel=False)->typing.Collection[Task]:
         if dataset_ is None:
           dataset = self.parse_dataset()
         else: dataset=dataset_
@@ -516,23 +551,30 @@ class GenericTaskConfig:
         if os.path.exists(constructSummaryYamlPath(dn)):
             raise ValueError("Experiment is already finished!!!!")
         folds = self.kfold(dataset, None)
+        units_of_works=[]
         for i in range(len(folds.folds)):
             if foldsToExecute:
                 if not i in foldsToExecute:
                     continue
-            model = self.createAndCompile()
-            for s in range(0, len(self.stages)):
-                if s<start_from_stage:
-                    self.skip_stage(i, model, s, subsample)
-                    continue
-                st: Stage = self.stages[s]
-                ec = ExecutionConfig(fold=i, stage=s, subsample=subsample, dr=self.directory(), drawingFunction=drawingFunction)
-                st.execute(folds, model, ec)
-        self.generateReports(foldsToExecute, subsample)
+            fw=FoldWork(self,i,start_from_stage,subsample,drawingFunction,folds)
+            if not parallel:
+                fw()
+            else:
+              units_of_works.append(fw)
+        if self._reporter is not None and self._reporter.isCanceled():
+            return []
+        if parallel:
+            units_of_works=[Task(x) for x in units_of_works]
+            rw=Task(ReportWork(self,foldsToExecute,subsample))
+            rw.deps=units_of_works.copy()
+            units_of_works.append(rw)
+            return units_of_works
+        else: self.generateReports(foldsToExecute, subsample)
 
 
 
     def generateReports(self, foldsToExecute=None, subsample=1.0):
+
         dn = self.directory()
         with open(constructSummaryYamlPath(dn), "w") as f:
             initial = {"completed": True, "cfgName": os.path.basename(self.path), "subsample": subsample,
@@ -551,6 +593,8 @@ class GenericTaskConfig:
             metric=metric[4:]
         for stage in range(len(self.stages)):
             ms={}
+            if self._reporter is not None and self._reporter.isCanceled():
+                return {"canceled": True }
             #tr=self.find_optimal_treshold_by_validation2(metric, [stage])
             #tr0 = self.find_optimal_treshold_by_validation(metric, [stage])
             for m in self.metrics:
@@ -567,6 +611,8 @@ class GenericTaskConfig:
         #tr = self.find_optimal_treshold_by_validation2(metric)
         #tr0 = self.find_optimal_treshold_by_validation(metric)
         for m in self.metrics:
+            if self._reporter is not None and self._reporter.isCanceled():
+                return {"canceled": True }
             all[m] = predictions.cross_validation_stat(self, m)
             if self.testSplit > 0 or self.holdoutArr is not None:
                 all[m + "_holdout"] = predictions.holdout_stat(self, m)
@@ -634,7 +680,7 @@ class GenericTaskConfig:
         for runner in task_runners.values():
             runner.end()
 
-    def parse_dataset(self):
+    def parse_dataset(self,datasetName=None):
         ds_config = self.pickup_ds_config()
 
         return musket_core.image_datasets.DS_Wrapper(self.dataset, ds_config, self.path)
@@ -823,11 +869,25 @@ class GenericImageTaskConfig(GenericTaskConfig):
 class KFoldCallback(keras.callbacks.Callback):
 
     def __init__(self, k:datasets.ImageKFoldedDataSet):
+        super().__init__()
         self.data=k
 
     def on_epoch_end(self, epoch, logs=None):
         self.data.epoch()
         pass
+
+
+class ReporterCallback(keras.callbacks.Callback):
+
+    def __init__(self,reporter):
+        super().__init__()
+        self.reporter=reporter
+        pass
+
+    def on_batch_end(self, batch, logs=None):
+        if self.reporter.isCanceled():
+            self.model.stop_training = True
+        super().on_batch_end(batch, logs)
 
 
 class Stage:
@@ -877,13 +937,21 @@ class Stage:
         kf.trainOnFold(ec.fold, model, cb,epochs, self.negatives, subsample=ec.subsample,validation_negatives=self.validation_negatives)
         return ll
 
-    def execute(self, kf: datasets.DefaultKFoldedDataSet, model: keras.Model, ec: ExecutionConfig):
+    def execute(self, kf: datasets.DefaultKFoldedDataSet, model: keras.Model, ec: ExecutionConfig,callbacks=None):
         if 'unfreeze_encoder' in self.dict and self.dict['unfreeze_encoder']:
             self.unfreeze(model)
 
         if 'unfreeze_encoder' in self.dict and not self.dict['unfreeze_encoder']:
             self.freeze(model)
-
+        if callbacks is None:
+            cb = [] + self.cfg.callbacks
+        else:
+            cb=callbacks
+        if self.cfg._reporter is not None:
+            if self.cfg._reporter.isCanceled():
+                return
+            cb.append(ReporterCallback(self.cfg._reporter))
+            pass
         prevInfo = None
         if self.cfg.resume:
             allBest = self.cfg.info()
@@ -894,7 +962,7 @@ class Stage:
 
         if self.loss or self.lr:
             self.cfg.compile(model, self.cfg.createOptimizer(self.lr), self.loss)
-        cb = [] + self.cfg.callbacks
+
         if self.initial_weights is not None:
             model.load_weights(self.initial_weights)
         if 'callbacks' in self.dict:
@@ -902,6 +970,7 @@ class Stage:
         if 'extra_callbacks' in self.dict:
             cb = cb + configloader.parse("callbacks", self.dict['extra_callbacks'])
         kepoch=-1
+
         cb.append(KFoldCallback(kf))
         if self.cfg.resume:
             kepoch=maxEpoch(ec.metricsPath())

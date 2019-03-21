@@ -123,7 +123,8 @@ class GenericPipeline(generic.GenericTaskConfig):
             return dataset
         return None
 
-    def fit(self, dataset=None, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction=None):
+
+    def fit(self, dataset=None, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction=None,parallel = False):
         if dataset is None:
           dataset = self.parse_dataset()
         self._dataset = dataset
@@ -131,7 +132,7 @@ class GenericPipeline(generic.GenericTaskConfig):
             dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing, self.imports)
         predItem=dataset[0]
         utils.save_yaml(self.path+".shapes",(_shape(predItem.x),_shape(predItem.y)))
-        super().fit(dataset,subsample,foldsToExecute,start_from_stage,drawingFunction)
+        return super().fit(dataset,subsample,foldsToExecute,start_from_stage,drawingFunction,parallel=parallel)
 
 def parse(path) -> GenericPipeline:
     cfg = configloader.parse("generic", path)

@@ -1,9 +1,9 @@
 from musket_core.utils import save_yaml,load_yaml,ensure,delete_file,load_string,save_string
 import os
 import numpy as np
-import traceback
 import random
-import sys
+import typing
+from  musket_core.parralel import Task,Error
 from musket_core import generic
 from musket_core.structure_constants import constructPredictionsDirPath, constructSummaryYamlPath, constructInProgressYamlPath, constructConfigYamlPath, constructErrorYamlPath, constructConfigYamlConcretePath
 
@@ -14,6 +14,9 @@ class Experiment:
         self._cfg=None
         self.project=project
         self.allowResume = allowResume
+        self.gpus=1
+        self.onlyReports = False
+        self.launchTasks = True
 
     def cleanup(self):
         if os.path.exists(self.getPredictionsDirPath()):
@@ -33,9 +36,6 @@ class Experiment:
             return self.path[len(self.project.experimentsPath())+1:].replace("\\","/")
         return os.path.basename(self.path)
 
-    def final_metric(self):
-        m=self.config()
-        return  m["final_metric"] if "final_metric" in m else None
 
     def hyperparameters(self):
         config = self.config()
@@ -74,7 +74,6 @@ class Experiment:
                         save_string(rp,template.replace("${metrics}",m))
 
 
-
     def result(self,forseRecalc=False):
         pi = self.apply(True)
         if forseRecalc:
@@ -82,8 +81,9 @@ class Experiment:
         m=self.metrics()
         if m is None:
             return None
-        if len(m)>0:
-            return m
+        if self.hyperparameters() is not None:
+
+            return
         if len(pi) > 1:
             vals = []
             for i in pi:
@@ -106,7 +106,19 @@ class Experiment:
             return float(m)
         else:
             m = self.metrics()
-            return m
+            if isinstance(m,dict):
+                pm = self.config()["primary_metric"]
+                if "val_" in pm:
+                    pm = pm[4:]
+                mv = m["allStages"][pm + "_holdout"]
+                if "aggregation_metric" in self.config():
+                    mv = m["allStages"][self.config()["aggregation_metric"]]
+                return mv
+            if isinstance(m,float):
+                return m
+            if isinstance(m,int):
+                return m
+            return 1000000
         pass
 
     def isCompleted(self):
@@ -121,7 +133,6 @@ class Experiment:
         elif not val and self.isInProgress():
             delete_file(self.getInProgressYamlPath())
 
-
     def config(self):
         if self._cfg is not None:
             return self._cfg
@@ -132,28 +143,76 @@ class Experiment:
             self._cfg=load_yaml(self.getConfigYamlConcretePath())
         return self._cfg
 
-    def dumpTo(self,path,extra):
-        c=self.config()
+    def dumpTo(self,path,extra,remove=()):
+        c=self.config().copy()
         for k in extra:
             c[k]=extra[k]
+        for r in remove:
+            del c[r]
         return save_yaml(constructConfigYamlConcretePath(path),c)
 
-    def fit(self):
+    def fit(self,reporter=None)->typing.Collection[Task]:
+        subExps=self.apply(True)
         try:
-            self.cleanup()
+            if len(subExps)>1:
+                all_units_of_work=[]
+                for x in subExps:
+                    m=x.config()
+                    if "num_seeds" in m:
+                        del m["num_seeds"]
+                    if reporter is not None and reporter.isCanceled():
+                        save_yaml(self.getSummaryYamlPath(), "Cancelled")
+                        return []
+                    for i in x.fit(reporter):
+                        all_units_of_work.append(i)
+                if reporter is not None and reporter.isCanceled():
+                    save_yaml(self.getSummaryYamlPath(), "Cancelled")
+                    return []
+                def c():
+                    self.result()
+                t=Task(c)
+                t.deps=all_units_of_work.copy()
+                all_units_of_work.append(t)
+                return all_units_of_work
+
+            if not self.onlyReports:
+                self.cleanup()
             self.setInProgress(True)
             cfg = self.parse_config()
-            cfg.fit()
-        except:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            print(self.path)
-            print(exc_value)
-            print(traceback.format_exc())
-            print(exc_type)
-            save_yaml(self.getErrorYamlPath(), [str(exc_value),str(traceback.format_exc()),str(exc_type)])
-        finally:
-            self.setInProgress(False)
+            cfg.gpus=self.gpus
+            cfg._reporter=reporter
+            units_of_work=[]
+            if self.onlyReports:
+                units_of_work.append(Task(lambda :cfg.generateReports()))
+            else:
+                units_of_work=units_of_work+cfg.fit(parallel=True)
 
+            r=Task(lambda: self.result())
+            r.deps=units_of_work.copy()
+            units_of_work.append(r)
+
+            r = Task(lambda ts: self.onExperimentFinished(ts), runOnErrors=True, needs_tasks=True)
+            r.deps = units_of_work.copy()
+            units_of_work.append(r)
+            return units_of_work
+        except:
+            self.onExperimentFinished()
+            self._onErrors([Error()])
+
+
+    def _onErrors(self, errors):
+        save_yaml(self.getErrorYamlPath(), {"errors":[x.log() for x in errors]})
+        save_yaml(self.getSummaryYamlPath(), "Error")
+
+    def onExperimentFinished(self,tasksState:Task=None):
+        if tasksState is not None:
+            errors=tasksState.all_errors()
+            if len(errors)>0:
+                self._onErrors(errors)
+            else:
+                if os.path.exists(self.getErrorYamlPath()):
+                    os.remove(self.getErrorYamlPath())
+        self.setInProgress(False)
 
     def apply(self,all=False):
         if self.hyperparameters() is not None:
@@ -169,8 +228,14 @@ class Experiment:
                         continue
 
                 s=random.randint(0,100000)
-                self.dumpTo(i_, {"testSplitSeed":s})
-                paths.append(Experiment(i_,self.allowResume))
+                if not all or not os.path.exists(constructConfigYamlConcretePath(i_)):
+                    self.dumpTo(i_, {"testSplitSeed":s},["num_seeds"])
+                e=Experiment(i_, self.allowResume)
+                e.gpus=self.gpus
+                e.onlyReports=self.onlyReports
+                e.launchTasks=self.launchTasks
+                e.project=self.project
+                paths.append(e)
             return paths
         return [self]
 

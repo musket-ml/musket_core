@@ -17,10 +17,11 @@ def _all_experiments(path,e:[experiment.Experiment]):
 
 
 class WrappedDataSetFactory:
-    def __init__(self,name,func,sig):
+    def __init__(self,name,func,sig,project):
         self.name=name
         self.sig=sig
         self.func=func
+        self.project=project
 
     def __str__(self):
         return self.name+str(self.sig)
@@ -29,7 +30,7 @@ class WrappedDataSetFactory:
         return hash(str(self))
 
     def create(self,name, parameters):
-        return WrappedDataSet(name,self, parameters)
+        return WrappedDataSet(name,self, parameters,self.project)
 
 
 class WrappedVisualizer:
@@ -49,14 +50,24 @@ class WrappedVisualizer:
         return visualization.Visualizer(self.func,path,d)
 
 class WrappedDataSet(datasets.DataSet):
-    def __init__(self,name,w:WrappedDataSetFactory,parameters):
+    def __init__(self,name,w:WrappedDataSetFactory,parameters,project):
         self.w=w
         self.name=name
+        self.project=project
         self.parameters=parameters
         self._inner_=None
+        self._vis=None
 
     def __getitem__(self, item):
         return self.inner()[item]
+
+    def visualizer(self):
+        if self._vis is not None:
+            return self._vis
+        vs=self.project.get_visualizers()[0]
+        vz=self.project._attach_visualizer(vs,self)
+        self._vis=vz
+        return vz
 
     def inner(self):
         if self._inner_ is not None:
@@ -81,6 +92,19 @@ class WrappedDataSet(datasets.DataSet):
         return self.name+str(self.parameters)
     def __repr__(self):
         return str(self)
+
+class Workspace:
+
+    def __init__(self):
+        self.projects = {}
+        pass
+
+    def project(self, path):
+        if path in self.projects:
+            return self.projects[path]
+        p = Project(path)
+        self.projects[path] = p
+        return p
 
 class Project:
 
@@ -108,6 +132,11 @@ class Project:
         ep=os.path.join(self.path, "experiments",name)
         if structure_constants.isExperimentDir(ep):
             return experiment.Experiment(ep,project=self)
+        return None
+
+    def byFullPath(self,name):
+        if structure_constants.isExperimentDir(name):
+            return experiment.Experiment(name,project=self)
         return None
 
 
@@ -158,10 +187,13 @@ class Project:
                     if sig.return_annotation is not None:
                         d=sig.return_annotation
                         if d==datasets.DataSet or issubclass(d,datasets.DataSet):
-                            elements.append(WrappedDataSetFactory(name,vl,sig))
+                            elements.append(WrappedDataSetFactory(name,vl,sig,self))
                     if hasattr(vl,"visualizer") and getattr(vl,"visualizer")==True:
                         elements.append(WrappedVisualizer(name,vl,sig))
         return elements
+
+    def get_visualizers(self):
+        return [x for x in self.elements() if isinstance(x,WrappedVisualizer)]
 
     def get_datasets(self):
         ds=set()
@@ -194,31 +226,14 @@ class Project:
     def get_visualizer(self,name,datasetName)->visualization.Visualizer:
         visualization=os.path.join(self.path, "visualizations", name, datasetName)
         utils.ensure(visualization)
-        return p.element(name).create(self.get_dataset(datasetName),visualization)
+        return self.element(name).create(self.get_dataset(datasetName),visualization)
+
+    def _attach_visualizer(self,visualizer,dataset)->visualization.Visualizer:
+        visualization=os.path.join(self.path, "visualizations", visualizer.name, dataset.name)
+        utils.ensure(visualization)
+        return visualizer.create(dataset,visualization)
 
 
-p=Project("C:/Users/Павел/PycharmProjects/discharge")
 
-for e in p.experiments():
-    e.report()
-# d=p.get_dataset("test")
-#
-# v=p.get_visualizer("visualize","test")
-# r=v.all()
-#
-# print(r)
-# #     print(p.get_datasets())
-#
-# # for e in p.elements():
-# #     print(e.create(False,False)[0])
-# #     print(e)
-# # for e in p.experiments():
-# #     if e.isCompleted():
-# #         print(e.name(),e.result())
-# #
-# # print(p.modules())
-# #e=p.byName("120_epochs/plain_120")
-# #print(e.result())
-# #print(e)
-# #for i in range(100):
-# #    print(([x.name() for x in p.experiments() if x.isCompleted()]))
+
+
