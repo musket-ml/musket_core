@@ -112,7 +112,9 @@ class Experiment:
                     pm = pm[4:]
                 mv = m["allStages"][pm + "_holdout"]
                 if "aggregation_metric" in self.config():
-                    mv = m["allStages"][self.config()["aggregation_metric"]]
+                    am=self.config()["aggregation_metric"]
+                    if am in m["allStages"]:
+                        mv = m["allStages"][am]
                 return mv
             if isinstance(m,float):
                 return m

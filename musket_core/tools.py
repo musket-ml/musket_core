@@ -1,5 +1,6 @@
 from musket_core import parralel
 from musket_core import hyper
+from musket_core.utils import save_yaml
 class ProgressMonitor:
 
     def isCanceled(self)->bool:
@@ -83,6 +84,21 @@ class TaskLaunch(yaml.YAMLObject):
         return rs
 
 
+class Introspect(yaml.YAMLObject):
+    yaml_tag = u'!com.onpositive.musket_core.IntrospectTask'
+
+    def __init__(self,path,outPath=None):
+        self.path=path;
+        self.outPath=outPath
+        pass
+
+    def perform(self, server, reporter: ProgressMonitor):
+        project = server.project(self.path)
+        r=project.introspect()
+        if self.outPath is not None:
+            save_yaml(self.outPath,r)
+        return r
+
 class Launch(yaml.YAMLObject):
     yaml_tag = u'!com.onpositive.dside.ui.LaunchConfiguration'
 
@@ -95,6 +111,9 @@ class Launch(yaml.YAMLObject):
         self.onlyReports=onlyReports
         self.launchTasks=launchTasks
         pass
+
+
+
 
     def perform(self,server,reporter:ProgressMonitor):
         workPerProject={}

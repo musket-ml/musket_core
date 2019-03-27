@@ -10,7 +10,9 @@ import musket_core.net_declaration as net
 import musket_core.quasymodels as qm
 
 
-
+def model_function(func):
+    func.model=True
+    return func
 
 def _shape(x):
     if isinstance(x,list) or isinstance(x,tuple):

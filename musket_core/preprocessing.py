@@ -29,4 +29,6 @@ def dataset_preprocessor(func):
     def wrapper(input,**kwargs):
         return PreprocessedDataSet(input,func,**kwargs)
     wrapper.args=inspect.signature(func).parameters
+    wrapper.preprocessor=True
+    wrapper.__name__=func.__name__
     return wrapper
