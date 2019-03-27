@@ -2,6 +2,7 @@ from musket_core import experiment,structure_constants
 from musket_core import datasets,visualization,utils
 from musket_core import parralel
 import keras
+import  musket_core.model
 import musket_core.generic
 import musket_core.generic_config
 from typing import Collection
@@ -86,9 +87,15 @@ class WrappedTask:
             for p in self.sig.parameters:
                 par=self.sig.parameters[p]
                 type=par.annotation
-                if issubclass(type,musket_core.generic_config.GenericTaskConfig):
+                if issubclass(type,musket_core.model.Model):
+                    if p in args:
+                        actualArgs[p]=args[p].wrap(config,exp)
                     actualArgs[p]=config
+
                 elif issubclass(type,musket_core.datasets.DataSet):
+                    actualArgs[p]=config.get_dataset(args[p])
+                    if not hasattr(actualArgs[p],"name") and not hasattr(actualArgs[p],"origName"):
+                        actualArgs[p].name=args[p]
                     pass
                 else:
                     if p in args:
@@ -294,7 +301,7 @@ class Project:
                     if hasattr(vl,"task") and getattr(vl,"task")==True:
                         elements.append(WrappedTask(name, vl, sig))
                     if hasattr(vl,"model") and getattr(vl,"model")==True:
-                        elements.append(WrappedTask(name, vl, sig))
+                        elements.append(WrappedModelBlock(vl))
                     if hasattr(vl, "preprocessor") and getattr(vl, "preprocessor") == True:
                         elements.append(WrappedPreprocessor(vl))
                 if inspect.isclass(vl):

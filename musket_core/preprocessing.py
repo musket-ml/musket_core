@@ -1,7 +1,7 @@
 import functools
 import importlib
 import inspect
-from datasets import PredictionItem
+from musket_core.datasets import PredictionItem
 
 class PreprocessedDataSet:
 
@@ -14,6 +14,8 @@ class PreprocessedDataSet:
             self.folds=getattr(parent,"folds");
         if hasattr(parent, "name"):
             self.name=parent.name+self.func.__name__+str(kwargs)
+            self.origName = self.name
+
         pass
 
     def __getitem__(self, item):

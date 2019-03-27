@@ -1,5 +1,7 @@
 from musket_core import parralel
 from musket_core import hyper
+from musket_core import model
+from musket_core.generic_config import GenericTaskConfig
 from musket_core.utils import save_yaml
 class ProgressMonitor:
 
@@ -78,10 +80,43 @@ class TaskLaunch(yaml.YAMLObject):
                 err=None
                 if x.exception is not None:
                     err=x.exception.log()
-                rs.append({"results":x.results,"exception":err})
+                if hasattr(x,"results"):
+                    rs.append({"results":x.results,"exception":err})
+                else:
+                    rs.append({"results": None, "exception": err})
 
         reporter.done()
         return rs
+
+
+
+
+class ModelSpec(yaml.YAMLObject):
+    yaml_tag = u'!com.onpositive.dside.ui.ModelEvaluationSpec'
+
+    def __init__(self,**kwargs):
+        self.args=kwargs
+        self.folds="ALL"
+        self.stages="LAST_STAGE"
+        self.folds_numbers=[]
+        self.stages_numbers = []
+        self.seed_numbers = []
+        pass
+
+    def wrap(self,m:GenericTaskConfig,e)->model.ConnectedModel:
+        folds=list(range(m.folds_count))
+        stages=len(m.stages)-1
+        if self.folds=="MANUAL":
+            folds=self.folds_numbers
+            pass
+        if self.stages=="MANUAL":
+            folds=self.stages_numbers
+            pass
+        if self.stages=="ALL":
+            stages=list(range(m.stages))
+            pass
+        return model.FoldsAndStages(m,folds,stages)
+
 
 
 class Introspect(yaml.YAMLObject):

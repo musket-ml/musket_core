@@ -216,6 +216,8 @@ class Experiment:
                     os.remove(self.getErrorYamlPath())
         self.setInProgress(False)
 
+
+
     def apply(self,all=False):
         if self.hyperparameters() is not None:
             return [self]
@@ -257,7 +259,7 @@ class Experiment:
                 return [Experiment(concretePath)]
             return [self]
 
-        return [self.apply()]
+        return self.apply(True)
 
     def getSummaryYamlPath(self):
         return constructSummaryYamlPath(self.path)

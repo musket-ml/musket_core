@@ -135,6 +135,8 @@ def diskcache(layers,declarations,config,outputs,linputs,pName,withArgs):
                 dumpArray(data[1], f"{name}/y_", ext, "Saving Y cache...")
 
             result = DiskCache(input, data)
+            if hasattr(input, "name"):
+                result.origName = input.name
             storage[name] = result
             return result
         finally:

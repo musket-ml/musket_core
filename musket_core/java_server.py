@@ -73,8 +73,9 @@ class Server(projects.Workspace):
         self.projects[path]=p
         return p
 
-    def performTask(self,config,reporter:tools.ProgressMonitor):
-        obj=yaml.load(config[1:])
+    def performTask(self,config:str,reporter:tools.ProgressMonitor):
+        config=config[1:].replace("!!com.onpositive","!com.onpositive")
+        obj=yaml.load(config)
         wor=sys.stdout.write
         wer = sys.stderr.write
         def newWrite(t):

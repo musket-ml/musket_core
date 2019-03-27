@@ -26,6 +26,7 @@ class Task:
         self.run_on_errors=runOnErrors
         self.requiresSession=requiresSession
         self.needsTasks=needs_tasks
+        self.result=None
         self.exception=None
 
     def __str__(self):
