@@ -1,6 +1,7 @@
 import functools
 import importlib
 import inspect
+from datasets import PredictionItem
 
 class PreprocessedDataSet:
 
@@ -17,8 +18,9 @@ class PreprocessedDataSet:
 
     def __getitem__(self, item):
         pi=self.parent[item]
-        pi.x=self.func(pi.x,**self.kw)
-        return pi
+        x=self.func(pi.x,**self.kw)
+        newPi = PredictionItem(item,x,pi.y)
+        return newPi
 
     def __len__(self):
         return len(self.parent)
