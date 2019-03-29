@@ -56,6 +56,9 @@ def dataset_visualizer(func):
     func.visualizer=True
     return func
 
+def dataset_analizer(func):
+    func.analizer=True
+    return func
 
 def context():
     return _context

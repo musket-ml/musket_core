@@ -1,4 +1,4 @@
-from py4j.clientserver import ClientServer, JavaParameters, PythonParameters,JavaGateway
+from py4j.clientserver import ClientServer, JavaParameters, PythonParameters,JavaGateway,GatewayParameters,CallbackServerParameters
 from musket_core import projects
 import yaml
 import io
@@ -76,28 +76,22 @@ class Server(projects.Workspace):
     def performTask(self,config:str,reporter:tools.ProgressMonitor):
         config=config[1:].replace("!!com.onpositive","!com.onpositive")
         obj=yaml.load(config)
-        wor=sys.stdout.write
-        wer = sys.stderr.write
-        def newWrite(t):
-            wor(t)
-            reporter.stdout(t)
-        def newErr(t):
-            wer(t)
-            reporter.stdout(t)
-        try:
-            sys.stdout.write=newWrite
-            sys.stderr.write=newErr
-            results=obj.perform(self.w,reporter)
-            return yaml.dump(results)
-        finally:
-            sys.stdout.write=wor
-            sys.stderr.write=wer
-            pass
+        results=obj.perform(self.w,reporter)
+        return results
+      
 
     class Java:
         implements = ["com.onpositive.musket_core.IServer"]
 
-server = Server()
-gateway = JavaGateway(auto_convert=True,
-            python_server_entry_point=server)
-gateway.start_callback_server()
+
+def launch(port):
+    server = Server()
+    gateway = JavaGateway(
+        gateway_parameters=GatewayParameters(port=port),
+        callback_server_parameters=CallbackServerParameters(port=0))
+    python_port = gateway.get_callback_server().get_listening_port()
+    gateway.start_callback_server()
+    gateway.java_gateway_server.resetCallbackClient(
+        gateway.java_gateway_server.getCallbackClient().getAddress(),
+        python_port)
+    gateway.entry_point.created(server)

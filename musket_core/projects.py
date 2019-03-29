@@ -148,6 +148,14 @@ class WrappedModelBlock:
     def introspect(self):
         return  introspector.record(self.clazz,"model")
 
+class WrappedAnalizer:
+    def __init__(self,clazz):
+        self.name=clazz.__name__
+        self.clazz=clazz
+
+    def introspect(self):
+        return  introspector.record(self.clazz,"analizer")
+
 class WrappedDataSet(datasets.DataSet):
     def __init__(self,name,w:WrappedDataSetFactory,parameters,project):
         self.w=w
@@ -204,6 +212,11 @@ class Workspace:
         p = Project(path)
         self.projects[path] = p
         return p
+
+    def experiment(self,experimentPath):
+        project = self.project(experimentPath[0:experimentPath.index("experiments")])
+        exp = project.byFullPath(experimentPath)
+        return exp
 
 class Project:
 
@@ -302,6 +315,8 @@ class Project:
                         elements.append(WrappedTask(name, vl, sig))
                     if hasattr(vl,"model") and getattr(vl,"model")==True:
                         elements.append(WrappedModelBlock(vl))
+                    if hasattr(vl,"analizer") and getattr(vl,"analizer")==True: 
+                        elements.append(WrappedAnalizer(vl))
                     if hasattr(vl, "preprocessor") and getattr(vl, "preprocessor") == True:
                         elements.append(WrappedPreprocessor(vl))
                 if inspect.isclass(vl):
@@ -314,6 +329,9 @@ class Project:
     def get_visualizers(self):
         return [x for x in self.elements() if isinstance(x,WrappedVisualizer)]
 
+    def get_analizers(self):
+        return [x for x in self.elements() if isinstance(x,WrappedAnalizer)]
+
     def get_tasks(self):
         return [x for x in self.elements() if isinstance(x, WrappedTask)]
 
@@ -323,6 +341,16 @@ class Project:
                 return t
         return None
 
+    def get_visualizer_by_name(self,name)->WrappedVisualizer:
+        for t in self.get_visualizers():
+            if t.name==name:
+                return t
+
+    def get_analizer_by_name(self,name):
+        for t in self.get_analizers():
+            if t.name==name:
+                return t
+        return None
 
     def get_datasets(self):
         ds=set()

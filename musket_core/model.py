@@ -1,5 +1,5 @@
 from musket_core import datasets,generic_config
-
+import numpy as np
 
 
 def block(func):
@@ -18,6 +18,8 @@ class ConnectedModel(Model):
         raise ValueError("Not implemented")
 
 
+
+
 class FoldsAndStages(ConnectedModel):
 
     def __init__(self,core,folds,stages):
@@ -33,5 +35,16 @@ class FoldsAndStages(ConnectedModel):
 
 class AverageBlend(ConnectedModel):
 
-    def __init__(self,cfgs):
+    def __init__(self,models):
+        self.models=models
         pass
+    
+    
+    def predict_on_dataset(self, d, **kwargs):
+        raise ValueError("Not Implemented")
+
+    def predictions(self,name, **kwargs):
+        rm=[]
+        for v in self.models:
+            rm.append(v.predictions(name))
+        return np.array(rm).mean(axis=0)    
