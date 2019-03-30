@@ -156,6 +156,14 @@ class WrappedAnalizer:
     def introspect(self):
         return  introspector.record(self.clazz,"analizer")
 
+class WrappedDataAnalizer:
+    def __init__(self,clazz):
+        self.name=clazz.__name__
+        self.clazz=clazz
+
+    def introspect(self):
+        return  introspector.record(self.clazz,"data_analizer")
+
 class WrappedDataSet(datasets.DataSet):
     def __init__(self,name,w:WrappedDataSetFactory,parameters,project):
         self.w=w
@@ -317,6 +325,8 @@ class Project:
                         elements.append(WrappedModelBlock(vl))
                     if hasattr(vl,"analizer") and getattr(vl,"analizer")==True: 
                         elements.append(WrappedAnalizer(vl))
+                    if hasattr(vl,"data_analizer") and getattr(vl,"data_analizer")==True:
+                        elements.append(WrappedDataAnalizer(vl))
                     if hasattr(vl, "preprocessor") and getattr(vl, "preprocessor") == True:
                         elements.append(WrappedPreprocessor(vl))
                 if inspect.isclass(vl):
@@ -331,6 +341,9 @@ class Project:
 
     def get_analizers(self):
         return [x for x in self.elements() if isinstance(x,WrappedAnalizer)]
+
+    def get_data_analizers(self):
+        return [x for x in self.elements() if isinstance(x,WrappedDataAnalizer)]
 
     def get_tasks(self):
         return [x for x in self.elements() if isinstance(x, WrappedTask)]
@@ -348,6 +361,9 @@ class Project:
 
     def get_analizer_by_name(self,name):
         for t in self.get_analizers():
+            if t.name==name:
+                return t
+        for t in self.get_data_analizers():
             if t.name==name:
                 return t
         return None

@@ -64,8 +64,12 @@ def require_original(func):
     rs.visualizer=True
     return rs
 
-def dataset_analizer(func):
+def prediction_analizer(func):
     func.analizer=True
+    return func
+
+def dataset_analizer(func):
+    func.data_analizer=True
     return func
 
 def context():

@@ -237,7 +237,8 @@ class AnalizeOptionsRequest(yaml.YAMLObject):
         project:projects.Project=exp.project
         rs={
             "visualizers":[v.introspect() for v in project.get_visualizers()],
-            "analizers": [v.introspect() for v in project.get_analizers()]
+            "analizers": [v.introspect() for v in project.get_analizers()],
+            "data_analizers": [v.introspect() for v in project.get_data_analizers()]
         }
         return yaml.dump(rs)
 
@@ -253,6 +254,7 @@ class AnalizePredictions(yaml.YAMLObject):
         self.datasetName=None
         self.analizer=_exactValue
         self.visualizer=None
+        self.data=False
         pass
 
     def perform(self, server, reporter: ProgressMonitor):
@@ -264,20 +266,31 @@ class AnalizePredictions(yaml.YAMLObject):
         wrappedModel = ms.wrap(cf, exp)
 
         targets=datasets.get_targets_as_array(ds)
-        analizerFunc=exp.project.get_analizer_by_name(self.analizer).clazz
-        visualizerFunc=exp.project.get_visualizer_by_name(self.visualizer)
-
-        predictions=wrappedModel.predictions(self.datasetName)
-        l=len(targets)
-        res={}
-        for i in tqdm(range(l)):
-            gt=targets[i]
-            pr=predictions[i]
-            gr=analizerFunc(gt,pr)
-            if gr in res:
-                res[gr].append(i)
-            else:
-                res[gr]=[i]
+        analizerFunc = exp.project.get_analizer_by_name(self.analizer).clazz
+        visualizerFunc = exp.project.get_visualizer_by_name(self.visualizer)
+        if self.data:
+            pass
+            l = len(targets)
+            res = {}
+            for i in tqdm(range(l)):
+                gt = targets[i]
+                gr = analizerFunc(gt)
+                if gr in res:
+                    res[gr].append(i)
+                else:
+                    res[gr] = [i]
+        else:
+            predictions=wrappedModel.predictions(self.datasetName)
+            l=len(targets)
+            res={}
+            for i in tqdm(range(l)):
+                gt=targets[i]
+                pr=predictions[i]
+                gr=analizerFunc(gt,pr)
+                if gr in res:
+                    res[gr].append(i)
+                else:
+                    res[gr]=[i]
 
         _results=[]
         for q in res:
