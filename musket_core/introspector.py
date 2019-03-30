@@ -4,8 +4,10 @@ from  keras.layers import Layer
 from  keras.callbacks import Callback
 
 def parameters(sig):
+    if hasattr(sig, "original"):
+       sig=getattr(sig, "original")
     cs = inspect.signature(sig)
-
+    
     pars=[]
     for v in cs.parameters:
         parameter = cs.parameters[v]
@@ -36,9 +38,12 @@ def record(m,kind):
     if hasattr(m,"__name__"):
         rs["name"]=getattr(m,"__name__")
 
-    if hasattr(m,"__init__"):
-        constructor=getattr(m,"__init__")
-        rs["parameters"]=parameters(constructor)
+    if inspect.isclass(m):
+        if hasattr(m,"__init__"):
+            constructor=getattr(m,"__init__")
+            rs["parameters"]=parameters(constructor)
+    else:
+        rs["parameters"]=parameters(m)     
     rs["kind"]=kind
     rs["sourcefile"]=inspect.getsourcefile(m)
     return rs

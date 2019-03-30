@@ -4,6 +4,7 @@ import yaml
 import io
 from musket_core import tools
 import sys
+from musket_core import parralel
 
 class DataSetProxy:
     def __init__(self,ds:projects.WrappedDataSet,p):
@@ -74,10 +75,13 @@ class Server(projects.Workspace):
         return p
 
     def performTask(self,config:str,reporter:tools.ProgressMonitor):
-        config=config[1:].replace("!!com.onpositive","!com.onpositive")
-        obj=yaml.load(config)
-        results=obj.perform(self.w,reporter)
-        return results
+        try:
+            config=config[1:].replace("!!com.onpositive","!com.onpositive")
+            obj=yaml.load(config)
+            results=obj.perform(self.w,reporter)
+            return results
+        except:
+            parralel.Error()
       
 
     class Java:

@@ -1,10 +1,31 @@
 from threading import local,Thread
+from musket_core.parralel import Error
 from tqdm import tqdm
+
 import os
 import numpy as np
 from musket_core.utils import save,load
+from musket_core import parralel
 
 _context=local()
+
+class VFunc:
+
+    def __init__(self,dataset,item,func,args,path):
+        self.dataset=dataset
+        self.item=item
+        self.func=func
+        self.path=path
+        self.args=args
+        pass
+
+    def __call__(self, *args, **kwargs):
+        _context.path = self.path
+        if self.args is not None:
+            val = self.func(self.dataset[self.item], **self.args)
+        else:
+            val = self.func(self.dataset[self.item])
+        return val
 
 class Visualizer:
 
@@ -13,18 +34,27 @@ class Visualizer:
         self._cache={}
         self.dataset=dataset
         self.path=path
+        self.args=None
         if os.path.exists(self._indexPath()):
             self._cache=load(self._indexPath())
         pass
 
     def __getitem__(self, item):
-        _context.path=self.path
-        if item in self._cache:
-            return self._cache[item]
-        val=self.func(self.dataset[item])
-        self._cache[item]=val
-        return val
+        try:
+            _context.path=self.path
 
+            if item in self._cache:
+                return self._cache[item]
+
+            t = parralel.Task(VFunc(self.dataset, item, self.func, self.args,self.path),requiresSession=False);
+            parralel.get_visualizer_executor().execute([t])
+
+
+            self._cache[item]=t.result
+            return t.result
+        except:
+            Error()
+            return None
     def __len__(self):
         return len(self.dataset)
 
@@ -58,10 +88,11 @@ def dataset_visualizer(func):
 
 def require_original(func):
     func.visualizer=True
-    def rs(x):
-        return func(x.rootItem())
+    def rs(x,**kwargs):
+        return func(x.rootItem(),**kwargs)
     rs.__name__=func.__name__
     rs.visualizer=True
+    rs.original=func
     return rs
 
 def prediction_analizer(func):

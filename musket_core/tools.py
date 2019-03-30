@@ -255,6 +255,8 @@ class AnalizePredictions(yaml.YAMLObject):
         self.analizer=_exactValue
         self.visualizer=None
         self.data=False
+        self.analzierArgs={}
+        self.visualizerArgs={}
         pass
 
     def perform(self, server, reporter: ProgressMonitor):
@@ -274,7 +276,7 @@ class AnalizePredictions(yaml.YAMLObject):
             res = {}
             for i in tqdm(range(l)):
                 gt = targets[i]
-                gr = analizerFunc(gt)
+                gr = analizerFunc(gt,**self.analzierArgs)
                 if gr in res:
                     res[gr].append(i)
                 else:
@@ -286,7 +288,7 @@ class AnalizePredictions(yaml.YAMLObject):
             for i in tqdm(range(l)):
                 gt=targets[i]
                 pr=predictions[i]
-                gr=analizerFunc(gt,pr)
+                gr=analizerFunc(gt,pr,**self.analzierArgs)
                 if gr in res:
                     res[gr].append(i)
                 else:
@@ -296,6 +298,8 @@ class AnalizePredictions(yaml.YAMLObject):
         for q in res:
             r=WrappedDS(ds,res[q],str(q))
             r._visualizer=visualizerFunc.create(r,tempfile.mkdtemp())
+            if (len(self.visualizerArgs)) > 0:
+                r._visualizer.args=self.visualizerArgs
             _results.append(r)
         return AnalizeResults(_results)
 

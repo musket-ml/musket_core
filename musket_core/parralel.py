@@ -11,6 +11,7 @@ class Error:
         self.exc_type, self.exc_value, self.exc_traceback = sys.exc_info()
         self.exc_traceback=traceback.format_exc()
         print(self.exc_traceback)
+        print(self.exc_value,self.exc_type)
     def log(self):
         return { "type":str(self.exc_type),"value":str(self.exc_value),"trace":self.exc_traceback}
 
@@ -99,6 +100,7 @@ class Worker(threading.Thread):
                                      self.respond.put(exp)
             else:
                 exp.run()
+                self.respond.put(exp)
 
     def create_session(self,gpus):
 
@@ -156,3 +158,11 @@ def schedule(todo:typing.Collection[Task]):
     if _executor is None:
         _executor=get_executor(1,1)
     _executor.execute(todo)
+
+v_executor=None
+def get_visualizer_executor()->Executor:
+    global v_executor
+    if v_executor is not None:
+        return v_executor
+    v_executor=Executor(1,1)
+    return v_executor
