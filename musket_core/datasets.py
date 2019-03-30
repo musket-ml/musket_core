@@ -24,6 +24,12 @@ class PredictionItem:
         self.y=y
         self.id=path
 
+    def original(self):
+       return self
+
+    def rootItem(self):
+        return self
+
 
 class DataSet:
     def __getitem__(self, item)->PredictionItem:

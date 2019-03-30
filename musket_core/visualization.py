@@ -56,6 +56,14 @@ def dataset_visualizer(func):
     func.visualizer=True
     return func
 
+def require_original(func):
+    func.visualizer=True
+    def rs(x):
+        return func(x.rootItem())
+    rs.__name__=func.__name__
+    rs.visualizer=True
+    return rs
+
 def dataset_analizer(func):
     func.analizer=True
     return func
