@@ -175,6 +175,9 @@ class PythonFunction(AbstractType):
             for i in range(len(args)):
                 mm[self.args[i]]=args[i]
             def res(i):
+                if isinstance(i, list) or isinstance(i , tuple):
+                    if len(i)==0:
+                        i=None
                 if i is not None:
                     mm["input"]=i
                 return clazz(**mm)

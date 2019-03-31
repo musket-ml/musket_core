@@ -86,6 +86,18 @@ def dataset_visualizer(func):
     func.visualizer=True
     return func
 
+def visualize_as_image(func):
+    func.viewer="image"
+    return func
+
+def visualize_as_text(func):
+    func.viewer="text"
+    return func
+
+def visualize_as_html(func):
+    func.viewer="html"
+    return func
+
 def require_original(func):
     func.visualizer=True
     def rs(x,**kwargs):
@@ -93,6 +105,8 @@ def require_original(func):
     rs.__name__=func.__name__
     rs.visualizer=True
     rs.original=func
+    if hasattr(func,"viewer"):
+        rs.viewer=getattr(func,"viewer")
     return rs
 
 def prediction_analizer(func):

@@ -379,7 +379,7 @@ def create_model_from_config(n,inputs,name="net",imports=[])->keras.Model:
     return out
 
 def create_preprocessor_from_config(n,inputs,name="net",imports=[]):
-    d=Declarations(n)
+    d=Declarations(n)    
     for x in imports: layers.register(x)
     if hasattr(inputs,"_preprocessed"):
         return inputs

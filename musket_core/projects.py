@@ -1,6 +1,7 @@
 from musket_core import experiment,structure_constants
 from musket_core import datasets,visualization,utils
 from musket_core import parralel
+from musket_core import dataset_analizers,dataset_visualizers
 import keras
 import  musket_core.model
 import musket_core.generic
@@ -66,6 +67,10 @@ class WrappedVisualizer:
         r["name"] = self.name
         r["kind"] = "visualizer"
         r["parameters"] = introspector.parameters(self.func)
+        if hasattr(self.func,"viewer"):
+            r["viewer"]=getattr(self.func,"viewer")
+        else:
+            r["viewer"] = "text"
         return r
 
 class WrappedTask:
@@ -273,6 +278,8 @@ class Project:
             if m.endswith(".py"):
                 x=m[:-3]
                 res.append(self.module(x))
+        res.append(dataset_analizers)
+        res.append(dataset_visualizers)
         return res
 
     def module(self,name):
