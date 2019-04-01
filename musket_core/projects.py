@@ -271,6 +271,9 @@ class Project:
     def modulesPath(self):
         return os.path.join(self.path,"modules")
 
+    def commonPath(self):
+        return os.path.join(self.path,"common.yaml")
+
     def modules(self):
 
         res=[]

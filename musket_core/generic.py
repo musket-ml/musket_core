@@ -2,7 +2,6 @@ import musket_core.generic_config as generic
 import musket_core.datasets as datasets
 import musket_core.configloader as configloader
 import musket_core.utils as utils
-
 import numpy as np
 import keras
 import tqdm
@@ -136,7 +135,10 @@ class GenericPipeline(generic.GenericTaskConfig):
         utils.save_yaml(self.path+".shapes",(_shape(predItem.x),_shape(predItem.y)))
         return super().fit(dataset,subsample,foldsToExecute,start_from_stage,drawingFunction,parallel=parallel)
 
-def parse(path) -> GenericPipeline:
-    cfg = configloader.parse("generic", path)
+def parse(path,extra=None) -> GenericPipeline:
+    cfg = configloader.parse("generic", path,extra)
     cfg.path = path
+    if cfg.imports is None:
+
+       pass
     return cfg

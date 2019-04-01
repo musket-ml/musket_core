@@ -47,13 +47,22 @@ class Experiment:
         cfg.generateReports()
 
     def parse_config(self):
+        extra=None
+        if self.project is not None:
+            if os.path.exists(self.project.commonPath()):
+                extra=self.project.commonPath()
         if os.path.exists(self.getConfigYamlPath()):
-            cfg = generic.parse(self.getConfigYamlPath())
+            cfg = generic.parse(self.getConfigYamlPath(),extra)
 
         else:
-            cfg = generic.parse(self.getConfigYamlConcretePath())
+            cfg = generic.parse(self.getConfigYamlConcretePath(),extra)
         if self.allowResume:
             cfg.setAllowResume(self.allowResume)
+        if self.project is not None:            
+            for m in os.listdir(self.project.modulesPath()):
+                if ".py" in m:
+                    cfg.imports.append(m[0:m.index(".py")])
+
         return cfg
 
     def log_path(self,fold,stage):

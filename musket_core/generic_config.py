@@ -271,6 +271,7 @@ class GenericTaskConfig(model.ConnectedModel):
             setattr(self, v, val)
         pass
 
+
     def _update_from_config(self, v, val):
         if v == 'callbacks':
             cs = []
