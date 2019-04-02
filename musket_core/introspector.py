@@ -46,6 +46,7 @@ def record(m,kind):
         rs["parameters"]=parameters(m)     
     rs["kind"]=kind
     rs["sourcefile"]=inspect.getsourcefile(m)
+    rs["source"] = inspect.getsource(m)
     return rs
 
 blackList={'get','deserialize','deserialize_keras_object','serialize','serialize_keras_object','Layer','Callback','Optimizer'}

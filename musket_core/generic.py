@@ -7,15 +7,17 @@ import keras
 import tqdm
 import musket_core.net_declaration as net
 import musket_core.quasymodels as qm
-
+import os
 
 def model_function(func):
     func.model=True
     return func
 
 def _shape(x):
-    if isinstance(x,list) or isinstance(x,tuple):
+    if isinstance(x,tuple):
         return [i.shape for i in x]
+    if isinstance(x,list):
+        return np.array(x).shape
     return x.shape
 
 class GenericPipeline(generic.GenericTaskConfig):
@@ -112,6 +114,8 @@ class GenericPipeline(generic.GenericTaskConfig):
 
     def parse_dataset(self,name=None):
         fw=self.dataset
+        if self.datasets_path is not None:
+            os.chdir(self.datasets_path) #TODO review
         if name is not None:
             fw=self.datasets[name]
         if isinstance(fw,str):
@@ -137,8 +141,5 @@ class GenericPipeline(generic.GenericTaskConfig):
 
 def parse(path,extra=None) -> GenericPipeline:
     cfg = configloader.parse("generic", path,extra)
-    cfg.path = path
-    if cfg.imports is None:
-
-       pass
+    cfg.path = path    
     return cfg

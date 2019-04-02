@@ -44,6 +44,8 @@ class WrappedDataSetFactory:
         r["name"]=self.name
         r["kind"]="dataset_factory"
         r["parameters"]=introspector.parameters(self.func)
+        r["sourcefile"] = inspect.getsourcefile(self.func)
+        r["source"] = inspect.getsource(self.func)
         return r
 
 class WrappedVisualizer:
@@ -71,6 +73,8 @@ class WrappedVisualizer:
             r["viewer"]=getattr(self.func,"viewer")
         else:
             r["viewer"] = "text"
+        r["sourcefile"] = inspect.getsourcefile(self.func)
+        r["source"] = inspect.getsource(self.func)
         return r
 
 class WrappedTask:
@@ -124,7 +128,8 @@ class WrappedTask:
         r["name"]=self.name
         r["kind"]="task"
         r["parameters"]=introspector.parameters(self.func)
-        r["source"]=inspect.getsourcefile(self.func)
+        r["sourcefile"]=inspect.getsourcefile(self.func)
+        r["source"] = inspect.getsource(self.func)
         return r
 
 class WrappedLayer:
@@ -270,6 +275,9 @@ class Project:
 
     def modulesPath(self):
         return os.path.join(self.path,"modules")
+
+    def dataPath(self):
+        return os.path.join(self.path, "data")
 
     def commonPath(self):
         return os.path.join(self.path,"common.yaml")

@@ -220,6 +220,7 @@ class GenericTaskConfig(model.ConnectedModel):
         self.all = atrs
         self.groupFunc=None
         self.imports=[]
+        self.datasets_path=None
         self._dataset=None
         self._reporter=None
         self.testTimeAugmentation=None
