@@ -66,7 +66,7 @@ def diskcache(layers,declarations,config,outputs,linputs,pName,withArgs):
 
             if hasattr(input, "name"):
                 id = getattr(input, "name")
-                name = id.replace("{", "").replace("[", "").replace("]", "").replace("}", "").replace(" ", "").replace(",","").replace("\'","").replace(":", "")
+                name = id.replace("{", "").replace("[", "").replace("/", "").replace("\\", "").replace("]", "").replace("}", "").replace(" ", "").replace(",","").replace("\'","").replace(":", "")
             name=CACHE_DIR+name
             if name in storage:
                 return storage[name]
@@ -135,6 +135,10 @@ def diskcache(layers,declarations,config,outputs,linputs,pName,withArgs):
                 dumpArray(data[1], f"{name}/y_", ext, "Saving Y cache...")
 
             result = DiskCache(input, data)
+            if hasattr(input, "folds"):
+                result.folds = input.folds
+            if hasattr(input, "holdoutArr"):
+                result.holdoutArr = input.holdoutArr
             storage[name] = result
             return result
         finally:
