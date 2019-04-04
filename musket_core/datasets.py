@@ -12,6 +12,7 @@ import imageio
 import numpy as np
 import traceback
 import random
+import tqdm
 from musket_core import utils
 
 AUGMENTER_QUEUE_LIMIT=10
@@ -24,6 +25,12 @@ class PredictionItem:
         self.y=y
         self.id=path
 
+    def original(self):
+       return self
+
+    def rootItem(self):
+        return self
+
 
 class DataSet:
     def __getitem__(self, item)->PredictionItem:
@@ -31,6 +38,11 @@ class DataSet:
 
     def __len__(self):
         raise ValueError("Not implemented")
+
+    def __str__(self):
+        if hasattr(self,"name"):
+            return getattr(self,"name")
+        return "dataset"
 
 class DataSetLoader:
     def __init__(self,dataset,indeces,batchSize=16,isTrain=True):
@@ -634,6 +646,6 @@ def dataset_classes(ds, groupFunc):
 
 def get_targets_as_array(d):
     preds=[]
-    for i in range(len(d)):
+    for i in tqdm.tqdm(range(len(d)),"reading dataset targets "+str(d)):
         preds.append(d[i].y)
     return np.array(preds)

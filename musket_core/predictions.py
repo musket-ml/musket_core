@@ -16,12 +16,19 @@ class Prediction:
 
     def calculate(self):
         ensure(constructPredictionsDirPath(self.cfg.directory()))
-        path = f"{constructPredictionsDirPath(self.cfg.directory())}/{self.name}{str(self.stage)}{str(self.fold)}.npy"
+        nm=self.name
+        if not isinstance(self.name,str):
+            if hasattr(self.name,"name"):
+                nm=getattr(self.name,"name")
+            if hasattr(self.name,"origName"):
+                nm=getattr(self.name,"origName")
+        path = f"{constructPredictionsDirPath(self.cfg.directory())}/{nm}{str(self.stage)}{str(self.fold)}.npy"
         if os.path.exists(path):
             rr= np.load(path)
             return rr
-        ds=None
-        if self.name=="holdout":
+        if not isinstance(self.name,str):
+            ds=self.name
+        elif self.name=="holdout":
             ds=self.cfg.holdout()
         elif self.name=="validation":
             ds=self.cfg.validation(self.fold)

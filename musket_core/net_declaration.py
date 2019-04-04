@@ -379,7 +379,7 @@ def create_model_from_config(n,inputs,name="net",imports=[])->keras.Model:
     return out
 
 def create_preprocessor_from_config(n,inputs,name="net",imports=[]):
-    d=Declarations(n)
+    d=Declarations(n)    
     for x in imports: layers.register(x)
     if hasattr(inputs,"_preprocessed"):
         return inputs
@@ -391,7 +391,11 @@ def create_preprocessor_from_config(n,inputs,name="net",imports=[]):
 
     out._preprocessed=True
     return out
+
+DEFAULT_DATASET_DIR=None
 def create_dataset_from_config(n,name="net",imports=[]):
+    if DEFAULT_DATASET_DIR is not None:
+        os.chdir(str(DEFAULT_DATASET_DIR))
     d=Declarations(n)
     for x in imports: layers.register(x)
     out=d.preprocess(name, None)

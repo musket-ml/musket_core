@@ -2,7 +2,7 @@ import importlib
 import os
 import yaml
 import inspect
-
+from musket_core import utils
 class Module:
 
     def __init__(self,dict):
@@ -175,6 +175,9 @@ class PythonFunction(AbstractType):
             for i in range(len(args)):
                 mm[self.args[i]]=args[i]
             def res(i):
+                if isinstance(i, list) or isinstance(i , tuple):
+                    if len(i)==0:
+                        i=None
                 if i is not None:
                     mm["input"]=i
                 return clazz(**mm)
@@ -272,9 +275,24 @@ def load(name: str)  -> Module:
     loaded[name]=Module(cfg);
     return loaded[name]
 
-def parse(name:str,p):
+alllowReplace=["declarations","callbacks","datasets","tasks"]
+def parse(name:str,p,extra=None):
     m=load(name)
+
     if type(p)==str:
         with open(p, "r") as f:
-            return m.instantiate(yaml.load(f));
+            base=yaml.load(f)
+            if extra is not None:
+                extrad=utils.load_yaml(extra)
+                for v in extrad:
+                    if v not in base:
+                        base[v]=extrad[v]
+                    else:
+                        if v in alllowReplace:
+                            for q in extrad[v]:
+                                mn=base[v]
+                                if q not in mn:
+                                    mn[q]=extrad[v][q]
+
+            return m.instantiate(base)
     return m.instantiate(p);

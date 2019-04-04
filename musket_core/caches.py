@@ -29,6 +29,18 @@ class Cache:
         return len(self.parent)
 
 
+class CachedPredictionItem(PredictionItem):
+
+    def __init__(self, path, x, y,originalDataSet):
+        super().__init__(path,x,y)
+        self._original=originalDataSet
+
+    def original(self):
+        return self._original[self.id]
+
+    def rootItem(self):
+        return self.original().rootItem()
+
 class DiskCache:
 
     def __init__(self,parent,items):
@@ -41,9 +53,9 @@ class DiskCache:
     def __getitem__(self, item):
         isList = isinstance(self.items[0],list)
         if isList:
-            return PredictionItem(item,list(map(lambda x: x[item], self.items[0])),self.items[1][item])
+            return CachedPredictionItem(item,list(map(lambda x: x[item], self.items[0])),self.items[1][item],self.parent)
         else:
-            return PredictionItem(item,self.items[0][item],self.items[1][item])
+            return CachedPredictionItem(item,self.items[0][item],self.items[1][item],self.parent)
 
     def __len__(self):
         return len(self.parent)
@@ -135,10 +147,13 @@ def diskcache(layers,declarations,config,outputs,linputs,pName,withArgs):
                 dumpArray(data[1], f"{name}/y_", ext, "Saving Y cache...")
 
             result = DiskCache(input, data)
+
             if hasattr(input, "folds"):
                 result.folds = input.folds
             if hasattr(input, "holdoutArr"):
                 result.holdoutArr = input.holdoutArr
+            if hasattr(input, "name"):
+                result.origName = input.name
             storage[name] = result
             return result
         finally:

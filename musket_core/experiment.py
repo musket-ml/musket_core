@@ -47,13 +47,24 @@ class Experiment:
         cfg.generateReports()
 
     def parse_config(self):
+        extra=None
+        if self.project is not None:
+            if os.path.exists(self.project.commonPath()):
+                extra=self.project.commonPath()
+
         if os.path.exists(self.getConfigYamlPath()):
-            cfg = generic.parse(self.getConfigYamlPath())
+            cfg = generic.parse(self.getConfigYamlPath(),extra)
 
         else:
-            cfg = generic.parse(self.getConfigYamlConcretePath())
+            cfg = generic.parse(self.getConfigYamlConcretePath(),extra)
         if self.allowResume:
             cfg.setAllowResume(self.allowResume)
+        if self.project is not None:            
+            for m in os.listdir(self.project.modulesPath()):
+                if ".py" in m:
+                    cfg.imports.append(m[0:m.index(".py")])
+            if os.path.exists(self.project.dataPath()):
+                cfg.datasets_path=self.project.dataPath()
         return cfg
 
     def log_path(self,fold,stage):
@@ -112,7 +123,9 @@ class Experiment:
                     pm = pm[4:]
                 mv = m["allStages"][pm + "_holdout"]
                 if "aggregation_metric" in self.config():
-                    mv = m["allStages"][self.config()["aggregation_metric"]]
+                    am=self.config()["aggregation_metric"]
+                    if am in m["allStages"]:
+                        mv = m["allStages"][am]
                 return mv
             if isinstance(m,float):
                 return m
@@ -214,6 +227,8 @@ class Experiment:
                     os.remove(self.getErrorYamlPath())
         self.setInProgress(False)
 
+
+
     def apply(self,all=False):
         if self.hyperparameters() is not None:
             return [self]
@@ -255,7 +270,7 @@ class Experiment:
                 return [Experiment(concretePath)]
             return [self]
 
-        return [self.apply()]
+        return self.apply(True)
 
     def getSummaryYamlPath(self):
         return constructSummaryYamlPath(self.path)

@@ -1,7 +1,9 @@
 from musket_core import experiment,structure_constants
 from musket_core import datasets,visualization,utils
 from musket_core import parralel
-
+from musket_core import dataset_analizers,dataset_visualizers
+import keras
+import  musket_core.model
 import musket_core.generic
 import musket_core.generic_config
 from typing import Collection
@@ -9,7 +11,7 @@ import os
 import sys
 import importlib
 import inspect
-
+from musket_core import introspector
 
 def _all_experiments(path,e:[experiment.Experiment]):
     if structure_constants.isExperimentDir(path):
@@ -37,6 +39,14 @@ class WrappedDataSetFactory:
     def create(self,name, parameters):
         return WrappedDataSet(name,self, parameters,self.project)
 
+    def introspect(self):
+        r={}
+        r["name"]=self.name
+        r["kind"]="dataset_factory"
+        r["parameters"]=introspector.parameters(self.func)
+        r["sourcefile"] = inspect.getsourcefile(self.func)
+        r["source"] = inspect.getsource(self.func)
+        return r
 
 class WrappedVisualizer:
     def __init__(self,name,func,sig):
@@ -54,7 +64,18 @@ class WrappedVisualizer:
         utils.ensure(path)
         return visualization.Visualizer(self.func,path,d)
 
-
+    def introspect(self):
+        r = {}
+        r["name"] = self.name
+        r["kind"] = "visualizer"
+        r["parameters"] = introspector.parameters(self.func)
+        if hasattr(self.func,"viewer"):
+            r["viewer"]=getattr(self.func,"viewer")
+        else:
+            r["viewer"] = "text"
+        r["sourcefile"] = inspect.getsourcefile(self.func)
+        r["source"] = inspect.getsource(self.func)
+        return r
 
 class WrappedTask:
     def __init__(self,name,func,sig):
@@ -75,9 +96,15 @@ class WrappedTask:
             for p in self.sig.parameters:
                 par=self.sig.parameters[p]
                 type=par.annotation
-                if issubclass(type,musket_core.generic_config.GenericTaskConfig):
+                if issubclass(type,musket_core.model.Model):
+                    if p in args:
+                        actualArgs[p]=args[p].wrap(config,exp)
                     actualArgs[p]=config
+
                 elif issubclass(type,musket_core.datasets.DataSet):
+                    actualArgs[p]=config.get_dataset(args[p])
+                    if not hasattr(actualArgs[p],"name") and not hasattr(actualArgs[p],"origName"):
+                        actualArgs[p].name=args[p]
                     pass
                 else:
                     if p in args:
@@ -96,6 +123,56 @@ class WrappedTask:
         concrete=exp.concrete()
         return [self.createConcreteTodo(v,args,project) for v in concrete]
 
+    def introspect(self):
+        r={}
+        r["name"]=self.name
+        r["kind"]="task"
+        r["parameters"]=introspector.parameters(self.func)
+        r["sourcefile"]=inspect.getsourcefile(self.func)
+        r["source"] = inspect.getsource(self.func)
+        return r
+
+class WrappedLayer:
+    def __init__(self,clazz):
+        self.name=clazz.__name__
+        self.clazz=clazz
+
+
+    def introspect(self):
+        return  introspector.record(self.clazz,"Layer")
+
+class WrappedPreprocessor:
+    def __init__(self,clazz):
+        self.name=clazz.__name__
+        self.clazz=clazz
+
+
+    def introspect(self):
+        return  introspector.record(self.clazz,"preprocessor")
+
+class WrappedModelBlock:
+    def __init__(self,clazz):
+        self.name=clazz.__name__
+        self.clazz=clazz
+
+    def introspect(self):
+        return  introspector.record(self.clazz,"model")
+
+class WrappedAnalizer:
+    def __init__(self,clazz):
+        self.name=clazz.__name__
+        self.clazz=clazz
+
+    def introspect(self):
+        return  introspector.record(self.clazz,"analizer")
+
+class WrappedDataAnalizer:
+    def __init__(self,clazz):
+        self.name=clazz.__name__
+        self.clazz=clazz
+
+    def introspect(self):
+        return  introspector.record(self.clazz,"data_analizer")
 
 class WrappedDataSet(datasets.DataSet):
     def __init__(self,name,w:WrappedDataSetFactory,parameters,project):
@@ -154,6 +231,11 @@ class Workspace:
         self.projects[path] = p
         return p
 
+    def experiment(self,experimentPath):
+        project = self.project(experimentPath[0:experimentPath.index("experiments")])
+        exp = project.byFullPath(experimentPath)
+        return exp
+
 class Project:
 
     def __init__(self,path):
@@ -194,6 +276,12 @@ class Project:
     def modulesPath(self):
         return os.path.join(self.path,"modules")
 
+    def dataPath(self):
+        return os.path.join(self.path, "data")
+
+    def commonPath(self):
+        return os.path.join(self.path,"common.yaml")
+
     def modules(self):
 
         res=[]
@@ -201,6 +289,8 @@ class Project:
             if m.endswith(".py"):
                 x=m[:-3]
                 res.append(self.module(x))
+        res.append(dataset_analizers)
+        res.append(dataset_visualizers)
         return res
 
     def module(self,name):
@@ -209,6 +299,15 @@ class Project:
         self.__module_cache[name]=importlib.import_module(name)
         return self.__module_cache[name]
 
+    def introspect(self):
+        self._elements=None
+        for x in self.__module_cache:
+            importlib.reload(self.__module_cache[x])
+        res=[x.introspect() for x in self.elements()]
+        for x in res:
+            x["custom"]=True
+        res=res+introspector.builtins()
+        return {"features":res}
 
     def elements(self):
         if self._elements is not None:
@@ -240,10 +339,29 @@ class Project:
                         elements.append(WrappedVisualizer(name,vl,sig))
                     if hasattr(vl,"task") and getattr(vl,"task")==True:
                         elements.append(WrappedTask(name, vl, sig))
+                    if hasattr(vl,"model") and getattr(vl,"model")==True:
+                        elements.append(WrappedModelBlock(vl))
+                    if hasattr(vl,"analizer") and getattr(vl,"analizer")==True: 
+                        elements.append(WrappedAnalizer(vl))
+                    if hasattr(vl,"data_analizer") and getattr(vl,"data_analizer")==True:
+                        elements.append(WrappedDataAnalizer(vl))
+                    if hasattr(vl, "preprocessor") and getattr(vl, "preprocessor") == True:
+                        elements.append(WrappedPreprocessor(vl))
+                if inspect.isclass(vl):
+                    if issubclass(vl,keras.layers.Layer):
+                        file=inspect.getsourcefile(vl)
+                        if not "keras" in file:
+                            elements.append(WrappedLayer(vl))
         return elements
 
     def get_visualizers(self):
         return [x for x in self.elements() if isinstance(x,WrappedVisualizer)]
+
+    def get_analizers(self):
+        return [x for x in self.elements() if isinstance(x,WrappedAnalizer)]
+
+    def get_data_analizers(self):
+        return [x for x in self.elements() if isinstance(x,WrappedDataAnalizer)]
 
     def get_tasks(self):
         return [x for x in self.elements() if isinstance(x, WrappedTask)]
@@ -254,6 +372,19 @@ class Project:
                 return t
         return None
 
+    def get_visualizer_by_name(self,name)->WrappedVisualizer:
+        for t in self.get_visualizers():
+            if t.name==name:
+                return t
+
+    def get_analizer_by_name(self,name):
+        for t in self.get_analizers():
+            if t.name==name:
+                return t
+        for t in self.get_data_analizers():
+            if t.name==name:
+                return t
+        return None
 
     def get_datasets(self):
         ds=set()

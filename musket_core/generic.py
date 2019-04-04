@@ -2,19 +2,22 @@ import musket_core.generic_config as generic
 import musket_core.datasets as datasets
 import musket_core.configloader as configloader
 import musket_core.utils as utils
-
 import numpy as np
 import keras
 import tqdm
 import musket_core.net_declaration as net
 import musket_core.quasymodels as qm
+import os
 
-
-
+def model_function(func):
+    func.model=True
+    return func
 
 def _shape(x):
-    if isinstance(x,list) or isinstance(x,tuple):
+    if isinstance(x,tuple):
         return [i.shape for i in x]
+    if isinstance(x,list):
+        return np.array(x).shape
     return x.shape
 
 class GenericPipeline(generic.GenericTaskConfig):
@@ -111,13 +114,15 @@ class GenericPipeline(generic.GenericTaskConfig):
 
     def parse_dataset(self,name=None):
         fw=self.dataset
+        if self.datasets_path is not None:
+            os.chdir(self.datasets_path) #TODO review
         if name is not None:
             fw=self.datasets[name]
         if isinstance(fw,str):
             fw = self.datasets[name]
         if self.dataset is not None:
             dataset = net.create_dataset_from_config(self.declarations, fw,  self.imports)
-            if self.preprocessing is not None:
+            if self.preprocessing is not None and self.preprocessing!="":
                 dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing,
                                                               self.imports)
             return dataset
@@ -134,7 +139,7 @@ class GenericPipeline(generic.GenericTaskConfig):
         utils.save_yaml(self.path+".shapes",(_shape(predItem.x),_shape(predItem.y)))
         return super().fit(dataset,subsample,foldsToExecute,start_from_stage,drawingFunction,parallel=parallel)
 
-def parse(path) -> GenericPipeline:
-    cfg = configloader.parse("generic", path)
-    cfg.path = path
+def parse(path,extra=None) -> GenericPipeline:
+    cfg = configloader.parse("generic", path,extra)
+    cfg.path = path    
     return cfg

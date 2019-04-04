@@ -6,6 +6,7 @@ import csv
 import keras
 import tqdm
 import pandas as pd
+from musket_core import model
 import typing
 import musket_core.image_datasets
 import musket_core.splits
@@ -211,7 +212,7 @@ class ReportWork:
         self.cfg.generateReports(self.foldsToExecute, self.subsample)
 
 
-class GenericTaskConfig:
+class GenericTaskConfig(model.ConnectedModel):
 
     def __init__(self,**atrs):
         self.batch = 8
@@ -219,6 +220,7 @@ class GenericTaskConfig:
         self.all = atrs
         self.groupFunc=None
         self.imports=[]
+        self.datasets_path=None
         self._dataset=None
         self._reporter=None
         self.testTimeAugmentation=None
@@ -269,6 +271,7 @@ class GenericTaskConfig:
             val = self._update_from_config(v, val)
             setattr(self, v, val)
         pass
+
 
     def _update_from_config(self, v, val):
         if v == 'callbacks':
@@ -428,11 +431,15 @@ class GenericTaskConfig:
             foldNum=ds
             ds=self.get_dataset()
         ids=self.kfold(ds).indexes(foldNum,False)
-        return datasets.SubDataSet(ds,ids)
+        r=datasets.SubDataSet(ds, ids)
+        r.name="validation"+str(foldNum)
+        return r
 
     def train(self,ds,foldNum):
         ids=self.kfold(ds).indexes(foldNum,True)
-        return datasets.SubDataSet(ds,ids)
+        r=datasets.SubDataSet(ds,ids)
+        r.name="train"+str(foldNum)
+        return r
 
     def createOptimizer(self, lr=None):
         r = getattr(opt, self.optimizer)
@@ -529,6 +536,10 @@ class GenericTaskConfig:
         if dataSetName is not None:
             if dataSetName=="holdout":
                 return self.holdout(self.get_dataset())
+            if dataSetName=="validation":
+                return self.validation(self.get_dataset(),0)
+            if dataSetName=="train":
+                return self.train(self.get_dataset(),0)
             return self.parse_dataset(dataSetName)
 
 
