@@ -133,6 +133,8 @@ class GenericPipeline(generic.GenericTaskConfig):
         if dataset is None:
           dataset = self.parse_dataset()
         self._dataset = dataset
+        if hasattr(self._dataset,'folds'):
+            self.folds_count = len(self._dataset.folds)
         if self.preprocessing is not None:
             dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing, self.imports)
         predItem=dataset[0]

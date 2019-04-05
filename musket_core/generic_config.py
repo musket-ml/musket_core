@@ -292,8 +292,10 @@ class GenericTaskConfig(model.ConnectedModel):
 
     def doGetHoldout(self, ds):
         ho = self.holdoutArr
+        if ho is None and hasattr(ds,'holdoutArr'):
+            ho = getattr(ds,'holdoutArr')
         if ho is not None:
-            train = list(set(range(1,len(ds))).difference(self.holdoutArr))
+            train = list(set(range(0,len(ds)-1)).difference(ho))
 
             return datasets.SubDataSet(ds, train), datasets.SubDataSet(ds, ho)
 
@@ -318,6 +320,9 @@ class GenericTaskConfig(model.ConnectedModel):
     def kfold(self, ds=None, indeces=None,batch=None)-> datasets.DefaultKFoldedDataSet:
         if ds is None:
             ds=self.get_dataset()
+        inputFolds = None
+        if hasattr(ds,'folds'):
+            inputFolds = getattr(ds,'folds')
         if self.testSplit>0:
             if os.path.exists(self.path + ".holdout_split"):
                 trI,hI = utils.load_yaml(self.path + ".holdout_split")
@@ -336,7 +341,9 @@ class GenericTaskConfig(model.ConnectedModel):
         transforms = [] + self.transforms
         ds = self.inject_task_specific_transforms(ds, transforms)
         split_loaded=False
-        if os.path.exists(self.path+".folds_split"):
+        if inputFolds is not None:
+            ds.folds = inputFolds
+        elif os.path.exists(self.path+".folds_split"):
              folds=utils.load_yaml(self.path+".folds_split")
              split_loaded=True
              ds.folds=folds

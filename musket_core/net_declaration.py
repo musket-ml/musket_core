@@ -415,15 +415,14 @@ def create_dataset_from_config(n,name="net",imports=[]):
         vOff = lt
         hOff = lt + lv
 
-        trainIndices      = [i for i in range(tOff, tOff + lt)]
-        validationIndices = [i for i in range(vOff, vOff + lv)]
-        holdoutIndices    = [i for i in range(hOff, hOff + lh)]
-
+        trainIndices      = np.array([i for i in range(tOff, tOff + lt)], dtype=np.int)
+        validationIndices = np.array([i for i in range(vOff, vOff + lv)], dtype=np.int)
+        holdoutIndices    = np.array([i for i in range(hOff, hOff + lh)], dtype=np.int)
 
         result = datasets.CompositeDataSet([train, validation, holdout])
-
         result.folds = [(trainIndices,validationIndices)]
         result.holdoutArr = holdoutIndices
+        result.name = f"t-{trainName}_v-{validationName}_h-{holdoutName}"
         return result
 
     if DEFAULT_DATASET_DIR is not None:

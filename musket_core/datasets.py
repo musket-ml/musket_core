@@ -182,6 +182,11 @@ class CompositeDataSet:
         return None
 
     def __getitem__(self, item):
+        if isinstance(item, slice):
+            ifnone = lambda a, b: b if a is None else a
+            rng = range(ifnone(item.start, 0), ifnone(item.stop, self.__len__()), ifnone(item.step, 1))
+            result = [self.__getitem__(i) for i in rng]
+            return result
         i = item
         for j in range(len(self.shifts)):
             d = self.components[j]
