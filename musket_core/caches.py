@@ -93,7 +93,7 @@ def cache(layers,declarations,config,outputs,linputs,pName,withArgs):
     return ccc
 
 CACHE_DIR=""
-def diskcache1(layers,declarations,config,outputs,linputs,pName,withArgs):
+def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
     def ccc(input):
         global CACHE_DIR
         __lock__.acquire()
@@ -233,7 +233,7 @@ def diskcache1(layers,declarations,config,outputs,linputs,pName,withArgs):
                 save(blocksCountPath, blockInd)
                 return input
 
-            result = DiskCache(input, data, xIsListOrTuple, yIsListOrTuple)
+            result = DiskCache1(input, data, xIsListOrTuple, yIsListOrTuple)
             storage[name] = result
             return result
         finally:
@@ -305,7 +305,7 @@ def inspect_structure(obj)->([str], [[int]], str):
 
     return types, shapes, container
 
-def diskcache(layers,declarations,config,outputs,linputs,pName,withArgs):
+def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
     def ccc(input):
         global CACHE_DIR
         __lock__.acquire()
@@ -397,3 +397,11 @@ def diskcache(layers,declarations,config,outputs,linputs,pName,withArgs):
         finally:
             __lock__.release()
     return ccc
+
+
+def diskcache(layers, declarations, config, outputs, linputs, pName, withArgs):
+    if config is not None and isinstance(config, dict):
+        if 'split' in config and config['split'] == True:
+            return diskcache_new(layers, declarations, config, outputs, linputs, pName, withArgs)
+
+    return diskcache_old(layers, declarations, config, outputs, linputs, pName, withArgs)
