@@ -397,6 +397,35 @@ def create_preprocessor_from_config(n,inputs,name="net",imports=[]):
 
 DEFAULT_DATASET_DIR=None
 def create_dataset_from_config(n,name="net",imports=[]):
+
+    if isinstance(name,dict) and 'train' in name and 'validation' in name and 'holdout' in name:
+        trainName = name['train']
+        validationName = name['validation']
+        holdoutName = name['holdout']
+
+        train = create_dataset_from_config(n,trainName,imports)
+        validation = create_dataset_from_config(n, validationName, imports)
+        holdout = create_dataset_from_config(n, holdoutName, imports)
+
+        lt = len(train)
+        lv = len(validation)
+        lh = len(holdout)
+
+        tOff = 0
+        vOff = lt
+        hOff = lt + lv
+
+        trainIndices      = [i for i in range(tOff, tOff + lt)]
+        validationIndices = [i for i in range(vOff, vOff + lv)]
+        holdoutIndices    = [i for i in range(hOff, hOff + lh)]
+
+
+        result = datasets.CompositeDataSet([train, validation, holdout])
+
+        result.folds = [(trainIndices,validationIndices)]
+        result.holdoutArr = holdoutIndices
+        return result
+
     if DEFAULT_DATASET_DIR is not None:
         os.chdir(str(DEFAULT_DATASET_DIR))
     d=Declarations(n)
