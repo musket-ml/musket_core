@@ -23,6 +23,8 @@ class PreprocessedDataSet:
         self.kw=kwargs
         if hasattr(parent,"folds"):
             self.folds=getattr(parent,"folds");
+        if hasattr(parent,"holdoutArr"):
+            self.holdoutArr=getattr(parent,"holdoutArr");
         if hasattr(parent, "name"):
             self.name=parent.name+self.func.__name__+str(kwargs)
             self.origName = self.name
