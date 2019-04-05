@@ -1,5 +1,5 @@
 from musket_core import experiment,structure_constants
-from musket_core import datasets,visualization,utils
+from musket_core import datasets,visualization,utils,net_declaration
 from musket_core import parralel
 from musket_core import dataset_analizers,dataset_visualizers
 import keras
@@ -11,6 +11,7 @@ import os
 import sys
 import importlib
 import inspect
+
 from musket_core import introspector
 
 def _all_experiments(path,e:[experiment.Experiment]):
@@ -352,6 +353,7 @@ class Project:
                         file=inspect.getsourcefile(vl)
                         if not "keras" in file:
                             elements.append(WrappedLayer(vl))
+
         return elements
 
     def get_visualizers(self):

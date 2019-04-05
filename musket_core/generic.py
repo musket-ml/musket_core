@@ -139,6 +139,7 @@ class GenericPipeline(generic.GenericTaskConfig):
         utils.save_yaml(self.path+".shapes",(_shape(predItem.x),_shape(predItem.y)))
         return super().fit(dataset,subsample,foldsToExecute,start_from_stage,drawingFunction,parallel=parallel)
 
+
 def parse(path,extra=None) -> GenericPipeline:
     cfg = configloader.parse("generic", path,extra)
     cfg.path = path    

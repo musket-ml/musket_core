@@ -303,6 +303,19 @@ class AnalizePredictions(yaml.YAMLObject):
             _results.append(r)
         return AnalizeResults(_results)
 
+class Validate(yaml.YAMLObject):
+    yaml_tag = u'!com.onpositive.musket_core.ValidateTask'
+
+    def __init__(self):
+        self.path=None
+
+    def perform(self,server,reporter:ProgressMonitor):
+        path=self.path
+        e:Experiment= server.experiment(path)
+        model=e.parse_config().createAndCompile()
+        model.summary()
+        print("Model validated successfully!")
+        return None
 
 class Launch(yaml.YAMLObject):
     yaml_tag = u'!com.onpositive.dside.ui.LaunchConfiguration'

@@ -333,7 +333,10 @@ class Declarations:
         return self.declarationMap[item]
 
     def instantiate(self,name,inputs):
-        if isinstance(name,dict):
+        if isinstance(name,list):
+            v=Declaration(name).instantiate(self)
+            inp=[]
+        elif isinstance(name,dict):
             v=Declaration([name]).instantiate(self)
             inp=[]
         else:
