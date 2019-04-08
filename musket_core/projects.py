@@ -45,8 +45,11 @@ class WrappedDataSetFactory:
         r["name"]=self.name
         r["kind"]="dataset_factory"
         r["parameters"]=introspector.parameters(self.func)
-        r["sourcefile"] = inspect.getsourcefile(self.func)
-        r["source"] = inspect.getsource(self.func)
+        try:
+            r["sourcefile"] = inspect.getsourcefile(self.func)
+            r["source"] = inspect.getsource(self.func)
+        except:
+            pass
         return r
 
 class WrappedVisualizer:
@@ -74,8 +77,11 @@ class WrappedVisualizer:
             r["viewer"]=getattr(self.func,"viewer")
         else:
             r["viewer"] = "text"
-        r["sourcefile"] = inspect.getsourcefile(self.func)
-        r["source"] = inspect.getsource(self.func)
+        try:
+            r["sourcefile"] = inspect.getsourcefile(self.func)
+            r["source"] = inspect.getsource(self.func)
+        except:
+            pass
         return r
 
 class WrappedTask:
@@ -129,8 +135,11 @@ class WrappedTask:
         r["name"]=self.name
         r["kind"]="task"
         r["parameters"]=introspector.parameters(self.func)
-        r["sourcefile"]=inspect.getsourcefile(self.func)
-        r["source"] = inspect.getsource(self.func)
+        try:
+            r["sourcefile"]=inspect.getsourcefile(self.func)
+            r["source"] = inspect.getsource(self.func)
+        except:
+            pass
         return r
 
 class WrappedLayer:
@@ -174,6 +183,14 @@ class WrappedDataAnalizer:
 
     def introspect(self):
         return  introspector.record(self.clazz,"data_analizer")
+
+class WrappedDataFilter:
+    def __init__(self,clazz):
+        self.name=clazz.__name__
+        self.clazz=clazz
+
+    def introspect(self):
+        return  introspector.record(self.clazz,"data_filter")
 
 class WrappedDataSet(datasets.DataSet):
     def __init__(self,name,w:WrappedDataSetFactory,parameters,project):
@@ -348,6 +365,8 @@ class Project:
                         elements.append(WrappedDataAnalizer(vl))
                     if hasattr(vl, "preprocessor") and getattr(vl, "preprocessor") == True:
                         elements.append(WrappedPreprocessor(vl))
+                    if hasattr(vl, "data_filter") and getattr(vl, "data_filter") == True:
+                        elements.append(WrappedDataFilter(vl))
                 if inspect.isclass(vl):
                     if issubclass(vl,keras.layers.Layer):
                         file=inspect.getsourcefile(vl)
@@ -364,6 +383,9 @@ class Project:
 
     def get_data_analizers(self):
         return [x for x in self.elements() if isinstance(x,WrappedDataAnalizer)]
+
+    def get_data_filters(self):
+        return [x for x in self.elements() if isinstance(x,WrappedDataFilter)]
 
     def get_tasks(self):
         return [x for x in self.elements() if isinstance(x, WrappedTask)]
@@ -384,6 +406,12 @@ class Project:
             if t.name==name:
                 return t
         for t in self.get_data_analizers():
+            if t.name==name:
+                return t
+        return None
+
+    def get_filter_by_name(self,name):
+        for t in self.get_data_filters():
             if t.name==name:
                 return t
         return None

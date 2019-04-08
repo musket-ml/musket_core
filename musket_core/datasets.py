@@ -1,6 +1,7 @@
 def warn(*args, **kwargs):
     pass
 import warnings
+import typing
 old=warnings.warn
 warnings.warn = warn
 import sklearn.model_selection as ms
@@ -33,6 +34,10 @@ class PredictionItem:
 
 
 class DataSet:
+
+    def __init__(self):
+        self.parent=None
+
     def __getitem__(self, item)->PredictionItem:
         raise ValueError("Not implemented")
 
@@ -43,6 +48,54 @@ class DataSet:
         if hasattr(self,"name"):
             return getattr(self,"name")
         return "dataset"
+
+def get_id(d:DataSet)->str:
+    if hasattr(d,"id"):
+        try:
+            return d.id()
+        except:
+            pass
+        return d.id
+    if hasattr(d, "name"):
+        return getattr(d, "name")
+    if hasattr(d, "origName"):
+        return getattr(d, "origName")
+    return "<unknown>"
+
+def get_stages(d:DataSet)->typing.List[str]:
+  ds=d
+  while isinstance(ds, SubDataSet):
+        ds = ds.ds
+  result=[]
+  while ds is not None:
+    result.append(get_id(ds))
+    if hasattr(ds,"parent"):
+        p=getattr(ds,"parent")
+        ds=p
+    else: break
+  return result
+
+def get_stage(d:DataSet,n:str)->DataSet:
+  ind=[]
+  ds=d
+  def createSub(ds,ind):
+      for j in range(1,len(ind)+1):
+          ds=SubDataSet(ds,ind[len(ind)-j])
+      return ds
+  while isinstance(ds, SubDataSet):
+        ind.append(ds.indexes)
+        ds = ds.ds
+
+  while ds is not None:
+      id=get_id(ds)
+      if id==n:
+           return createSub(ds,ind)
+
+      if hasattr(ds,"parent"):
+          p=getattr(ds,"parent")
+          ds=p
+      else: break
+  pass
 
 class DataSetLoader:
     def __init__(self,dataset,indeces,batchSize=16,isTrain=True):
@@ -628,6 +681,7 @@ class SubDataSet:
         if isinstance(orig,int) or orig is None or isinstance(orig,list):
             raise ValueError("Dataset is expected")
         self.ds=orig
+        self.parent=orig
         self.indexes=indexes
 
     def isPositive(self, item):
