@@ -160,7 +160,6 @@ def log_loss(y_true, y_pred):
     sum = K.sum(components)
     result = sum * -1.
     result /= K.cast(K.shape(y_true)[0], "float")
-    result /= 3.0
     return result
 
 log_loss.need_threshold = False
