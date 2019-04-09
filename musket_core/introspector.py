@@ -47,8 +47,11 @@ def record(m,kind):
     else:
         rs["parameters"]=parameters(m)     
     rs["kind"]=kind
-    rs["sourcefile"]=inspect.getsourcefile(m)
-    rs["source"] = inspect.getsource(m)
+    try:
+        rs["sourcefile"]=inspect.getsourcefile(m)
+        rs["source"] = inspect.getsource(m)
+    except:
+        pass
     return rs
 
 blackList={'get','deserialize','deserialize_keras_object','serialize','serialize_keras_object','Layer','Callback','Optimizer'}
@@ -76,8 +79,25 @@ optimizer=instrospect(keras.optimizers,keras.optimizers.Optimizer)
 layers=instrospect(keras.layers,Layer)
 callbacks=instrospect(keras.callbacks,Callback)
 bs=[]
+
+
+def createPars(c:str):
+    if "cache" in c: return []
+    return [
+        {
+
+            "name": "body",
+            "type": "Layer[]"
+        }
+
+    ]
+
+
 for c in net_declaration.builtins:
-    bs.append({ "name":c, "kind":"LayerOrPreprocessor","sourcefile":net_declaration.__file__})
+    bs.append({ "name":c, "kind":"LayerOrPreprocessor","sourcefile":net_declaration.__file__,"parameters": createPars(c)
+
+
+    })
 
 objects = keras.utils.get_custom_objects()
 for m in objects:

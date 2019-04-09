@@ -6,9 +6,11 @@ from musket_core.generic_config import GenericTaskConfig
 from musket_core.utils import save_yaml
 from musket_core import projects
 from musket_core.experiment import Experiment
+from musket_core import dataset_analizers
 import numpy as np
 import tempfile
 from tqdm import tqdm
+import inspect
 class ProgressMonitor:
 
     def isCanceled(self)->bool:
@@ -221,6 +223,36 @@ class AnalizeResults:
 
 
 
+
+class LastDataSetCache:
+
+    def __init__(self):
+        self._ds=None
+        self._cfg=None
+        self._config=None
+        self._targets=None
+        pass
+
+    def get_dataset(self,e:Experiment,name:str)->datasets.DataSet:
+        if self._cfg==e.path+":"+name:
+            if self._ds is not None:
+                return self._ds
+
+        self._config=e.parse_config()
+        self._ds=self._config.get_dataset(name)
+        self._cfg = e.path + ":" + name
+        return self._ds
+
+    def get_targets(self,e:Experiment,name:str)->datasets.DataSet:
+        if self._cfg==e.path+":"+name:
+            if self._targets is not None:
+                return self._targets
+
+        self._targets = datasets.get_targets_as_array(self.get_dataset(e,name))
+        return self._targets
+
+_cache=LastDataSetCache()
+
 class AnalizeOptionsRequest(yaml.YAMLObject):
 
     yaml_tag = u'!com.onpositive.dside.dto.GetPossibleAnalisisInfo'
@@ -234,11 +266,17 @@ class AnalizeOptionsRequest(yaml.YAMLObject):
 
     def perform(self, server, reporter: ProgressMonitor):
         exp:Experiment=server.experiment(self.experimentPath)
+        print("Aquiring dataset...")
+        ds=_cache.get_dataset(exp,self.datasetName)
+
         project:projects.Project=exp.project
+
         rs={
             "visualizers":[v.introspect() for v in project.get_visualizers()],
             "analizers": [v.introspect() for v in project.get_analizers()],
-            "data_analizers": [v.introspect() for v in project.get_data_analizers()]
+            "data_analizers": [v.introspect() for v in project.get_data_analizers()],
+            "datasetStages": datasets.get_stages(ds),
+            "datasetFilters":[v.introspect() for v in project.get_data_filters()],
         }
         return yaml.dump(rs)
 
@@ -257,26 +295,78 @@ class AnalizePredictions(yaml.YAMLObject):
         self.data=False
         self.analzierArgs={}
         self.visualizerArgs={}
+        self.stage=None
+        self.filters=[]
         pass
+
+    def accept_filter(self,ds:datasets.DataSet,i:int):
+        if self.filters is None or len(self.filters)==0:
+            return True
+
+        for x in self.filters:
+            f=x[0]
+            d=x[1]
+            a=x[2]
+
+            item = d[i]
+            if not f(item,a):
+                return False
+
+        return True
+
 
     def perform(self, server, reporter: ProgressMonitor):
         ms=ModelSpec(**self.spec)
         exp:Experiment=server.experiment(self.experimentPath)
         cf=exp.parse_config()
 
-        ds=cf.get_dataset(self.datasetName)
+        ds = _cache.get_dataset(exp, self.datasetName)
+        if self.stage is not None:
+            ds=datasets.get_stage(ds,self.stage)
         wrappedModel = ms.wrap(cf, exp)
 
-        targets=datasets.get_targets_as_array(ds)
+
         analizerFunc = exp.project.get_analizer_by_name(self.analizer).clazz
         visualizerFunc = exp.project.get_visualizer_by_name(self.visualizer)
+        targets=_cache.get_targets(exp,self.datasetName)
+        filters=[]
+        for f in self.filters:
+            fa:dict=f
+            flt_func=exp.project.get_filter_by_name(fa["filterKind"]).clazz
+            if flt_func==dataset_analizers.custom_python:
+                d={}
+                r = exec(fa["filterArgs"], d, d) in d
+                for m in d:
+                    if inspect.isfunction(d[m]):
+                        r = d[m]
+
+                        def fff(x, args):
+                            return r(x)
+
+                        flt_func = fff
+            if fa["mode"]=="inverse":
+                def inv(x,a):
+                    return not flt_func(x,a)
+                flt=inv
+            else:
+                flt=flt_func
+            m=_cache.get_dataset(exp, self.datasetName)
+            fltDat=datasets.get_stage(m,fa["applyAt"])
+            filterArgs=fa["filterArgs"]
+            filters.append((flt,fltDat,filterArgs))
+        self.filters=filters
+
         if self.data:
             pass
             l = len(targets)
             res = {}
             for i in tqdm(range(l)):
                 gt = targets[i]
-                gr = analizerFunc(gt,**self.analzierArgs)
+                if not self.accept_filter(ds,i):
+                    continue
+                if analizerFunc.usePredictionItem:
+                    gr = analizerFunc(ds[i], **self.analzierArgs)
+                else: gr = analizerFunc(gt,**self.analzierArgs)
                 if gr in res:
                     res[gr].append(i)
                 else:
@@ -287,8 +377,12 @@ class AnalizePredictions(yaml.YAMLObject):
             res={}
             for i in tqdm(range(l)):
                 gt=targets[i]
+                if not self.accept_filter(ds,i):
+                    continue
                 pr=predictions[i]
-                gr=analizerFunc(gt,pr,**self.analzierArgs)
+                if analizerFunc.usePredictionItem:
+                    gr = analizerFunc(ds[i],pr, **self.analzierArgs)
+                else: gr=analizerFunc(gt,pr,**self.analzierArgs)
                 if gr in res:
                     res[gr].append(i)
                 else:

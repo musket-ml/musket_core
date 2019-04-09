@@ -6,7 +6,8 @@ import os
 import numpy as np
 from musket_core.utils import save,load
 from musket_core import parralel
-
+from musket_core import datasets
+import inspect
 _context=local()
 
 class VFunc:
@@ -111,10 +112,26 @@ def require_original(func):
 
 def prediction_analizer(func):
     func.analizer=True
+    _check_input(func)
     return func
 
 def dataset_analizer(func):
     func.data_analizer=True
+    _check_input(func)
+    return func
+
+
+def _check_input(func):
+    pars = inspect.signature(func).parameters
+    func.usePredictionItem = False
+    for v in pars:
+        parameter = pars[v];
+        if parameter.annotation == datasets.PredictionItem:
+            func.usePredictionItem = True
+
+
+def dataset_filter(func):
+    func.data_filter=True
     return func
 
 def context():

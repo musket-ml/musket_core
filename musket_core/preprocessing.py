@@ -32,6 +32,12 @@ class PreprocessedDataSet:
             self.origName = self.name
         pass
 
+    def id(self):
+        m=self.func.__name__
+        if len(self.kw)>0:
+            m=m+":"+str(self.kw)
+        return m
+
     def __getitem__(self, item):
         pi=self.parent[item]
         arg = pi if self.expectsItem else pi.x
