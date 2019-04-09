@@ -17,10 +17,12 @@ class PreproccedPredictionItem(PredictionItem):
 
 class PreprocessedDataSet:
 
-    def __init__(self,parent,func,**kwargs):
+    def __init__(self,parent,func,expectsItem,**kwargs):
+        self.expectsItem = expectsItem
         self.parent=parent
         self.func=func
         self.kw=kwargs
+
         if hasattr(parent,"folds"):
             self.folds=getattr(parent,"folds");
         if hasattr(parent,"holdoutArr"):
@@ -32,8 +34,9 @@ class PreprocessedDataSet:
 
     def __getitem__(self, item):
         pi=self.parent[item]
-        x=self.func(pi.x,**self.kw)
-        newPi = PreproccedPredictionItem(pi.id,x,pi.y,pi)
+        arg = pi if self.expectsItem else pi.x
+        result = self.func(arg,**self.kw)
+        newPi = result if self.expectsItem else PreproccedPredictionItem(pi.id,result,pi.y,pi)
         return newPi
 
     def __len__(self):
@@ -42,8 +45,18 @@ class PreprocessedDataSet:
 
 
 def dataset_preprocessor(func):
+    expectsItem = False
+    params = inspect.signature(func).parameters
+    if 'input' in params:
+        inputParam = params['input']
+        if hasattr(inputParam, 'annotation'):
+            pType = inputParam.annotation
+            if hasattr(pType, "__module__") and hasattr(pType, "__name__"):
+                if pType.__module__ == "musket_core.datasets" and pType.__name__ == "PredictionItem":
+                    expectsItem = True
+
     def wrapper(input,**kwargs):
-        return PreprocessedDataSet(input,func,**kwargs)
+        return PreprocessedDataSet(input,func,expectsItem,**kwargs)
     wrapper.args=inspect.signature(func).parameters
     wrapper.preprocessor=True
     wrapper.original=func

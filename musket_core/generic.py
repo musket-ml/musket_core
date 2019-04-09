@@ -131,10 +131,8 @@ class GenericPipeline(generic.GenericTaskConfig):
 
     def fit(self, dataset=None, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction=None,parallel = False):
         if dataset is None:
-          dataset = self.parse_dataset()
+          dataset = self.get_dataset()
         self._dataset = dataset
-        if hasattr(self._dataset,'folds'):
-            self.folds_count = len(self._dataset.folds)
         if self.preprocessing is not None:
             dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing, self.imports)
         predItem=dataset[0]

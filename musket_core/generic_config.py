@@ -45,6 +45,7 @@ keras.utils.get_custom_objects()["focal_loss"]= musket_core.losses.focal_loss
 keras.utils.get_custom_objects()["l2_loss"]= musket_core.losses.l2_loss
 from musket_core.parralel import  Task
 keras.utils.get_custom_objects().update({'matthews_correlation': musket_core.losses.matthews_correlation})
+keras.utils.get_custom_objects().update({'log_loss': musket_core.losses.log_loss})
 dataset_augmenters={
 
 }
@@ -167,6 +168,13 @@ def threshold_search(y_true, y_proba,func):
             best_threshold = threshold
             best_score = score
     return ScoreAndTreshold(best_score,best_threshold)
+
+def need_threshold(func:str)->bool:
+    func_ = keras.metrics.get(func)
+    if func_ is not None and hasattr(func_, "need_threshold") and func_.need_threshold == False:
+        return False
+    return True
+
 
 def eval_metric(y_true,y_proba,func):
     if isinstance(func,str):
@@ -555,12 +563,14 @@ class GenericTaskConfig(model.ConnectedModel):
             return self._dataset
         if self.dataset is not None:
             self._dataset=self.parse_dataset()
+            if hasattr(self._dataset, 'folds'):
+                self.folds_count = len(self._dataset.folds)
             return self._dataset
         raise ValueError("Data set is not defined for this config")
 
     def fit(self, dataset_ = None, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction = None,parallel=False)->typing.Collection[Task]:
         if dataset_ is None:
-          dataset = self.parse_dataset()
+          dataset = self.get_dataset()
         else: dataset=dataset_
 
         dataset = self._adapt_before_fit(dataset)

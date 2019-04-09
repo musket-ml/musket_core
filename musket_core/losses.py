@@ -150,6 +150,24 @@ def dice_coef(y_true, y_pred, smooth=1):
 def dice_coef_loss(y_true, y_pred):
     return 1-dice_coef(y_true, y_pred)
 
+def log_loss(y_true, y_pred):
+    epsilon = 10.**(-15)
+    ub = 1.0 - epsilon
+    lb = epsilon
+    y = K.maximum(K.minimum(y_pred,ub),lb)
+    logs = K.log(y)
+    components = y_true * logs
+    sum = K.sum(components)
+    result = sum * -1.
+    result /= K.cast(K.shape(y_true)[0], "float")
+    result /= 3.0
+    return result
+
+log_loss.need_threshold = False
+
+bce = keras.metrics.get("binary_crossentropy")
+bce.need_threshold = False
+
 # code download from: https://github.com/bermanmaxim/LovaszSoftmax
 def lovasz_grad(gt_sorted):
     """
