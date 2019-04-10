@@ -44,7 +44,7 @@ class PreprocessedDataSet(DataSet):
         return m
 
     def get_target(self,item):
-        if self._parent_supports_target:
+        if self._parent_supports_target and not self.expectsItem:
             return self.parent.get_target(item)
         return self[item].y
 
