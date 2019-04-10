@@ -5,6 +5,7 @@ import keras
 import musket_core.templating as tp
 from musket_core.caches import *
 from musket_core import datasets
+from builtins import isinstance
 layers=configloader.load("layers")
 from  musket_core.preprocessing import SplitPreproccessor
 import importlib
@@ -65,6 +66,19 @@ def split_concat(layers, declarations, config, outputs, linputs, pName, withArgs
     m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
     return m,keras.layers.Concatenate()
 
+def foreach_concat(layers, declarations, config, outputs, linputs, pName, withArgs):
+    m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
+    def buildPreprocessor(inputArg):
+        if isinstance(inputArg,dict):
+            inputArg=[inputArg[x] for x in inputArg]
+        rs=[]    
+        for i in range(len(m)):
+            rs.append(m[i].build(inputArg[i]))
+            
+        return keras.layers.concatenate(rs)
+
+    return buildPreprocessor
+
 def split_add(layers,declarations,config,outputs,linputs,pName,withArgs):
     m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
     return m,keras.layers.Add()
@@ -111,7 +125,8 @@ builtins={
     "disk-cache": diskcache,
     "split-preprocessor": split_preprocessor,
     "seq-preprocessor": seq_preprocessor,
-    "pass":passPreprocessor
+    "pass":passPreprocessor,
+    "foreach-concat":foreach_concat
 }
 for i in range(20):
     builtins["repeat("+str(i)+")"]=repeat(i)
