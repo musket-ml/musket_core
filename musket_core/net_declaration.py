@@ -398,32 +398,50 @@ def create_preprocessor_from_config(n,inputs,name="net",imports=[]):
 DEFAULT_DATASET_DIR=None
 def create_dataset_from_config(n,name="net",imports=[]):
 
-    if isinstance(name,dict) and 'train' in name and 'validation' in name and 'holdout' in name:
-        trainName = name['train']
-        validationName = name['validation']
-        holdoutName = name['holdout']
+    compositeDS = None
+    if isinstance(name,dict):
+        holdout = extract_datasets(n, imports, name, 'holdout')
+        train = extract_datasets(n, imports, name, 'train')
+        validation = extract_datasets(n, imports, name, 'validation')
 
-        train = create_dataset_from_config(n,trainName,imports)
-        validation = create_dataset_from_config(n, validationName, imports)
-        holdout = create_dataset_from_config(n, holdoutName, imports)
+        valDSCount = len(validation)
+        trainDSCount = len(train)
+        holdoutDSCount = len(holdout)
 
-        lt = len(train)
-        lv = len(validation)
-        lh = len(holdout)
+        if valDSCount + trainDSCount + holdoutDSCount > 0:
+            lt = sum([len(x) for x in train])
+            lv = sum([len(x) for x in validation])
+            lh = sum([len(x) for x in holdout])
 
-        tOff = 0
-        vOff = lt
-        hOff = lt + lv
+            tOff = 0
+            vOff = lt
+            hOff = lt + lv
 
-        trainIndices      = np.array([i for i in range(tOff, tOff + lt)], dtype=np.int)
-        validationIndices = np.array([i for i in range(vOff, vOff + lv)], dtype=np.int)
-        holdoutIndices    = np.array([i for i in range(hOff, hOff + lh)], dtype=np.int)
+            components = [ds for dsList in [train, validation, holdout] for ds in dsList]
+            compositeDS = datasets.CompositeDataSet(components)
 
-        result = datasets.CompositeDataSet([train, validation, holdout])
-        result.folds = [(trainIndices,validationIndices)]
-        result.holdoutArr = holdoutIndices
-        result.name = f"t-{trainName}_v-{validationName}_h-{holdoutName}"
-        return result
+
+            if valDSCount > 0 :
+                trainIndices      = np.array([i for i in range(tOff, tOff + lt)], dtype=np.int)
+                validationIndices = np.array([i for i in range(vOff, vOff + lv)], dtype=np.int)
+                compositeDS.folds = [(trainIndices,validationIndices)]
+
+            if holdoutDSCount > 0:
+                holdoutIndices    = np.array([i for i in range(hOff, hOff + lh)], dtype=np.int)
+                compositeDS.holdoutArr = holdoutIndices
+
+            resultName = []
+            if trainDSCount >0:
+                resultName.append("t-" + "_".join([x.name for x in train]))
+            if valDSCount >0:
+                resultName.append("v-" + "_".join([x.name for x in validation]))
+            if holdoutDSCount >0:
+                resultName.append("h-" + "_".join([x.name for x in holdout]))
+
+            compositeDS.name = "_".join(resultName)
+
+    if compositeDS is not None:
+        return compositeDS
 
     if DEFAULT_DATASET_DIR is not None:
         os.chdir(str(DEFAULT_DATASET_DIR))
@@ -432,6 +450,18 @@ def create_dataset_from_config(n,name="net",imports=[]):
     out=d.preprocess(name, None)
     out.name=str(name)
     return out
+
+def extract_datasets(decls, imports, d:dict, name:str)->[]:
+    result = []
+    if name in d:
+        ds = d[name]
+        if isinstance(ds, dict):
+            for n in ds:
+                val = ds[n]
+                ch = {n: val}
+                res1 = create_dataset_from_config(decls, ch, imports)
+                result.append(res1)
+    return result
 
 def create_test_time_aug(name,imports=[]):
     for x in imports:

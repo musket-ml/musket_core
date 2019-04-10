@@ -66,10 +66,16 @@ def stat(metrics):
 
 def cross_validation_stat(cfg, metric,stage=None,treshold=0.5):
     metrics=[]
+    cfg.get_dataset()
     for i in range(cfg.folds_count):
         if cfg._reporter is not None and cfg._reporter.isCanceled():
             return {"canceled": True}
-        val=get_validation_prediction(cfg,i,stage)>treshold
+        prediction = get_validation_prediction(cfg, i, stage)
+        need_threshold = generic_config.need_threshold(metric)
+        if need_threshold:
+            val = prediction > treshold
+        else:
+            val = prediction
         vt=datasets.get_targets_as_array(cfg.validation(i))
         eval_metric = generic_config.eval_metric(vt, val, metric)
         metrics.append(np.mean(eval_metric))
@@ -78,7 +84,12 @@ def cross_validation_stat(cfg, metric,stage=None,treshold=0.5):
 def holdout_stat(cfg, metric,stage=None,treshold=0.5):
     if cfg._reporter is not None and cfg._reporter.isCanceled():
         return {"canceled": True}
-    val=get_holdout_prediction(cfg,None,stage)>treshold
+    prediction = get_holdout_prediction(cfg, None, stage)
+    need_threshold = generic_config.need_threshold(metric)
+    if need_threshold:
+        val = prediction > treshold
+    else:
+        val = prediction
     vt=datasets.get_targets_as_array(cfg.holdout())
     eval_metric = generic_config.eval_metric(vt, val, metric)
     if cfg._reporter is not None and cfg._reporter.isCanceled():
