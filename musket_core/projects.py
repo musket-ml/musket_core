@@ -9,10 +9,13 @@ import musket_core.generic_config
 from typing import Collection
 import os
 import sys
+from threading import local
 import importlib
 import inspect
 
 from musket_core import introspector
+
+_context=local()
 
 def _all_experiments(path,e:[experiment.Experiment]):
     if structure_constants.isExperimentDir(path):
@@ -100,6 +103,7 @@ class WrappedTask:
         def executeTask(t):
             actualArgs={}
             config=exp.parse_config()
+            _context.projectPath=project.path
             for p in self.sig.parameters:
                 par=self.sig.parameters[p]
                 type=par.annotation
@@ -172,6 +176,7 @@ class WrappedAnalizer:
     def __init__(self,clazz):
         self.name=clazz.__name__
         self.clazz=clazz
+        self.isClass=inspect.isclass(clazz)
 
     def introspect(self):
         return  introspector.record(self.clazz,"analizer")
@@ -179,6 +184,7 @@ class WrappedAnalizer:
 class WrappedDataAnalizer:
     def __init__(self,clazz):
         self.name=clazz.__name__
+        self.isClass = inspect.isclass(clazz)
         self.clazz=clazz
 
     def introspect(self):
@@ -368,6 +374,10 @@ class Project:
                     if hasattr(vl, "data_filter") and getattr(vl, "data_filter") == True:
                         elements.append(WrappedDataFilter(vl))
                 if inspect.isclass(vl):
+                    if hasattr(vl,"analizer") and getattr(vl,"analizer")==True: 
+                        elements.append(WrappedAnalizer(vl))
+                    if hasattr(vl,"data_analizer") and getattr(vl,"data_analizer")==True:
+                        elements.append(WrappedDataAnalizer(vl))
                     if issubclass(vl,keras.layers.Layer):
                         file=inspect.getsourcefile(vl)
                         if not "keras" in file:
@@ -454,7 +464,27 @@ class Project:
         utils.ensure(visualization)
         return visualizer.create(dataset,visualization)
 
+def _find_path():
+    last=-1
+    st=inspect.stack()
+    for frm in st:
+        
+        file=frm.filename;
+        
+        dn=os.path.dirname(file)
+        if last==0:
+            last=last+1
+            continue
+        if last==1:
+          return os.path.dirname(dn)  
+        if os.path.basename(file)=="projects.py" and "musket_core" in dn:
+          last=0
+        
 
+def get_current_project_path():
+    if not hasattr(_context,"projectPath"):
+        _context.projectPath=_find_path();
+    return _context.projectPath
 
 
 

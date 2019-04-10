@@ -25,6 +25,7 @@ class PredictionItem:
         self.x=x
         self.y=y
         self.id=path
+        self.prediction=None
 
     def original(self):
        return self
@@ -48,6 +49,9 @@ class DataSet:
         if hasattr(self,"name"):
             return getattr(self,"name")
         return "dataset"
+
+    def get_target(self,item):
+        return self[item].y
 
 def get_id(d:DataSet)->str:
     if hasattr(d,"id"):
@@ -682,6 +686,10 @@ class SubDataSet:
             raise ValueError("Dataset is expected")
         self.ds=orig
         self.parent=orig
+        if hasattr(self.parent,"get_target"):
+            def trg(index):
+                return self.parent.get_target(self.indexes[index])
+            self.get_target=trg
         self.indexes=indexes
 
     def isPositive(self, item):
@@ -692,6 +700,9 @@ class SubDataSet:
 
     def __len__(self):
         return len(self.indexes)
+
+    def get_target(self, item):
+        return self.parent[self.indexes[item]].y
 
 
 def dataset_classes(ds, groupFunc):
@@ -705,6 +716,10 @@ def dataset_classes(ds, groupFunc):
 
 def get_targets_as_array(d):
     preds=[]
-    for i in tqdm.tqdm(range(len(d)),"reading dataset targets "+str(d)):
-        preds.append(d[i].y)
+    if hasattr(d,"get_target"):
+        for i in tqdm.tqdm(range(len(d)),"reading dataset targets "+str(d)):
+            preds.append(d.get_target(i))
+    else:
+        for i in tqdm.tqdm(range(len(d)),"reading dataset targets "+str(d)):
+            preds.append(d[i].y)
     return np.array(preds)

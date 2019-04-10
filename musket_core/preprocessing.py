@@ -1,7 +1,7 @@
 import functools
 import importlib
 import inspect
-from musket_core.datasets import PredictionItem
+from musket_core.datasets import PredictionItem,DataSet
 
 class PreproccedPredictionItem(PredictionItem):
 
@@ -15,12 +15,18 @@ class PreproccedPredictionItem(PredictionItem):
     def rootItem(self):
         return self._original.rootItem()
 
-class PreprocessedDataSet:
+
+class PreprocessedDataSet(DataSet):
 
     def __init__(self,parent,func,**kwargs):
+        super().__init__()
         self.parent=parent
         self.func=func
         self.kw=kwargs
+        if isinstance(parent,PreprocessedDataSet) or isinstance(parent,DataSet):
+            self._parent_supports_target=True
+        else:
+            self._parent_supports_target = False
         if hasattr(parent,"folds"):
             self.folds=getattr(parent,"folds");
         if hasattr(parent,"holdoutArr"):
@@ -36,6 +42,11 @@ class PreprocessedDataSet:
             m=m+":"+str(self.kw)
         return m
 
+    def get_target(self,item):
+        if self._parent_supports_target:
+            return self.parent.get_target(item)
+        return self[item].y
+
     def __getitem__(self, item):
         pi=self.parent[item]
         x=self.func(pi.x,**self.kw)
@@ -44,7 +55,6 @@ class PreprocessedDataSet:
 
     def __len__(self):
         return len(self.parent)
-
 
 
 def dataset_preprocessor(func):

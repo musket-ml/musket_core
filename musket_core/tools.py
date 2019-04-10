@@ -11,6 +11,7 @@ import numpy as np
 import tempfile
 from tqdm import tqdm
 import inspect
+from musket_core.datasets import DataSet
 class ProgressMonitor:
 
     def isCanceled(self)->bool:
@@ -184,10 +185,11 @@ def _exactValue(x,y):
 
 class WrappedDS(datasets.SubDataSet):
 
-    def __init__(self,orig,indexes,name,visualizer=None):
+    def __init__(self,orig,indexes,name,visualizer,predictions):
         super().__init__(orig,indexes)
         self._visualizer=visualizer
         self._name=name
+        self.predictions=predictions
     def len(self):
         return len(self)
 
@@ -197,6 +199,11 @@ class WrappedDS(datasets.SubDataSet):
     def item(self,num):
         return self._visualizer[num]
 
+    def __getitem__(self, item):
+        it=super().__getitem__(item)
+        if self.predictions is not None:
+            it.prediction=self.predictions[self.indexes[item]]
+        return it
     def name(self):
         return self._name
 
@@ -205,8 +212,9 @@ class WrappedDS(datasets.SubDataSet):
     pass
 
 class AnalizeResults:
-    def __init__(self,ds):
+    def __init__(self,ds,visualSpec=None):
         self._results=ds
+        self._visualSpec=visualSpec
         pass
 
     def get(self,index):
@@ -221,7 +229,8 @@ class AnalizeResults:
     class Java:
         implements = ["com.onpositive.dside.tasks.analize.IAnalizeResults"]
 
-
+    def visualizationSpec(self):
+        return yaml.dump(self._visualSpec)
 
 
 class LastDataSetCache:
@@ -325,8 +334,15 @@ class AnalizePredictions(yaml.YAMLObject):
             ds=datasets.get_stage(ds,self.stage)
         wrappedModel = ms.wrap(cf, exp)
 
+        analizer_by_name = exp.project.get_analizer_by_name(self.analizer)
 
-        analizerFunc = exp.project.get_analizer_by_name(self.analizer).clazz
+        analizerFunc = analizer_by_name.clazz
+        isClass=False
+        if (analizer_by_name.isClass):
+            isClass=True
+            analizerFunc=analizerFunc(**self.analzierArgs)
+            self.analzierArgs={}
+            analizerFunc.usePredictionItem=True
         visualizerFunc = exp.project.get_visualizer_by_name(self.visualizer)
         targets=_cache.get_targets(exp,self.datasetName)
         filters=[]
@@ -355,7 +371,7 @@ class AnalizePredictions(yaml.YAMLObject):
             filterArgs=fa["filterArgs"]
             filters.append((flt,fltDat,filterArgs))
         self.filters=filters
-
+        predictions=None
         if self.data:
             pass
             l = len(targets)
@@ -365,7 +381,7 @@ class AnalizePredictions(yaml.YAMLObject):
                 if not self.accept_filter(ds,i):
                     continue
                 if analizerFunc.usePredictionItem:
-                    gr = analizerFunc(ds[i], **self.analzierArgs)
+                    gr = analizerFunc(i,ds[i], **self.analzierArgs)
                 else: gr = analizerFunc(gt,**self.analzierArgs)
                 if gr in res:
                     res[gr].append(i)
@@ -381,7 +397,7 @@ class AnalizePredictions(yaml.YAMLObject):
                     continue
                 pr=predictions[i]
                 if analizerFunc.usePredictionItem:
-                    gr = analizerFunc(ds[i],pr, **self.analzierArgs)
+                    gr = analizerFunc(i,ds[i],pr, **self.analzierArgs)
                 else: gr=analizerFunc(gt,pr,**self.analzierArgs)
                 if gr in res:
                     res[gr].append(i)
@@ -389,13 +405,19 @@ class AnalizePredictions(yaml.YAMLObject):
                     res[gr]=[i]
 
         _results=[]
+        visualizationHints=None
+        if isClass:
+            res=analizerFunc.results()
+            visualizationHints=analizerFunc.visualizationHints()
         for q in res:
-            r=WrappedDS(ds,res[q],str(q))
+            if isinstance(res[q],DataSet):
+                r=WrappedDS(res[q],list(range(len(res[q]))),str(q),None,predictions)
+            else: r=WrappedDS(ds,res[q],str(q),None,predictions)
             r._visualizer=visualizerFunc.create(r,tempfile.mkdtemp())
             if (len(self.visualizerArgs)) > 0:
                 r._visualizer.args=self.visualizerArgs
             _results.append(r)
-        return AnalizeResults(_results)
+        return AnalizeResults(_results,visualizationHints)
 
 class Validate(yaml.YAMLObject):
     yaml_tag = u'!com.onpositive.musket_core.ValidateTask'
@@ -423,7 +445,6 @@ class Launch(yaml.YAMLObject):
         self.onlyReports=onlyReports
         self.launchTasks=launchTasks
         pass
-
 
 
 

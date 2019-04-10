@@ -120,6 +120,12 @@ def dataset_analizer(func):
     _check_input(func)
     return func
 
+def caption(name:str):
+    def wrap(f):
+        f.name=name
+        return f
+    return wrap
+
 
 def _check_input(func):
     pars = inspect.signature(func).parameters
@@ -136,3 +142,4 @@ def dataset_filter(func):
 
 def context():
     return _context
+

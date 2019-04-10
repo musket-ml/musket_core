@@ -31,7 +31,7 @@ class Prediction:
         elif self.name=="holdout":
             ds=self.cfg.holdout()
         elif self.name=="validation":
-            ds=self.cfg.validation(self.fold)
+            ds=self.cfg.validation(None,self.fold)
         else:
             ds=self.cfg.get_dataset(self.name)
         value=self.cfg.predict_all_to_array(ds,self.fold,self.stage)

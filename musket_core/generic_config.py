@@ -438,6 +438,8 @@ class GenericTaskConfig(model.ConnectedModel):
         if isinstance(ds,int):
             foldNum=ds
             ds=self.get_dataset()
+        if isinstance(foldNum, list):
+            foldNum=foldNum[0]    
         ids=self.kfold(ds).indexes(foldNum,False)
         r=datasets.SubDataSet(ds, ids)
         r.name="validation"+str(foldNum)
@@ -596,8 +598,11 @@ class GenericTaskConfig(model.ConnectedModel):
 
         dn = self.directory()
         with open(constructSummaryYamlPath(dn), "w") as f:
+            fw=foldsToExecute
+            if fw is None:
+                fw=list(range(self.folds_count))
             initial = {"completed": True, "cfgName": os.path.basename(self.path), "subsample": subsample,
-                       "folds": foldsToExecute}
+                       "folds": fw}
             metrics = self.createSummary(foldsToExecute,subsample)
             for k in metrics:
                 initial[k] = metrics[k]

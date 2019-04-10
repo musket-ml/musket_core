@@ -121,11 +121,15 @@ class Experiment:
                 pm = self.config()["primary_metric"]
                 if "val_" in pm:
                     pm = pm[4:]
-                mv = m["allStages"][pm + "_holdout"]
+                mv=pm
+                if pm + "_holdout" in m["allStages"]:
+                    mv = m["allStages"][pm + "_holdout"]
                 if "aggregation_metric" in self.config():
                     am=self.config()["aggregation_metric"]
                     if am in m["allStages"]:
-                        mv = m["allStages"][am]
+                       mv = m["allStages"][am]
+
+
                 return mv
             if isinstance(m,float):
                 return m
@@ -165,6 +169,7 @@ class Experiment:
         return save_yaml(constructConfigYamlConcretePath(path),c)
 
     def fit(self,reporter=None)->typing.Collection[Task]:
+
         subExps=self.apply(True)
         try:
             if len(subExps)>1:
