@@ -199,7 +199,9 @@ class WrappedDataFilter:
         return  introspector.record(self.clazz,"data_filter")
 
 class WrappedDataSet(datasets.DataSet):
+
     def __init__(self,name,w:WrappedDataSetFactory,parameters,project):
+        super().__init__()
         self.w=w
         self.name=name
         self.project=project

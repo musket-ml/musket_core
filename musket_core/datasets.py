@@ -72,12 +72,19 @@ def get_stages(d:DataSet)->typing.List[str]:
         ds = ds.ds
   result=[]
   while ds is not None:
-    result.append(get_id(ds))
+    _id= get_id(ds)
+    result.append(_id)
     if hasattr(ds,"parent"):
+        if hasattr(ds,"subStages"):
+            brs=ds.subStages()
+            for v in brs:
+                if v not in result:
+                    result.append(v)
         p=getattr(ds,"parent")
         ds=p
     else: break
   return result
+
 
 def get_stage(d:DataSet,n:str)->DataSet:
   ind=[]
@@ -94,7 +101,10 @@ def get_stage(d:DataSet,n:str)->DataSet:
       id=get_id(ds)
       if id==n:
            return createSub(ds,ind)
-
+      if hasattr(ds,"get_stage"):
+          v=ds.get_stage(n)
+          if v is not None:
+              return createSub(v, ind)
       if hasattr(ds,"parent"):
           p=getattr(ds,"parent")
           ds=p

@@ -6,6 +6,7 @@ import musket_core.templating as tp
 from musket_core.caches import *
 from musket_core import datasets
 layers=configloader.load("layers")
+from  musket_core.preprocessing import SplitPreproccessor
 import importlib
 
 def take_input(layers,declarations,config,outputs,linputs,pName,withArgs):
@@ -33,6 +34,31 @@ def split(layers,declarations,config,outputs,linputs,pName,withArgs):
     m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
     return m
 
+
+def split_preprocessor(layers,declarations,config,outputs,linputs,pName,withArgs):
+    m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
+    
+    def buildPreprocessor(inputArg):
+        return SplitPreproccessor(inputArg,[x.build(inputArg) for x in m])
+
+    return buildPreprocessor
+
+
+def seq_preprocessor(layers, declarations, config, outputs, linputs, pName, withArgs):
+    m = [Layers([v], declarations, {}, outputs, linputs, withArgs) for v in config]
+
+    def buildPreprocessor(inputArg):
+        for x in m:
+            inputArg=x.build(inputArg)
+        return inputArg
+
+    return buildPreprocessor
+
+
+def passPreprocessor(layers, declarations, config, outputs, linputs, pName, withArgs):
+    def buildPreprocessor(inputArg):
+        return inputArg
+    return buildPreprocessor
 
 
 def split_concat(layers, declarations, config, outputs, linputs, pName, withArgs):
@@ -82,7 +108,10 @@ builtins={
     "seq":seq,
     "input": take_input,
     "cache": cache,
-    "disk-cache": diskcache
+    "disk-cache": diskcache,
+    "split-preprocessor": split_preprocessor,
+    "seq-preprocessor": seq_preprocessor,
+    "pass":passPreprocessor
 }
 for i in range(20):
     builtins["repeat("+str(i)+")"]=repeat(i)
@@ -161,7 +190,10 @@ class Layers:
             elif key in declarations:
                 decl=declarations[key]
                 layerImpl=decl.instantiate(declarations,config)
-                inputs = config["inputs"] if "inputs" in config else pName
+                if isinstance(config,dict):
+                    inputs = config["inputs"] if "inputs" in config else pName
+                else:
+                    inputs=pName    
                 name = self.get_new_name(config, key, layerImpl, nums)
             else:
                 if config=="all":

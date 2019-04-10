@@ -83,6 +83,16 @@ bs=[]
 
 def createPars(c:str):
     if "cache" in c: return []
+    if "pass" in c: return []
+    if "preprocessor" in c:
+        return [
+            {
+
+                "name": "body",
+                "type": "Preprocessor[]"
+            }
+
+        ]
     return [
         {
 
@@ -94,10 +104,16 @@ def createPars(c:str):
 
 
 for c in net_declaration.builtins:
-    bs.append({ "name":c, "kind":"LayerOrPreprocessor","sourcefile":net_declaration.__file__,"parameters": createPars(c)
+    if "preprocessor" in c:
+        bs.append({"name": c, "kind": "preprocessor", "sourcefile": net_declaration.__file__,
+                   "parameters": createPars(c)
+
+                   })
+    else:
+        bs.append({ "name":c, "kind":"LayerOrPreprocessor","sourcefile":net_declaration.__file__,"parameters": createPars(c)
 
 
-    })
+        })
 
 objects = keras.utils.get_custom_objects()
 for m in objects:
