@@ -2,6 +2,7 @@ import importlib
 import os
 import yaml
 import inspect
+import keras
 from musket_core import utils
 class Module:
 
@@ -17,20 +18,27 @@ class Module:
             self.catalog[v] = t
             self.orig[v.lower()]=v
         self.pythonModule=importlib.import_module(dict["(meta.module)"])
+        self.register_module(self.pythonModule,False)
         pass
 
     def register(self,pythonPath):
         pyMod=importlib.import_module(pythonPath)
+        self.register_module(pyMod)
+
+    def register_module(self, pyMod,override=True):
         for x in dir(pyMod):
-            tp=getattr(pyMod,x)
+            if not override:
+                if x.lower() in self.catalog:
+                    continue
+            tp = getattr(pyMod, x)
             if inspect.isclass(tp):
                 if x in self.catalog:
                     tp = self.catalog[x]
                 else:
-                    init=getattr(tp, "__init__")
-                    gignature=inspect.signature(init)
-                    typeName=x
-                    tp=PythonType(typeName,gignature,tp)
+                    init = getattr(tp, "__init__")
+                    gignature = inspect.signature(init)
+                    typeName = x
+                    tp = PythonType(typeName, gignature, tp)
                     self.catalog[typeName.lower()] = tp
                     self.catalog[typeName] = tp
                     self.orig[typeName.lower()] = typeName

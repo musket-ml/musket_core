@@ -130,14 +130,22 @@ class GenericPipeline(generic.GenericTaskConfig):
 
 
     def fit(self, dataset=None, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction=None,parallel = False):
+        dataset = self.init_shapes(dataset)
+        return super().fit(dataset,subsample,foldsToExecute,start_from_stage,drawingFunction,parallel=parallel)
+
+    def validate(self):
+        self.init_shapes(None)
+        super().validate()
+
+    def init_shapes(self, dataset):
         if dataset is None:
-          dataset = self.get_dataset()
+            dataset = self.get_dataset()
         self._dataset = dataset
         if self.preprocessing is not None:
             dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing, self.imports)
-        predItem=dataset[0]
-        utils.save_yaml(self.path+".shapes",(_shape(predItem.x),_shape(predItem.y)))
-        return super().fit(dataset,subsample,foldsToExecute,start_from_stage,drawingFunction,parallel=parallel)
+        predItem = dataset[0]
+        utils.save_yaml(self.path + ".shapes", (_shape(predItem.x), _shape(predItem.y)))
+        return dataset
 
 
 def parse(path,extra=None) -> GenericPipeline:

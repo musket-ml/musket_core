@@ -428,8 +428,7 @@ class Validate(yaml.YAMLObject):
     def perform(self,server,reporter:ProgressMonitor):
         path=self.path
         e:Experiment= server.experiment(path)
-        model=e.parse_config().createAndCompile()
-        model.summary()
+        e.parse_config().validate()
         print("Model validated successfully!")
         return None
 

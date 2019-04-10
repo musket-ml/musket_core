@@ -437,6 +437,10 @@ class GenericTaskConfig(model.ConnectedModel):
     def createAndCompile(self, lr=None, loss=None)->keras.Model:
         return self.compile(self.createNet(), self.createOptimizer(lr=lr), loss=loss)
 
+    def validate(self):
+        model = self.createAndCompile()
+        model.summary()
+
     def createNet(self):
         raise ValueError("Not implemented")
 

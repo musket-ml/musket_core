@@ -387,12 +387,12 @@ class GenericDataSetSequence(keras.utils.Sequence):
             r=self.ds[self.indexes[i]]
             for j in range(xd):
                 r_x = r.x
-                if not isinstance(r_x, list):
+                if not isinstance(r_x, list) and not isinstance(r_x, tuple):
                     r_x = [ r_x ]
                 batch_x[j].append(r_x[j])
             for j in range(yd):
                 r_y = r.y
-                if not isinstance(r_y, list):
+                if not isinstance(r_y, list) and not isinstance(r_x, tuple):
                     r_y = [ r_y ]
                 batch_y[j].append(r_y[j])
         batch_x=[np.array(x) for x in batch_x]
