@@ -66,7 +66,7 @@ def split_concat(layers, declarations, config, outputs, linputs, pName, withArgs
     m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
     return m,keras.layers.Concatenate()
 
-def foreach_concat(layers, declarations, config, outputs, linputs, pName, withArgs):
+def transform_concat(layers, declarations, config, outputs, linputs, pName, withArgs):
     m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
     def buildPreprocessor(inputArg):
         if isinstance(inputArg,dict):
@@ -76,6 +76,21 @@ def foreach_concat(layers, declarations, config, outputs, linputs, pName, withAr
             rs.append(m[i].build(inputArg[i]))
             
         return keras.layers.concatenate(rs)
+
+    return buildPreprocessor
+
+
+def transform_add(layers, declarations, config, outputs, linputs, pName, withArgs):
+    m = [Layers([v], declarations, {}, outputs, linputs, withArgs) for v in config]
+
+    def buildPreprocessor(inputArg):
+        if isinstance(inputArg, dict):
+            inputArg = [inputArg[x] for x in inputArg]
+        rs = []
+        for i in range(len(m)):
+            rs.append(m[i].build(inputArg[i]))
+
+        return keras.layers.add(rs)
 
     return buildPreprocessor
 
@@ -125,8 +140,9 @@ builtins={
     "disk-cache": diskcache,
     "split-preprocessor": split_preprocessor,
     "seq-preprocessor": seq_preprocessor,
-    "pass":passPreprocessor,
-    "foreach-concat":foreach_concat
+    "pass": passPreprocessor,
+    "transform-concat": transform_concat,
+    "transform-add": transform_add
 }
 for i in range(20):
     builtins["repeat("+str(i)+")"]=repeat(i)
