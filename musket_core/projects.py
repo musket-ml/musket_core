@@ -359,8 +359,11 @@ class Project:
                     sig=inspect.signature(vl)
                     if sig.return_annotation is not None:
                         d=sig.return_annotation
-                        if d==datasets.DataSet or issubclass(d,datasets.DataSet):
-                            elements.append(WrappedDataSetFactory(name,vl,sig,self))
+                        try:
+                            if d==datasets.DataSet or issubclass(d,datasets.DataSet):
+                                elements.append(WrappedDataSetFactory(name,vl,sig,self))
+                        except:
+                          pass
                     if hasattr(vl,"visualizer") and getattr(vl,"visualizer")==True:
                         elements.append(WrappedVisualizer(name,vl,sig))
                     if hasattr(vl,"task") and getattr(vl,"task")==True:
