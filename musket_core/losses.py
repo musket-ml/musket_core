@@ -151,6 +151,10 @@ def dice_coef_loss(y_true, y_pred):
     return 1-dice_coef(y_true, y_pred)
 
 def log_loss(y_true, y_pred):
+    '''
+    expects probability-like input, e.g. softmax output
+    '''
+    y_pred = y_pred / K.expand_dims(K.sum(y_pred, axis=1))
     epsilon = 10.**(-15)
     ub = 1.0 - epsilon
     lb = epsilon

@@ -9,6 +9,19 @@ import musket_core.net_declaration as net
 import musket_core.quasymodels as qm
 import os
 
+import tqdm
+
+tmpMethod = tqdm.tqdm._decr_instances
+def replacementMethod(cls, instance):
+    try:
+        tmpMethod(cls,instance)
+    except:
+        pass
+
+
+tqdm.tqdm._decr_instances = replacementMethod
+
+
 def model_function(func):
     func.model=True
     return func
@@ -17,7 +30,7 @@ def _shape(x):
     if isinstance(x,tuple):
         return [i.shape for i in x]
     if isinstance(x,list):
-        return np.array(x).shape
+        return [i.shape for i in x]
     return x.shape
 
 class GenericPipeline(generic.GenericTaskConfig):

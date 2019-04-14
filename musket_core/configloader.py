@@ -36,12 +36,16 @@ class Module:
                     tp = self.catalog[x]
                 else:
                     init = getattr(tp, "__init__")
-                    gignature = inspect.signature(init)
-                    typeName = x
-                    tp = PythonType(typeName, gignature, tp)
-                    self.catalog[typeName.lower()] = tp
-                    self.catalog[typeName] = tp
-                    self.orig[typeName.lower()] = typeName
+                    try:
+                        gignature = inspect.signature(init)
+                        typeName = x
+                        tp = PythonType(typeName, gignature, tp)
+                        self.catalog[typeName.lower()] = tp
+                        self.catalog[typeName] = tp
+                        self.orig[typeName.lower()] = typeName
+                    except:
+                        e: ValueError
+
             if inspect.isfunction(tp):
                 gignature = inspect.signature(tp)
                 typeName = x
