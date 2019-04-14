@@ -732,4 +732,4 @@ def get_targets_as_array(d):
     else:
         for i in tqdm.tqdm(range(len(d)),"reading dataset targets "+str(d)):
             preds.append(d[i].y)
-    return np.array(preds)
+    return np.array(preds,dtype=np.float32)
