@@ -106,7 +106,9 @@ class Experiment:
                     pm = i.config()["primary_metric"]
                     if "val_" in pm:
                         pm = pm[4:]
-                    mv = m["allStages"][pm + "_holdout"]
+                    mv = pm
+                    if pm + "_holdout" in m["allStages"]:
+                        mv = m["allStages"][pm + "_holdout"]
                     if "aggregation_metric" in i.config():
                         mv = m["allStages"][i.config()["aggregation_metric"]]
                     vals.append(mv)

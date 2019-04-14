@@ -112,23 +112,6 @@ class GenericPipeline(generic.GenericTaskConfig):
                 pbar.update(batch_size)
         return np.array(res),ids
 
-    def parse_dataset(self,name=None):
-        fw=self.dataset
-        if self.datasets_path is not None:
-            os.chdir(self.datasets_path) #TODO review
-        if name is not None:
-            fw=self.datasets[name]
-        if isinstance(fw,str):
-            fw = self.datasets[name]
-        if self.dataset is not None:
-            dataset = net.create_dataset_from_config(self.declarations, fw,  self.imports)
-            if self.preprocessing is not None and self.preprocessing!="":
-                dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing,
-                                                              self.imports)
-            return dataset
-        return None
-
-
     def fit(self, dataset=None, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction=None,parallel = False):
         dataset = self.init_shapes(dataset)
         return super().fit(dataset,subsample,foldsToExecute,start_from_stage,drawingFunction,parallel=parallel)

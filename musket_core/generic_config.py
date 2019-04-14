@@ -46,6 +46,7 @@ keras.utils.get_custom_objects()["l2_loss"]= musket_core.losses.l2_loss
 from musket_core.parralel import  Task
 keras.utils.get_custom_objects().update({'matthews_correlation': musket_core.losses.matthews_correlation})
 keras.utils.get_custom_objects().update({'log_loss': musket_core.losses.log_loss})
+from musket_core import net_declaration as net
 dataset_augmenters={
 
 }
@@ -719,9 +720,25 @@ class GenericTaskConfig(model.ConnectedModel):
             runner.end()
 
     def parse_dataset(self,datasetName=None):
-        ds_config = self.pickup_ds_config()
+        try:
+            fw = self.dataset
+            if self.datasets_path is not None:
+                os.chdir(self.datasets_path)  # TODO review
+            if datasetName is not None:
+                fw = self.datasets[datasetName]
+            if isinstance(fw, str):
+                fw = self.datasets[datasetName]
+            if self.dataset is not None:
+                dataset = net.create_dataset_from_config(self.declarations, fw, self.imports)
+                if self.preprocessing is not None and self.preprocessing != "":
+                    dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing,
+                                                                  self.imports)
+                return dataset
+            return None
+        except:
+            ds_config = self.pickup_ds_config()
+            return musket_core.image_datasets.DS_Wrapper(self.dataset, ds_config, self.path)
 
-        return musket_core.image_datasets.DS_Wrapper(self.dataset, ds_config, self.path)
 
     def pickup_ds_config(self):
         return self.datasets
@@ -787,6 +804,7 @@ class GenericImageTaskConfig(GenericTaskConfig):
             for batch in ta.augment_batches([original_batch]):
                 res = self.predict_on_batch(mdl, ttflips, batch)
                 self.update(batch,res)
+                batch.results=res
                 yield batch
 
 

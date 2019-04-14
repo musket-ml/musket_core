@@ -288,6 +288,14 @@ def parse(name:str,p,extra=None):
     m=load(name)
 
     if type(p)==str:
+        with open(p,"r") as f:
+            first_line = f.readline()
+            first_line=first_line.strip()
+            if first_line.startswith("#%Musket "):
+                first_line=first_line[8:].strip()
+                dialect=first_line[:first_line.index(' ')].strip()
+                m=load(dialect.lower())
+                #dialect=
         with open(p, "r") as f:
             base=yaml.load(f)
             if extra is not None:
