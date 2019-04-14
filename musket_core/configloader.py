@@ -47,6 +47,8 @@ class Module:
                         e: ValueError
 
             if inspect.isfunction(tp):
+                if x.lower() in self.catalog:
+                    continue
                 gignature = inspect.signature(tp)
                 typeName = x
                 tp = PythonFunction(gignature, tp)
@@ -175,6 +177,8 @@ class PythonFunction(AbstractType):
 
     def __init__(self,s:inspect.Signature,clazz):
         super(PythonFunction,self).__init__()
+        # if clazz.__name__.lower()=="flatten":
+        #     print("A")
         if hasattr(clazz,"args"):
             args=[p for p in clazz.args if "input" not in p]
         else: args=[p for p in s.parameters if "input" not in p]
