@@ -65,10 +65,21 @@ class PreprocessedDataSet(AbstractPreprocessedDataSet):
 
     def __getitem__(self, item):
         pi=self.parent[item]
-        arg = pi if self.expectsItem else pi.x
-        result = self.func(arg,**self.kw)
-        newPi = result if self.expectsItem else PreproccedPredictionItem(pi.id,result,pi.y,pi)
-        return newPi
+        isSlice = False
+        if isinstance(item, slice) and isinstance(pi,list):
+            isSlice= True
+            piList = pi
+        else:
+            piList = [ pi ]
+
+        newList = []
+        for pi in piList:
+            arg = pi if self.expectsItem else pi.x
+            result = self.func(arg,**self.kw)
+            newPi = result if self.expectsItem else PreproccedPredictionItem(pi.id,result,pi.y,pi)
+            newList.append(newPi)
+
+        return newList if isSlice else newList[0]
 
 
 
