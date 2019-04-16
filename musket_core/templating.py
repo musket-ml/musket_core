@@ -1,8 +1,10 @@
 import ast
 import operator as op
 
+
 # supported operators
 operators = {ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul,
+             ast.Not: op.not_,
              ast.Div: op.truediv, ast.Pow: op.pow, ast.BitXor: op.xor,
              ast.USub: op.neg}
 
@@ -45,7 +47,8 @@ def resolveTemplates(data,params):
                     mn=list(x.keys())[0]
                     if "if(" in mn:
                         cond=mn[3:mn.index(")")]
-                        if params[cond]:
+                        r = eval_expr(cond, params)
+                        if r:
                             res.append(resolveTemplates(x[mn], params))
                             continue
                         else:
