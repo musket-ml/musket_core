@@ -86,7 +86,8 @@ def createPars(c:str):
         {
 
             "name": "split",
-            "type": "bool"
+            "type": "bool",
+            "defaultValue": True,
         }
 
     ]
