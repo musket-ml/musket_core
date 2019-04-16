@@ -4,22 +4,11 @@ import musket_core.configloader as configloader
 import musket_core.utils as utils
 import numpy as np
 import keras
-import tqdm
 import musket_core.net_declaration as net
 import musket_core.quasymodels as qm
-import os
 
 import tqdm
 
-tmpMethod = tqdm.tqdm._decr_instances
-def replacementMethod(cls, instance):
-    try:
-        tmpMethod(cls,instance)
-    except:
-        pass
-
-
-tqdm.tqdm._decr_instances = replacementMethod
 
 
 def model_function(func):

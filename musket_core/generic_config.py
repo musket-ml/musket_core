@@ -28,6 +28,7 @@ from keras.callbacks import  LambdaCallback
 import keras.backend as K
 import imgaug
 import musket_core
+import keras.utils.data_utils as _du
 import copy
 from musket_core.clr_callback import CyclicLR
 keras.callbacks.CyclicLR= CyclicLR
@@ -51,6 +52,38 @@ dataset_augmenters={
 
 }
 extra_train={}
+
+from  threading import Lock
+
+_patched=False
+def patch_concurency_issues():
+    global _patched
+    if _patched:
+        return
+    _patched=True
+    global tmpMethod, z, _keras_seq_lock
+    tmpMethod = tqdm.tqdm._decr_instances
+
+    def replacementMethod(*args, **kwargs):
+        try:
+            tmpMethod(*args, **kwargs)
+        except:
+            pass
+
+    z = _du.SequenceEnqueuer.__init__
+    _keras_seq_lock = Lock()
+
+    def new_Constructor(*args, **kwargs):
+        _keras_seq_lock.acquire()
+        try:
+            z(*args, **kwargs)
+        finally:
+            _keras_seq_lock.release()
+
+    _du.SequenceEnqueuer.__init__ = new_Constructor
+    tqdm.tqdm._decr_instances = replacementMethod
+
+patch_concurency_issues()
 
 class Rotate90(imgaug.augmenters.Affine):
     def __init__(self, enabled):
