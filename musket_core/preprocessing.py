@@ -83,6 +83,9 @@ class PreprocessedDataSet(AbstractPreprocessedDataSet):
 
 
 
+def dataset_transformer(func):
+    func.preprocessor = True
+    return func
 
 def dataset_preprocessor(func):
     expectsItem = False
@@ -134,6 +137,6 @@ class SplitPreproccessor(AbstractPreprocessedDataSet):
 
     def __getitem__(self, item):
         items=[x[item] for x in self.branches]
-        return PreproccedPredictionItem(items[0].id,tuple([x.x for x in items]),items[0].y,items[0].original())
+        return PreproccedPredictionItem(items[0].id,[x.x for x in items],items[0].y,items[0].original())
 
 

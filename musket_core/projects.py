@@ -366,6 +366,8 @@ class Project:
                           pass
                     if hasattr(vl,"visualizer") and getattr(vl,"visualizer")==True:
                         elements.append(WrappedVisualizer(name,vl,sig))
+                    if hasattr(vl,"dataset") and getattr(vl,"dataset")==True:
+                        elements.append(WrappedDataSetFactory(name, vl, sig, self))
                     if hasattr(vl,"task") and getattr(vl,"task")==True:
                         elements.append(WrappedTask(name, vl, sig))
                     if hasattr(vl,"model") and getattr(vl,"model")==True:

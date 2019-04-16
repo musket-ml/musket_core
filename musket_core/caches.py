@@ -92,7 +92,7 @@ def cache(layers,declarations,config,outputs,linputs,pName,withArgs):
 
     return ccc
 
-CACHE_DIR="D:/kostya_work/gap-coreference"
+CACHE_DIR=""
 def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
     def ccc(input):
         global CACHE_DIR

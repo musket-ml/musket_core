@@ -82,7 +82,14 @@ bs=[]
 
 
 def createPars(c:str):
-    if "cache" in c: return []
+    if "cache" in c: return [
+        {
+
+            "name": "split",
+            "type": "bool"
+        }
+
+    ]
     if "pass" in c: return []
     if "preprocessor" in c:
         return [

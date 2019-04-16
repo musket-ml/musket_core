@@ -277,6 +277,9 @@ class CompositeDataSet:
     def __len__(self):
         return self.len
 
+def dataset_provider(func):
+    func.dataset=True
+    return func
 
 class DirectoryDataSet:
 
