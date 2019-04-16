@@ -7,7 +7,7 @@ from musket_core.caches import *
 from musket_core import datasets
 from builtins import isinstance
 layers=configloader.load("layers")
-from  musket_core.preprocessing import SplitPreproccessor
+from  musket_core.preprocessing import SplitPreproccessor,SplitConcatPreprocessor
 import importlib
 
 def take_input(layers,declarations,config,outputs,linputs,pName,withArgs):
@@ -41,6 +41,15 @@ def split_preprocessor(layers,declarations,config,outputs,linputs,pName,withArgs
     
     def buildPreprocessor(inputArg):
         return SplitPreproccessor(inputArg,[x.build(inputArg) for x in m])
+
+    return buildPreprocessor
+
+
+def split_concact_preprocessor(layers, declarations, config, outputs, linputs, pName, withArgs):
+    m = [Layers([v], declarations, {}, outputs, linputs, withArgs) for v in config]
+
+    def buildPreprocessor(inputArg):
+        return SplitConcatPreprocessor(inputArg, [x.build(inputArg) for x in m])
 
     return buildPreprocessor
 
@@ -139,6 +148,7 @@ builtins={
     "cache": cache,
     "disk-cache": diskcache,
     "split-preprocessor": split_preprocessor,
+    "split-concat-preprocessor": split_concact_preprocessor,
     "seq-preprocessor": seq_preprocessor,
     "pass": passPreprocessor,
     "transform-concat": transform_concat,

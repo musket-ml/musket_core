@@ -1,9 +1,6 @@
-import functools
-import importlib
 import inspect
 from  typing import List,Optional
-
-from py4j.tests.java_callback_test import A
+import numpy as np
 
 from musket_core.datasets import PredictionItem,DataSet,get_id,get_stages,get_stage
 
@@ -147,3 +144,14 @@ class SplitPreproccessor(AbstractPreprocessedDataSet):
         if self._parent_supports_target and not self.expectsItem:
             return self.branches[0].get_target(item)
         return self[item].y
+
+
+class SplitConcatPreprocessor(SplitPreproccessor):
+
+    def __init__(self,parent,branches:List[PreprocessedDataSet],axis=-1):
+        super().__init__(parent,branches)
+        self.axis=axis
+
+    def __getitem__(self, item):
+        items=[x[item] for x in self.branches]
+        return PreproccedPredictionItem(items[0].id,np.concatenate([x.x for x in items],axis=self.axis),items[0].y,items[0].original())
