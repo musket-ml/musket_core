@@ -7,8 +7,6 @@ class AnsembleModel:
     def predict(self,data):
         res=[]
         for m in self.models:
-            if hasattr(m, "inputs") and len(m.inputs) > 1:
-                data = np.transpose(data).tolist()
             res.append(m.predict(data))
 
         rm=res[0]

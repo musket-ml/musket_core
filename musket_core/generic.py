@@ -41,7 +41,7 @@ class GenericPipeline(generic.GenericTaskConfig):
 
     def predict_on_batch(self, mdl, ttflips, batch):
 
-        res = mdl.predict(np.array(batch.images))
+        res =  mdl.predict(batch.images)
         return res
 
     def evaluateAll(self,ds, fold:int,stage=-1,negatives="real",ttflips=None,batchSize=32):
@@ -85,7 +85,7 @@ class GenericPipeline(generic.GenericTaskConfig):
             mdl=qm.TestTimeAugModel(mdl,net.create_test_time_aug(self.testTimeAugmentation,self.imports))
         if self.preprocessing is not None:
             dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing, self.imports)
-        for original_batch in datasets.batch_generator(dataset, batch_size, limit):
+        for original_batch in datasets.generic_batch_generator(dataset, batch_size, limit):
             res = self.predict_on_batch(mdl, ttflips, original_batch)
             original_batch.results=res
             yield original_batch

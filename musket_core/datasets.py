@@ -328,14 +328,23 @@ def batch_generator(ds, batchSize, maxItems=-1):
         if len(bx)>0:
             yield imgaug.Batch(images=bx,data=ps)
         return
-
+def generic_batch_generator(ds,batchSize,maxItems=-1):
+    indexes=None
+    if maxItems !=-1:
+        indexes=list(range(min(maxItems,len(ds))))
+    dg=GenericDataSetSequence(ds,batchSize,indexes,False)
+    for i in range(len(dg)):
+        X,y=dg[i]
+        yield imgaug.Batch(images=X,data=y)
+    return
 
 class GenericDataSetSequence(keras.utils.Sequence):
 
-    def __init__(self,ds,batch_size,indexes=None):
+    def __init__(self,ds,batch_size,indexes=None,infinite=True):
         self.ds=ds
         self.batchSize=batch_size
         self._dim=None
+        self.inifinite=infinite
         if indexes is None:
             indexes =range(len(self.ds))
         self.indexes=indexes
@@ -366,6 +375,8 @@ class GenericDataSetSequence(keras.utils.Sequence):
         for i in range(idx * self.batchSize,(idx + 1) * self.batchSize):
             if i>=l:
                 i=i%l
+                if not self.inifinite:
+                    break
             r=self.ds[self.indexes[i]]
             X.append(r.x)
             y.append(r.y)
@@ -387,6 +398,8 @@ class GenericDataSetSequence(keras.utils.Sequence):
         for i in range(idx * self.batchSize,(idx + 1) * self.batchSize):
             if i>=l:
                 i=i%l
+                if not self.inifinite:
+                    break
             r=self.ds[self.indexes[i]]
             for j in range(xd):
                 r_x = r.x
