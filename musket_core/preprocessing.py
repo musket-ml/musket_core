@@ -2,7 +2,7 @@ import inspect
 from  typing import List,Optional
 import numpy as np
 
-from musket_core.datasets import PredictionItem,DataSet,get_id,get_stages,get_stage
+from musket_core.datasets import PredictionItem,DataSet,get_id,get_stages,get_stage,inherit_dataset_params, CompositeDataSet
 
 
 class PreproccedPredictionItem(PredictionItem):
@@ -28,10 +28,7 @@ class AbstractPreprocessedDataSet(DataSet):
             self._parent_supports_target=True
         else:
             self._parent_supports_target = False
-        if hasattr(parent,"folds"):
-            self.folds=getattr(parent,"folds")
-        if hasattr(parent,"holdoutArr"):
-            self.holdoutArr=getattr(parent,"holdoutArr")
+        inherit_dataset_params(parent,self)
 
     def __len__(self):
         return len(self.parent)
@@ -98,7 +95,16 @@ def dataset_preprocessor(func):
                     expectsItem = True
 
     def wrapper(input,**kwargs):
-        return PreprocessedDataSet(input,func,expectsItem,**kwargs)
+        if isinstance(input,CompositeDataSet):
+            components = list(map(lambda x: PreprocessedDataSet(x,func,expectsItem,**kwargs), input.components))
+            compositeDS = CompositeDataSet(components)
+            inherit_dataset_params(input, compositeDS)
+            if hasattr(input, "name"):
+                compositeDS.name = input.name + func.__name__ + str(kwargs)
+                compositeDS.origName = compositeDS.name
+            return compositeDS
+        else:
+            return PreprocessedDataSet(input,func,expectsItem,**kwargs)
     wrapper.args=inspect.signature(func).parameters
     wrapper.preprocessor=True
     wrapper.original=func
