@@ -222,7 +222,7 @@ class ConstrainedDirectory:
     def __repr__(self):
         return self.path+" (with filter)"
 
-class CompositeDataSet:
+class CompositeDataSet(object):
 
     def __init__(self, components):
         self.components = components
@@ -749,3 +749,9 @@ def get_targets_as_array(d):
         for i in tqdm.tqdm(range(len(d)),"reading dataset targets "+str(d)):
             preds.append(d[i].y)
     return np.array(preds,dtype=np.float32)
+
+def inherit_dataset_params(ds_from,ds_to):
+    if hasattr(ds_from, "folds"):
+        ds_to.folds = getattr(ds_from, "folds")
+    if hasattr(ds_from, "holdoutArr"):
+        ds_to.holdoutArr = getattr(ds_from, "holdoutArr")
