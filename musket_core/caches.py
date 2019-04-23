@@ -106,7 +106,6 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
 
         __lock__.acquire()
         try:
-            __lock__.acquire()
             return ccc1(input)
         finally:
             __lock__.release()
