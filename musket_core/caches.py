@@ -3,9 +3,11 @@ import sys
 
 from musket_core.datasets import PredictionItem
 from musket_core.utils import load,save,readArray,dumpArray
+from musket_core import context
 import tqdm
 import numpy as np
 import threading
+from musket_core import utils
 
 __lock__ = threading.Lock()
 storage = {}
@@ -90,12 +92,21 @@ def cache(layers,declarations,config,outputs,linputs,pName,withArgs):
     def ccc(input):
         return Cache(input)
 
-    return ccc
+    return ccc 
 
-CACHE_DIR=""
+CACHE_DIR=None
+
+def get_cache_dir():
+    if CACHE_DIR is not None:
+        return CACHE_DIR
+    cp=context.get_current_project_path()
+    d=os.path.join(cp,".cache/")
+    utils.ensure(d)
+    return d
+
 def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
     def ccc(input):
-        global CACHE_DIR
+        
         __lock__.acquire()
         try:
             name = "data"
@@ -104,7 +115,7 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
             if hasattr(input, "name"):
                 id = getattr(input, "name")
                 name = id.replace("{", "").replace("[", "").replace("/", "").replace("\\", "").replace("]", "").replace("}", "").replace(" ", "").replace(",","").replace("\'","").replace(":", "")
-            name=CACHE_DIR+name
+            name=get_cache_dir()+name
             if name in storage:
                 return storage[name]
 
@@ -307,7 +318,7 @@ def inspect_structure(obj)->([str], [[int]], str):
 
 def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
     def ccc(input):
-        global CACHE_DIR
+        
         __lock__.acquire()
         try:
             name = "data"
@@ -317,7 +328,7 @@ def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
             if hasattr(input, "name"):
                 id = getattr(input, "name")
                 name = id.replace("{", "").replace("[", "").replace("/", "").replace("\\", "").replace("]", "").replace("}", "").replace(" ", "").replace(",","").replace("\'","").replace(":", "")
-            name=CACHE_DIR+name
+            name=get_cache_dir()+name
             if name in storage:
                 return storage[name]
 

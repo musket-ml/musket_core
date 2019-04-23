@@ -27,10 +27,11 @@ from musket_core.structure_constants import constructSummaryYamlPath
 from keras.callbacks import  LambdaCallback
 import keras.backend as K
 import imgaug
-import musket_core
 import keras.utils.data_utils as _du
 import copy
 from musket_core.clr_callback import CyclicLR
+
+from musket_core.context import context
 keras.callbacks.CyclicLR= CyclicLR
 from musket_core import predictions
 keras.utils.get_custom_objects()["macro_f1"]= musket_core.losses.macro_f1
@@ -262,13 +263,14 @@ class GenericTaskConfig(model.ConnectedModel):
         self.all = atrs
         self.groupFunc=None
         self.imports=[]
-        self.datasets_path=None
+        self.datasets_path=None        
         self._dataset=None
         self._reporter=None
         self.testTimeAugmentation=None
         self.stratified=False
         self.preprocessing=None
         self.verbose = 1
+        self._projectDir=None
         self.dataset=None
         self.noTrain = False
         self.inference_batch=32
@@ -752,11 +754,31 @@ class GenericTaskConfig(model.ConnectedModel):
         for runner in task_runners.values():
             runner.end()
 
+    def get_default_dataset_folder(self):
+        if self.datasets_path is not None:
+            return self.datasets_path
+        return os.path.join(self.get_project_path(),"data")
+    
+    
+
+    def get_project_path(self):
+        if self._projectDir is not None:
+            return self._projectDir
+        v=self.path
+        while v is not None:
+            v=os.path.dirname(v)
+            if os.path.exists(os.path.join(v,"modules")):
+                self._projectDir=v
+                return v
+        self._projectDir=os.path.pardir(self.path)
+        return self._projectDir    
+
     def parse_dataset(self,datasetName=None):
         try:
-            fw = self.dataset
+            context.projectPath=self.get_project_path()
+            fw = self.dataset            
             if self.datasets_path is not None:
-                os.chdir(self.datasets_path)  # TODO review
+                os.chdir(self.get_default_dataset_folder())  # TODO review
             if datasetName is not None:
                 fw = self.datasets[datasetName]
             if isinstance(fw, str):

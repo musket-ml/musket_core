@@ -50,7 +50,7 @@ class PreprocessedDataSet(AbstractPreprocessedDataSet):
         self.func=func
         self.kw=kwargs
         if hasattr(parent, "name"):
-            self.name=parent.name+self.func.__name__+str(kwargs)
+            self.name=parent.name+self.func.__name__+str(sorted(kwargs))
             self.origName = self.name
         pass
 
