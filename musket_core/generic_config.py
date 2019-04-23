@@ -836,8 +836,15 @@ class GenericImageTaskConfig(GenericTaskConfig):
         for original_batch in datasets.batch_generator(dataset, batch_size, limit):
             for batch in ta.augment_batches([original_batch]):
                 res = self.predict_on_batch(mdl, ttflips, batch)
-                self.update(batch,res)
-                batch.results=res
+                resList = [x for x in res]
+                for ind in range(len(resList)):
+                    img = resList[ind]
+                    unaug = batch.images_unaug[ind]
+                    resize = imgaug.augmenters.Scale({"height": unaug.shape[0], "width": unaug.shape[1]})
+                    restored = resize.augment_image(img)
+                    resList[ind] = restored
+                self.update(batch,resList)
+                batch.results=resList
                 yield batch
 
 
@@ -917,7 +924,14 @@ class GenericImageTaskConfig(GenericTaskConfig):
             for v in datasets.batch_generator(datasets.DirectoryDataSet(path), batch_size, limit):
                 for z in ta.augment_batches([v]):
                     res = self.predict_on_batch(mdl,ttflips,z)
-                    z.predictions = res;
+                    resList = [x for x in res]
+                    for ind in range(len(resList)):
+                        img = resList[ind]
+                        unaug = batch.images_unaug[ind]
+                        resize = imgaug.augmenters.Scale({"height": unaug.shape[0], "width": unaug.shape[1]})
+                        restored = resize.augment_image(img)
+                        resList[ind] = restored
+                    z.predictions = resList;
                     pbar.update(batch_size)
                     yield z
 
@@ -925,7 +939,6 @@ class GenericImageTaskConfig(GenericTaskConfig):
         transforms = [] + self.transforms
         transforms.append(imgaug.augmenters.Scale({"height": self.shape[0], "width": self.shape[1]}))
         return imgaug.augmenters.Sequential(transforms)
-
 
     def adaptNet(self, model, model1, copy=False):
         notUpdated = True

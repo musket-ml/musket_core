@@ -236,7 +236,7 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
                 save(xStructPath, xStruct)
                 save(yStructPath, yStruct)
                 save(blocksCountPath, blockInd)
-                return input
+                return ccc1(input)
 
             result = DiskCache1(input, data, xIsListOrTuple, yIsListOrTuple)
             storage[name] = result
