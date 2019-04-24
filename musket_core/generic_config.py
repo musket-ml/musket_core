@@ -27,10 +27,11 @@ from musket_core.structure_constants import constructSummaryYamlPath
 from keras.callbacks import  LambdaCallback
 import keras.backend as K
 import imgaug
-import musket_core
 import keras.utils.data_utils as _du
 import copy
 from musket_core.clr_callback import CyclicLR
+
+from musket_core.context import context
 keras.callbacks.CyclicLR= CyclicLR
 from musket_core import predictions
 keras.utils.get_custom_objects()["macro_f1"]= musket_core.losses.macro_f1
@@ -304,6 +305,7 @@ class GenericTaskConfig(model.ConnectedModel):
         self.stratified=False
         self.preprocessing=None
         self.verbose = 1
+        self._projectDir=None
         self.dataset=None
         self.noTrain = False
         self.inference_batch=32
@@ -537,7 +539,7 @@ class GenericTaskConfig(model.ConnectedModel):
             foldNum=ds
             ds=self.get_dataset()
         if isinstance(foldNum, list):
-            foldNum=foldNum[0]    
+            foldNum=foldNum[0]
         ids=self.kfold(ds).indexes(foldNum,False)
         r=datasets.SubDataSet(ds, ids)
         r.name="validation"+str(foldNum)
@@ -774,7 +776,7 @@ class GenericTaskConfig(model.ConnectedModel):
                 self.eval_task_set(item, tasks_set, tasks_set_id, path, dataset, fold, stage, callbacks, pbar)
 
             tasks_set_id += 1
-    
+
     def eval_task_set(self, task_item, tasks_set, tasks_set_id, path, dataset, fold, stage, callbacks, progress_bar):
         task_runners = {}
 
@@ -804,11 +806,31 @@ class GenericTaskConfig(model.ConnectedModel):
         for runner in task_runners.values():
             runner.end()
 
+    def get_default_dataset_folder(self):
+        if self.datasets_path is not None:
+            return self.datasets_path
+        return os.path.join(self.get_project_path(),"data")
+
+
+
+    def get_project_path(self):
+        if self._projectDir is not None:
+            return self._projectDir
+        v=self.path
+        while v is not None:
+            v=os.path.dirname(v)
+            if os.path.exists(os.path.join(v,"modules")):
+                self._projectDir=v
+                return v
+        self._projectDir=os.path.pardir(self.path)
+        return self._projectDir
+
     def parse_dataset(self,datasetName=None):
         try:
+            context.projectPath=self.get_project_path()
             fw = self.dataset
             if self.datasets_path is not None:
-                os.chdir(self.datasets_path)  # TODO review
+                os.chdir(self.get_default_dataset_folder())  # TODO review
             if datasetName is not None:
                 fw = self.datasets[datasetName]
             if isinstance(fw, str):
@@ -921,17 +943,17 @@ class GenericImageTaskConfig(GenericTaskConfig):
         elif ttflips:
             res = self.predict_with_all_augs(mdl, ttflips, batch)
         return res
-    
+
     def predict_with_all_augs(self, mdl, ttflips, batch):
         input_left = batch.images_aug
         input_right = imgaug.augmenters.Fliplr(1.0).augment_images(batch.images_aug)
-        
+
         out_left = self.predict_with_all_rot_augs(mdl, ttflips,  input_left)
         out_right = self.predict_with_all_rot_augs(mdl, ttflips,  input_right)
-        
+
         if self.flipPred:
             out_right = imgaug.augmenters.Fliplr(1.0).augment_images(out_right)
-        
+
         return (out_left + out_right) / 2.0
 
     def predict_with_all_rot_augs(self, mdl, ttflips,  input):
@@ -939,22 +961,22 @@ class GenericImageTaskConfig(GenericTaskConfig):
         rot_180 = imgaug.augmenters.Affine(rotate=180.0)
         rot_270 = imgaug.augmenters.Affine(rotate=270.0)
         count = 2.0
-        
+
         res_0 = mdl.predict(np.array(input))
-        
+
         res_180 = self.predict_there_and_back(mdl, rot_180, rot_180, input)
-        
+
         res_270 = 0;
         res_90 = 0
-        
+
         if ttflips == "Horizontal_and_vertical":
             count = 4.0
-            
+
             res_270 = self.predict_there_and_back(mdl, rot_270, rot_90, input)
             res_90 = self.predict_there_and_back(mdl, rot_90, rot_270, input)
-        
+
         return (res_0 + res_90 + res_180 + res_270) / count
-    
+
     def predict_there_and_back(self, mdl, there, back, input):
         augmented_input = there.augment_images(input)
         there_res = mdl.predict(np.array(augmented_input))

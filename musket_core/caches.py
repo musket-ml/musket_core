@@ -3,9 +3,11 @@ import sys
 
 from musket_core.datasets import PredictionItem, inherit_dataset_params, CompositeDataSet
 from musket_core.utils import load,save,readArray,dumpArray
+from musket_core import context
 import tqdm
 import numpy as np
 import threading
+from musket_core import utils
 
 __lock__ = threading.Lock()
 storage = {}
@@ -99,17 +101,27 @@ def cache(layers,declarations,config,outputs,linputs,pName,withArgs):
 
     return ccc
 
-CACHE_DIR=""
+CACHE_DIR=None
+
+def get_cache_dir():
+    if CACHE_DIR is not None:
+        return CACHE_DIR
+    cp=context.get_current_project_path()
+    d=os.path.join(cp,".cache/")
+    utils.ensure(d)
+    return d
+
 def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
     def ccc(input):
+
+        __lock__.acquire()
         try:
-            __lock__.acquire()
             return ccc1(input)
         finally:
             __lock__.release()
 
     def ccc1(input):
-        global CACHE_DIR
+        
 
         try:
             name = "data"
@@ -118,7 +130,7 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
             if hasattr(input, "name"):
                 id = getattr(input, "name")
                 name = id.replace("{", "").replace("[", "").replace("/", "").replace("\\", "").replace("]", "").replace("}", "").replace(" ", "").replace(",","").replace("\'","").replace(":", "")
-            name=CACHE_DIR+name
+            name=get_cache_dir()+name
             if name in storage:
                 return storage[name]
 
@@ -144,39 +156,40 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
                 xData, yData = init_buffers(xStruct, yStruct)
 
                 for blockInd in tqdm.tqdm(range(blocksCount), "loading disk cache for:" + id):
-                    xBlockPath = f"{name}/x_{blockInd}.dscache"
-                    if os.path.exists(xBlockPath):
-                        xBuff = load(xBlockPath)
-                        if not xIsListOrTuple:
-                            if isinstance(xBuff,list):
-                                xData.extend(xBuff)
-                            elif isinstance(xBuff, np.ndarray):
-                                xData.extend(xBuff.tolist())
+                    if not xIsListOrTuple:
+                        blockPath = f"{name}/x_{blockInd}.dscache"
+                        if os.path.exists(blockPath):
+                            xBuff = load(blockPath)
+                            for x in xBuff:
+                                xData.append(x)
                         else:
-                            for c in range(len(xStruct[0])):
-                                if isinstance(xBuff[c], list):
-                                    xData.extend(xBuff[c])
-                                elif isinstance(xBuff[c], np.ndarray):
-                                    xData.extend(xBuff[c].tolist())
+                            raise Exception(f"Cache block is missing: {name}")
                     else:
-                        raise Exception(f"Cache block is missing: {name}")
-
-                    yBlockPath = f"{name}/y_{blockInd}.dscache"
-                    if os.path.exists(yBlockPath):
-                        yBuff = load(yBlockPath)
-                        if not yIsListOrTuple:
-                            if isinstance(yBuff, list):
-                                yData.extend(yBuff)
-                            elif isinstance(yBuff, np.ndarray):
-                                yData.extend(yBuff.tolist())
+                        for c in range(len(xStruct[0])):
+                            blockPath = f"{name}/x_{blockInd}_{c}.dscache"
+                            if os.path.exists(blockPath):
+                                xBuff = load(blockPath)
+                                for x in xBuff:
+                                    xData[c].append(x)
+                            else:
+                                raise Exception(f"Cache block is missing: {name}")
+                    if not yIsListOrTuple:
+                        blockPath = f"{name}/y_{blockInd}.dscache"
+                        if os.path.exists(blockPath):
+                            yBuff = load(blockPath)
+                            for y in yBuff:
+                                yData.append(y)
                         else:
-                            for c in range(len(yStruct[0])):
-                                if isinstance(yBuff[c], list):
-                                    yData.extend(yBuff[c])
-                                elif isinstance(yBuff[c], np.ndarray):
-                                    yData.extend(yBuff[c].tolist())
+                            raise Exception(f"Cache block is missing: {name}")
                     else:
-                        raise Exception(f"Cache block is missing: {name}")
+                        for c in range(len(yStruct[0])):
+                            blockPath = f"{name}/y_{blockInd}_{c}.dscache"
+                            if os.path.exists(blockPath):
+                                yBuff = load(blockPath)
+                                for y in yBuff:
+                                    yData[c].append(y)
+                            else:
+                                raise Exception(f"Cache block is missing: {name}")
 
                 data = (xData, yData)
 
@@ -226,8 +239,11 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
                                 arr = np.array(arr)
                             save(f"{name}/x_{blockInd}.dscache", arr)
                         else:
-                            arr = xData
-                            save(f"{name}/x_{blockInd}.dscache", arr)
+                            for c in range(len(xStruct[0])):
+                                arr = xData[c]
+                                if xStruct[0][c].startswith("int") or xStruct[0][c].startswith("float"):
+                                    arr = np.array(arr)
+                                save(f"{name}/x_{blockInd}_{c}.dscache", arr)
 
                         if not yIsListOrTuple:
                             arr = yData
@@ -235,8 +251,11 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
                                 arr = np.array(arr)
                             save(f"{name}/y_{blockInd}.dscache", arr)
                         else:
-                            arr = yData
-                            save(f"{name}/y_{blockInd}.dscache", arr)
+                            for c in range(len(yStruct[0])):
+                                arr = yData[c]
+                                if yStruct[0][c].startswith("int") or yStruct[0][c].startswith("float"):
+                                    arr = np.array(arr)
+                                save(f"{name}/y_{blockInd}_{c}.dscache", arr)
 
                         buffSize = 0
                         blockInd += 1
@@ -247,7 +266,6 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
                 save(yStructPath, yStruct)
                 save(blocksCountPath, blockInd)
                 return ccc1(input)
-
             result = DiskCache1(input, data, xIsListOrTuple, yIsListOrTuple)
             storage[name] = result
             return result
@@ -328,8 +346,7 @@ def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
         finally:
             __lock__.release()
 
-    def ccc1(input):
-        global CACHE_DIR
+    def ccc1(input):       
         try:
             name = "data"
             id = "dataset"
@@ -339,7 +356,8 @@ def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
                 id = getattr(input, "name")
                 name = id.replace("{", "").replace("[", "").replace("/", "").replace("\\", "").replace("]", "").replace(
                     "}", "").replace(" ", "").replace(",", "").replace("\'", "").replace(":", "")
-            name = CACHE_DIR + name
+
+            name=get_cache_dir()+name
             if name in storage:
                 return storage[name]
 

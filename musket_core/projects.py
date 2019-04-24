@@ -1,21 +1,20 @@
 from musket_core import experiment,structure_constants
-from musket_core import datasets,visualization,utils,net_declaration
+from musket_core.context import context
+from musket_core import datasets,visualization,utils
 from musket_core import parralel
 from musket_core import dataset_analizers,dataset_visualizers
 import keras
 import  musket_core.model
-import musket_core.generic
-import musket_core.generic_config
 from typing import Collection
 import os
 import sys
-from threading import local
+
 import importlib
 import inspect
 
 from musket_core import introspector
 
-_context=local()
+
 
 def _all_experiments(path,e:[experiment.Experiment]):
     if structure_constants.isExperimentDir(path):
@@ -103,7 +102,7 @@ class WrappedTask:
         def executeTask(t):
             actualArgs={}
             config=exp.parse_config()
-            _context.projectPath=project.path
+            context.projectPath=project.path
             for p in self.sig.parameters:
                 par=self.sig.parameters[p]
                 type=par.annotation
@@ -471,27 +470,6 @@ class Project:
         utils.ensure(visualization)
         return visualizer.create(dataset,visualization)
 
-def _find_path():
-    last=-1
-    st=inspect.stack()
-    for frm in st:
-        
-        file=frm.filename;
-        
-        dn=os.path.dirname(file)
-        if last==0:
-            last=last+1
-            continue
-        if last==1:
-          return os.path.dirname(dn)  
-        if os.path.basename(file)=="projects.py" and "musket_core" in dn:
-          last=0
-        
-
-def get_current_project_path():
-    if not hasattr(_context,"projectPath"):
-        _context.projectPath=_find_path();
-    return _context.projectPath
 
 
 

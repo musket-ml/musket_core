@@ -30,7 +30,8 @@ def main():
     parser.add_argument('--cache', type=str, default="",
                         help='cache directory')
     args = parser.parse_args()
-    caches.CACHE_DIR = args.cache
+    if len(args.cache)>0:
+        caches.CACHE_DIR = args.cache
     w=Workspace()
     project=w.project(args.project)
 
