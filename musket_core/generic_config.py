@@ -49,6 +49,9 @@ from musket_core.parralel import  Task
 keras.utils.get_custom_objects().update({'matthews_correlation': musket_core.losses.matthews_correlation})
 keras.utils.get_custom_objects().update({'log_loss': musket_core.losses.log_loss})
 from musket_core import net_declaration as net
+
+from musket_core.datasets import DataSet, MeanDataSet, WrappedDS
+
 dataset_augmenters={
 
 }
@@ -185,7 +188,11 @@ class ScoreAndTreshold:
     def __str__(self):
         return "score:"+str(self.score)+": treshold:"+str(self.treshold)
 
-def threshold_search(y_true, y_proba,func):
+def threshold_search(predsDS:DataSet, func, batch_size = None):
+
+    #TODO: fix batch_size for image pipeline
+    batch_size = None
+
     if isinstance(func,str):
         func_=keras.metrics.get(func)
         def wrapped(x,y):
@@ -198,7 +205,11 @@ def threshold_search(y_true, y_proba,func):
     best_score = 0
     K.clear_session()
     for threshold in tqdm.tqdm([i * 0.01 for i in range(100)]):
-        score = func(y_true.astype(np.float64), (y_proba > threshold))
+
+        def func1(y_true, y_proba):
+            return func(y_true.astype(np.float64), (y_proba > threshold))
+
+        score = applyFunctionToDS(predsDS, func1, batch_size)
         if np.mean(score) > np.mean(best_score):
             best_threshold = threshold
             best_score = score
@@ -211,7 +222,11 @@ def need_threshold(func:str)->bool:
     return True
 
 
-def eval_metric(y_true,y_proba,func):
+def eval_metric(predsDS:DataSet, func, batch_size = None):
+
+    # TODO: fix batch_size for image pipeline
+    batch_size = None
+
     if isinstance(func,str):
         func_=keras.metrics.get(func)
         def wrapped(x,y):
@@ -220,7 +235,34 @@ def eval_metric(y_true,y_proba,func):
             v2 = K.constant(y)
             return K.eval(func_(v1,v2))
         func=wrapped
-    return func(y_true,y_proba)
+
+    result = applyFunctionToDS(predsDS, func, batch_size)
+    return result
+
+
+def applyFunctionToDS(dsWithPredictions, func, batch_size):
+
+    l = len(dsWithPredictions)
+    if batch_size is None:
+        batch_size = l
+
+    resultArr = []
+    resultScalarArr = []
+    for ind in range(0, l, batch_size):
+        end = min(ind + batch_size, l)
+        items = dsWithPredictions[ind:end]
+        y_true = np.array([i.y for i in items])
+        y_proba = np.array([i.prediction for i in items])
+        batch_value = func(y_true, y_proba)
+        if isinstance(batch_value, np.ndarray):
+            resultArr.append(batch_value)
+        else:
+            resultScalarArr.append(batch_value)
+
+    if len(resultArr) > 0:
+        return np.concatenate(resultArr)
+    else:
+        return np.array(resultScalarArr)
 
 
 class FoldWork:
@@ -427,7 +469,29 @@ class GenericTaskConfig(model.ConnectedModel):
                 pbar.update(batch_size)
         return np.array(res)
 
-    def predictions(self,name,fold=None,stage=None):
+    def predict_all_to_dataset(self, dataset, fold=None, stage=None, limit=-1, batch_size=None, ttflips=False):
+        if batch_size is None:
+            batch_size=self.inference_batch
+        if fold is None:
+            fold=list(range(self.folds_count))
+        if stage is None:
+            stage=list(range(len(self.stages)))
+        if isinstance(dataset,str):
+            dataset=self.get_dataset(dataset)
+        res=[]
+        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
+            for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
+                b=v
+                for i in range(len(b.data)):
+                    res.append(b.results[i])
+                pbar.update(batch_size)
+
+        resName = (dataset.name if hasattr(dataset, "name") else "") + "_predictions"
+        result = WrappedDS(dataset, [i for i in range(len(dataset))], resName, None, res)
+        return result
+
+
+    def predictions(self,name,fold=None,stage=None)->DataSet:
         return musket_core.predictions.get_predictions(self,name,fold,stage)
 
     def find_treshold(self,ds,fold,func,stage=0):
@@ -435,39 +499,34 @@ class GenericTaskConfig(model.ConnectedModel):
         if isinstance(stage,list) or isinstance(stage,tuple):
             pa = []
             for i in stage:
-                pa.append(self.predict_all_to_array(ds, fold, i))
-            predicted = np.mean(np.array(pa),axis=0)
-        else: predicted = self.predict_all_to_array(ds, fold, stage)
-        vl = datasets.get_targets_as_array(ds)
-        return threshold_search(vl, predicted,func)
+                pa.append(self.predict_all_to_dataset(ds, fold, i))
+            predictedDS = MeanDataSet(pa)
+        else: predictedDS = self.predict_all_to_dataset(ds, fold, stage)
+        return threshold_search(predictedDS,func,self.inference_batch)
 
     def find_optimal_treshold_by_validation(self,func,stages=None):
         tresh = []
         for fold in range(self.folds_count):
-            arr = predictions.get_validation_prediction(self,fold,stages)
-            val = self.validation( fold)
-            targets = datasets.get_targets_as_array(val)
-            tr = threshold_search(targets,arr , func)
+            predsDS = predictions.get_validation_prediction(self,fold,stages)
+            tr = threshold_search(predsDS, func, self.inference_batch)
             tresh.append(tr.treshold)
         tr = np.mean(np.array(tresh))
         return tr
 
     def find_optimal_treshold_by_validation2(self,func,stages=None,ds=None,):
         all=[]
-        allTargets=[]
         for fold in range(self.folds_count):
             val = self.validation(ds, fold)
-            preds=predictions.get_validation_prediction(self,fold,stages)
-            targets=datasets.get_targets_as_array(val)
-            all.append(preds)
-            allTargets.append(targets)
+            predsDS=predictions.get_validation_prediction(self,fold,stages)
+            all.append(predsDS)
 
-        tr = threshold_search(np.concatenate(allTargets,axis=0),np.concatenate(all,axis=0),func)
+        resultPredsDS = all[0] if len(all) == 1 else datasets.CompositeDataSet(all)
+        tr = threshold_search(resultPredsDS,func, self.inference_batch)
         return tr.treshold
 
     def find_optimal_treshold_by_holdout(self,func,stages=None):
-        hl=predictions.get_holdout_prediction(self,None,stages)
-        return threshold_search(datasets.get_targets_as_array(self.holdout()), hl, func).treshold
+        predsDS=predictions.get_holdout_prediction(self,None,stages)
+        return threshold_search(predsDS, func, self.inference_batch).treshold
 
 
     def createAndCompile(self, lr=None, loss=None)->keras.Model:
@@ -487,7 +546,7 @@ class GenericTaskConfig(model.ConnectedModel):
             foldNum=ds
             ds=self.get_dataset()
         if isinstance(foldNum, list):
-            foldNum=foldNum[0]    
+            foldNum=foldNum[0]
         ids=self.kfold(ds).indexes(foldNum,False)
         r=datasets.SubDataSet(ds, ids)
         r.name="validation"+str(foldNum)
@@ -724,7 +783,7 @@ class GenericTaskConfig(model.ConnectedModel):
                 self.eval_task_set(item, tasks_set, tasks_set_id, path, dataset, fold, stage, callbacks, pbar)
 
             tasks_set_id += 1
-    
+
     def eval_task_set(self, task_item, tasks_set, tasks_set_id, path, dataset, fold, stage, callbacks, progress_bar):
         task_runners = {}
 
@@ -891,17 +950,17 @@ class GenericImageTaskConfig(GenericTaskConfig):
         elif ttflips:
             res = self.predict_with_all_augs(mdl, ttflips, batch)
         return res
-    
+
     def predict_with_all_augs(self, mdl, ttflips, batch):
         input_left = batch.images_aug
         input_right = imgaug.augmenters.Fliplr(1.0).augment_images(batch.images_aug)
-        
+
         out_left = self.predict_with_all_rot_augs(mdl, ttflips,  input_left)
         out_right = self.predict_with_all_rot_augs(mdl, ttflips,  input_right)
-        
+
         if self.flipPred:
             out_right = imgaug.augmenters.Fliplr(1.0).augment_images(out_right)
-        
+
         return (out_left + out_right) / 2.0
 
     def predict_with_all_rot_augs(self, mdl, ttflips,  input):
@@ -909,22 +968,22 @@ class GenericImageTaskConfig(GenericTaskConfig):
         rot_180 = imgaug.augmenters.Affine(rotate=180.0)
         rot_270 = imgaug.augmenters.Affine(rotate=270.0)
         count = 2.0
-        
+
         res_0 = mdl.predict(np.array(input))
-        
+
         res_180 = self.predict_there_and_back(mdl, rot_180, rot_180, input)
-        
+
         res_270 = 0;
         res_90 = 0
-        
+
         if ttflips == "Horizontal_and_vertical":
             count = 4.0
-            
+
             res_270 = self.predict_there_and_back(mdl, rot_270, rot_90, input)
             res_90 = self.predict_there_and_back(mdl, rot_90, rot_270, input)
-        
+
         return (res_0 + res_90 + res_180 + res_270) / count
-    
+
     def predict_there_and_back(self, mdl, there, back, input):
         augmented_input = there.augment_images(input)
         there_res = mdl.predict(np.array(augmented_input))

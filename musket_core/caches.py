@@ -56,11 +56,16 @@ class DiskCache:
 
 
     def __getitem__(self, item):
-        isList = isinstance(self.items[0],list)
-        if isList:
-            return CachedPredictionItem(item,list(map(lambda x: x[item], self.items[0])),self.items[1][item],self.parent)
+        if isinstance(item, slice):
+            indices = list(item)
+            result = [self.__getitem__(i) for i in indices]
+            return result
         else:
-            return CachedPredictionItem(item,self.items[0][item],self.items[1][item],self.parent)
+            isList = isinstance(self.items[0],list)
+            if isList:
+                return CachedPredictionItem(item,list(map(lambda x: x[item], self.items[0])),self.items[1][item],self.parent)
+            else:
+                return CachedPredictionItem(item,self.items[0][item],self.items[1][item],self.parent)
 
     def __len__(self):
         return len(self.parent)
@@ -78,9 +83,14 @@ class DiskCache1:
 
 
     def __getitem__(self, item):
-        x = self.items[0][item] if not self.xIsListOrTuple else [self.items[0][c][item] for c in range(len(self.items[0]))]
-        y = self.items[1][item] if not self.yIsListOrTuple else [self.items[1][c][item] for c in range(len(self.items[1]))]
-        return CachedPredictionItem(item,x,y,self.parent)
+        if isinstance(item,slice):
+            indices = list(item)
+            result = [self.__getitem__(i) for i in indices]
+            return result
+        else:
+            x = self.items[0][item] if not self.xIsListOrTuple else [self.items[0][c][item] for c in range(len(self.items[0]))]
+            y = self.items[1][item] if not self.yIsListOrTuple else [self.items[1][c][item] for c in range(len(self.items[1]))]
+            return CachedPredictionItem(item,x,y,self.parent)
 
     def __len__(self):
         return len(self.parent)

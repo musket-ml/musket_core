@@ -11,7 +11,8 @@ import numpy as np
 import tempfile
 from tqdm import tqdm
 import inspect
-from musket_core.datasets import DataSet
+from musket_core.datasets import DataSet, WrappedDS
+
 class ProgressMonitor:
 
     def isCanceled(self)->bool:
@@ -182,34 +183,6 @@ def _exactValue(x,y):
         return "Correct"
     return "Incorrect"
 
-
-class WrappedDS(datasets.SubDataSet):
-
-    def __init__(self,orig,indexes,name,visualizer,predictions):
-        super().__init__(orig,indexes)
-        self._visualizer=visualizer
-        self._name=name
-        self.predictions=predictions
-    def len(self):
-        return len(self)
-
-    def config(self):
-        return ""
-
-    def item(self,num):
-        return self._visualizer[num]
-
-    def __getitem__(self, item):
-        it=super().__getitem__(item)
-        if self.predictions is not None:
-            it.prediction=self.predictions[self.indexes[item]]
-        return it
-    def name(self):
-        return self._name
-
-    class Java:
-        implements = ["com.onpositive.musket_core.IDataSet"]
-    pass
 
 class AnalizeResults:
     def __init__(self,ds,visualSpec=None):
