@@ -188,7 +188,11 @@ class ScoreAndTreshold:
     def __str__(self):
         return "score:"+str(self.score)+": treshold:"+str(self.treshold)
 
-def threshold_search(predsDS:DataSet, func, batch_size):
+def threshold_search(predsDS:DataSet, func, batch_size = None):
+
+    #TODO: fix batch_size for image pipeline
+    batch_size = None
+
     if isinstance(func,str):
         func_=keras.metrics.get(func)
         def wrapped(x,y):
@@ -219,6 +223,9 @@ def need_threshold(func:str)->bool:
 
 
 def eval_metric(predsDS:DataSet, func, batch_size = None):
+
+    # TODO: fix batch_size for image pipeline
+    batch_size = None
 
     if isinstance(func,str):
         func_=keras.metrics.get(func)
