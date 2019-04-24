@@ -111,7 +111,7 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
             __lock__.release()
 
     def ccc1(input):
-        global CACHE_DIR
+        
 
         try:
             name = "data"
@@ -146,39 +146,40 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
                 xData, yData = init_buffers(xStruct, yStruct)
 
                 for blockInd in tqdm.tqdm(range(blocksCount), "loading disk cache for:" + id):
-                    xBlockPath = f"{name}/x_{blockInd}.dscache"
-                    if os.path.exists(xBlockPath):
-                        xBuff = load(xBlockPath)
-                        if not xIsListOrTuple:
-                            if isinstance(xBuff,list):
-                                xData.extend(xBuff)
-                            elif isinstance(xBuff, np.ndarray):
-                                xData.extend(xBuff.tolist())
+                    if not xIsListOrTuple:
+                        blockPath = f"{name}/x_{blockInd}.dscache"
+                        if os.path.exists(blockPath):
+                            xBuff = load(blockPath)
+                            for x in xBuff:
+                                xData.append(x)
                         else:
-                            for c in range(len(xStruct[0])):
-                                if isinstance(xBuff[c], list):
-                                    xData.extend(xBuff[c])
-                                elif isinstance(xBuff[c], np.ndarray):
-                                    xData.extend(xBuff[c].tolist())
+                            raise Exception(f"Cache block is missing: {name}")
                     else:
-                        raise Exception(f"Cache block is missing: {name}")
-
-                    yBlockPath = f"{name}/y_{blockInd}.dscache"
-                    if os.path.exists(yBlockPath):
-                        yBuff = load(yBlockPath)
-                        if not yIsListOrTuple:
-                            if isinstance(yBuff, list):
-                                yData.extend(yBuff)
-                            elif isinstance(yBuff, np.ndarray):
-                                yData.extend(yBuff.tolist())
+                        for c in range(len(xStruct[0])):
+                            blockPath = f"{name}/x_{blockInd}_{c}.dscache"
+                            if os.path.exists(blockPath):
+                                xBuff = load(blockPath)
+                                for x in xBuff:
+                                    xData[c].append(x)
+                            else:
+                                raise Exception(f"Cache block is missing: {name}")
+                    if not yIsListOrTuple:
+                        blockPath = f"{name}/y_{blockInd}.dscache"
+                        if os.path.exists(blockPath):
+                            yBuff = load(blockPath)
+                            for y in yBuff:
+                                yData.append(y)
                         else:
-                            for c in range(len(yStruct[0])):
-                                if isinstance(yBuff[c], list):
-                                    yData.extend(yBuff[c])
-                                elif isinstance(yBuff[c], np.ndarray):
-                                    yData.extend(yBuff[c].tolist())
+                            raise Exception(f"Cache block is missing: {name}")
                     else:
-                        raise Exception(f"Cache block is missing: {name}")
+                        for c in range(len(yStruct[0])):
+                            blockPath = f"{name}/y_{blockInd}_{c}.dscache"
+                            if os.path.exists(blockPath):
+                                yBuff = load(blockPath)
+                                for y in yBuff:
+                                    yData[c].append(y)
+                            else:
+                                raise Exception(f"Cache block is missing: {name}")
 
                 data = (xData, yData)
 
@@ -228,8 +229,11 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
                                 arr = np.array(arr)
                             save(f"{name}/x_{blockInd}.dscache", arr)
                         else:
-                            arr = xData
-                            save(f"{name}/x_{blockInd}.dscache", arr)
+                            for c in range(len(xStruct[0])):
+                                arr = xData[c]
+                                if xStruct[0][c].startswith("int") or xStruct[0][c].startswith("float"):
+                                    arr = np.array(arr)
+                                save(f"{name}/x_{blockInd}_{c}.dscache", arr)
 
                         if not yIsListOrTuple:
                             arr = yData
@@ -237,8 +241,11 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
                                 arr = np.array(arr)
                             save(f"{name}/y_{blockInd}.dscache", arr)
                         else:
-                            arr = yData
-                            save(f"{name}/y_{blockInd}.dscache", arr)
+                            for c in range(len(yStruct[0])):
+                                arr = yData[c]
+                                if yStruct[0][c].startswith("int") or yStruct[0][c].startswith("float"):
+                                    arr = np.array(arr)
+                                save(f"{name}/y_{blockInd}_{c}.dscache", arr)
 
                         buffSize = 0
                         blockInd += 1
@@ -249,7 +256,6 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
                 save(yStructPath, yStruct)
                 save(blocksCountPath, blockInd)
                 return ccc1(input)
-
             result = DiskCache1(input, data, xIsListOrTuple, yIsListOrTuple)
             storage[name] = result
             return result
@@ -330,8 +336,7 @@ def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
         finally:
             __lock__.release()
 
-    def ccc1(input):
-        global CACHE_DIR
+    def ccc1(input):       
         try:
             name = "data"
             id = "dataset"

@@ -38,7 +38,11 @@ class AbstractPreprocessedDataSet(DataSet):
             return self.parent.get_target(item)
         return self[item].y
 
-
+def _sorted_args(args):
+    rs={}
+    for k in sorted(args.keys()):
+        rs[k]=args[k]
+    return rs;
 class PreprocessedDataSet(AbstractPreprocessedDataSet):
 
     def __init__(self,parent,func,expectsItem,**kwargs):
@@ -47,7 +51,7 @@ class PreprocessedDataSet(AbstractPreprocessedDataSet):
         self.func=func
         self.kw=kwargs
         if hasattr(parent, "name"):
-            self.name=parent.name+self.func.__name__+str(sorted(kwargs))
+            self.name=parent.name+self.func.__name__+str(_sorted_args(kwargs))
             self.origName = self.name
         pass
 
@@ -100,7 +104,7 @@ def dataset_preprocessor(func):
             compositeDS = CompositeDataSet(components)
             inherit_dataset_params(input, compositeDS)
             if hasattr(input, "name"):
-                compositeDS.name = input.name + func.__name__ + str(kwargs)
+                compositeDS.name = input.name + func.__name__ + str(_sorted_args(kwargs))
                 compositeDS.origName = compositeDS.name
             return compositeDS
         else:
