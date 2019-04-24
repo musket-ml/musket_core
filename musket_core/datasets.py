@@ -519,7 +519,7 @@ class DefaultKFoldedDataSet:
             aug=[]
         if transforms==None:
             transforms=[]
-        self.aug=aug;
+        self.aug=aug
         if indexes==None:
             indexes=range(len(ds))
         self.transforms=transforms
@@ -533,7 +533,7 @@ class DefaultKFoldedDataSet:
                 self.kf = ms.StratifiedKFold(folds, shuffle=True, random_state=rs)
                 self.folds=[v for v in self.kf.split(indexes,dataset_classes(ds,groupFunc))]
             else:
-                self.kf = ms.KFold(folds, shuffle=True, random_state=rs);
+                self.kf = ms.KFold(folds, shuffle=True, random_state=rs)
                 self.folds = [v for v in self.kf.split(indexes)]
 
     def clear_train(self):
@@ -755,3 +755,6 @@ def inherit_dataset_params(ds_from,ds_to):
         ds_to.folds = getattr(ds_from, "folds")
     if hasattr(ds_from, "holdoutArr"):
         ds_to.holdoutArr = getattr(ds_from, "holdoutArr")
+        
+
+        

@@ -1,4 +1,4 @@
-from musket_core import experiment,structure_constants
+from musket_core import experiment,structure_constants, builtin_datasets
 from musket_core.context import context
 from musket_core import datasets,visualization,utils
 from musket_core import parralel
@@ -316,6 +316,7 @@ class Project:
                 res.append(self.module(x))
         res.append(dataset_analizers)
         res.append(dataset_visualizers)
+        res.append(builtin_datasets)
         return res
 
     def module(self,name):

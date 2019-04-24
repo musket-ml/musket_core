@@ -774,7 +774,7 @@ class GenericTaskConfig(model.ConnectedModel):
         return self._projectDir
 
     def parse_dataset(self,datasetName=None):
-        try:
+        #try:
             context.projectPath=self.get_project_path()
             fw = self.dataset
             if self.datasets_path is not None:
@@ -790,9 +790,9 @@ class GenericTaskConfig(model.ConnectedModel):
                                                                   self.imports)
                 return dataset
             return None
-        except:
-            ds_config = self.pickup_ds_config()
-            return musket_core.image_datasets.DS_Wrapper(self.dataset, ds_config, self.path)
+#         except:
+#             ds_config = self.pickup_ds_config()
+#             return musket_core.image_datasets.DS_Wrapper(self.dataset, ds_config, self.path)
 
 
     def pickup_ds_config(self):
@@ -949,7 +949,7 @@ class GenericImageTaskConfig(GenericTaskConfig):
                     resList = [x for x in res]
                     for ind in range(len(resList)):
                         img = resList[ind]
-                        unaug = batch.images_unaug[ind]
+                        unaug = z.images_unaug[ind]
                         resize = imgaug.augmenters.Scale({"height": unaug.shape[0], "width": unaug.shape[1]})
                         restored = resize.augment_image(img)
                         resList[ind] = restored

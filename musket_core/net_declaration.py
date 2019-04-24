@@ -8,6 +8,7 @@ from musket_core import datasets
 from builtins import isinstance
 layers=configloader.load("layers")
 from  musket_core.preprocessing import SplitPreproccessor,SplitConcatPreprocessor
+import musket_core.builtin_datasets
 import importlib
 
 def take_input(layers,declarations,config,outputs,linputs,pName,withArgs):
@@ -472,6 +473,7 @@ DEFAULT_DATASET_DIR=None
 def create_dataset_from_config(n,name="net",imports=[]):
 
     compositeDS = None
+    layers.register_module(musket_core.builtin_datasets)
     if isinstance(name,dict):
         holdout = extract_datasets(n, imports, name, 'holdout')
         train = extract_datasets(n, imports, name, 'train')

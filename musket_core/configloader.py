@@ -315,8 +315,12 @@ def parse(name:str,p,extra=None):
                         if v in alllowReplace:
                             for q in extrad[v]:
                                 mn=base[v]
-                                if q not in mn:
-                                    mn[q]=extrad[v][q]
+                                if mn is not None:
+                                    if q not in mn:
+                                        mn[q]=extrad[v][q]
+                                else:
+                                    base[v]=extrad[v]
+                                    break        
 
             return m.instantiate(base)
-    return m.instantiate(p);
+    return m.instantiate(p)
