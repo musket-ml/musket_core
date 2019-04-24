@@ -21,11 +21,11 @@ USE_MULTIPROCESSING=False
 
 
 class PredictionItem:
-    def __init__(self, path, x, y):
+    def __init__(self, path, x, y, prediction = None):
         self.x=x
         self.y=y
         self.id=path
-        self.prediction=None
+        self.prediction=prediction
 
     def original(self):
        return self
@@ -722,7 +722,11 @@ class SubDataSet:
         return self.ds.isPositive(self.indexes[item])
 
     def __getitem__(self, item):
-        return self.ds[self.indexes[item]]
+        if isinstance(item, slice):
+            result = [self.__getitem__(i) for i in self.indexes[item]]
+            return result
+        else:
+            return self.ds[self.indexes[item]]
 
     def __len__(self):
         return len(self.indexes)
@@ -755,3 +759,68 @@ def inherit_dataset_params(ds_from,ds_to):
         ds_to.folds = getattr(ds_from, "folds")
     if hasattr(ds_from, "holdoutArr"):
         ds_to.holdoutArr = getattr(ds_from, "holdoutArr")
+
+class MergedDataSet:
+    def __init__(self,components:[DataSet],mergeFunc):
+        self.components = components
+        self.mergeFunc = mergeFunc
+
+    def isPositive(self, item):
+        return self.ds.isPositive(self.indexes[item])
+
+    def __getitem__(self, item):
+        componentItems = [x[item] for x in self.components]
+        isSlice = isinstance(item, slice)
+        lst = list(zip(componentItems)) if isSlice else [ componentItems ]
+        merged = [ self.mergeFunc(x) for x in lst ]
+        result = merged if isSlice else merged[0]
+        return result
+
+    def __len__(self):
+        return len(self.components[0])
+
+
+def mergeFunc(items: [PredictionItem]) -> PredictionItem:
+    preds = np.array([x.prediction for x in items])
+    meanPred = np.mean(preds)
+    i = items[0]
+    result = PredictionItem(i.id, i.x, i.y, meanPred)
+    return result
+
+class MeanDataSet(MergedDataSet):
+    def __init(components:[DataSet]):
+        super().__init__(components, mergeFunc)
+
+
+
+
+class WrappedDS(SubDataSet):
+
+    def __init__(self,orig,indexes,name,visualizer,predictions):
+        super().__init__(orig,indexes)
+        self._visualizer=visualizer
+        self.name=name
+        self.predictions=predictions
+    def len(self):
+        return len(self)
+
+    def config(self):
+        return ""
+
+    def item(self,num):
+        return self._visualizer[num]
+
+    def __getitem__(self, item):
+        it = super().__getitem__(item)
+        if self.predictions is not None:
+            if isinstance(item, slice):
+                preds = [self.predictions[i] for i in self.indexes[item]]
+                for i in range(len(preds)):
+                    it[i].prediction = preds[i]
+            else:
+                it.prediction = self.predictions[self.indexes[item]]
+        return it
+
+    class Java:
+        implements = ["com.onpositive.musket_core.IDataSet"]
+    pass
