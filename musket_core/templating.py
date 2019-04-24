@@ -23,7 +23,11 @@ def eval_(node,globals):
     if isinstance(node, ast.Num): # <number>
         return node.n
     elif isinstance(node, ast.BinOp): # <left> <operator> <right>
-        return operators[type(node.op)](eval_(node.left,globals), eval_(node.right,globals))
+        e = operators[type(node.op)](eval_(node.left, globals), eval_(node.right, globals))
+        if isinstance(e, float):
+            if e==int(e):
+                return int(e)
+        return e
     elif isinstance(node, ast.UnaryOp): # <operator> <operand> e.g., -1
         return operators[type(node.op)](eval_(node.operand,globals))
     elif isinstance(node,ast.Name):
