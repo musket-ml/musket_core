@@ -807,6 +807,9 @@ class WrappedDS(SubDataSet):
     def config(self):
         return ""
 
+    def get_name(self):
+        return self.name
+
     def item(self,num):
         return self._visualizer[num]
 

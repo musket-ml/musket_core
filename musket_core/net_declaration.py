@@ -381,8 +381,9 @@ class Declaration:
                 return am
         if parameters is None:
             parameters={}
-        if "args" in parameters:
-            parameters=parameters["args"]
+        if isinstance(parameters,dict):    
+            if "args" in parameters:
+                parameters=parameters["args"]
         if isinstance(parameters,list):
             pMap={}
             for p in range(len(self.parameters)):

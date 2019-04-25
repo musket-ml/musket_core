@@ -19,7 +19,7 @@ class DataSetProxy:
     def config(self):
         return self.ds.w.name+"("+str(self.ds.parameters)[1:-1]+")"
 
-    def name(self):
+    def get_name(self):
         return self.ds.name
 
     def item(self,num):

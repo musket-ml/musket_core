@@ -37,6 +37,7 @@ def eval_(node,globals):
 
 
 def resolveTemplates(data,params):
+    
     if isinstance(data, dict):
         res={}
         for x in data:
@@ -59,6 +60,7 @@ def resolveTemplates(data,params):
                             continue
             res.append(resolveTemplates(x, params))
         return res
+    
     for param in params:
         if isinstance(data,str):
             if param in data:

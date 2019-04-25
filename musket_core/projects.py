@@ -317,6 +317,14 @@ class Project:
         res.append(dataset_analizers)
         res.append(dataset_visualizers)
         res.append(builtin_datasets)
+        if os.path.exists(self.commonPath()):
+            
+                mods=utils.load_yaml(self.commonPath())                
+                if "imports" in mods:
+                    if isinstance(mods["imports"],list):
+                        for m in mods["imports"]:
+                            res.append(self.module(m))
+                 
         return res
 
     def module(self,name):

@@ -32,4 +32,23 @@ class CSVDataSet(DataSet):
 def from_csv(path,targetColumn:str,featureColumn:str,idColumn:str=None,sep=",",absPath=False):
     if not absPath:
         path=get_current_project_path()+"/data/"+path 
-    return CSVDataSet(path,targetColumn,featureColumn,idColumn,sep)    
+    return CSVDataSet(path,targetColumn,featureColumn,idColumn,sep)
+
+
+class FromArrays(DataSet):
+    
+    def __init__(self,x,y):
+        self.x=x
+        self.y=y    
+        
+    def __len__(self):
+        return round(len(self.x))
+        
+    def __getitem__(self, item)->PredictionItem:
+        return PredictionItem(item,self.x[item],self.y[item])
+    
+    def get_target(self,item):
+        return self.y[item]
+    
+def from_array(x,y):
+    return FromArrays(x,y)        

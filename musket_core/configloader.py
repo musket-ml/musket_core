@@ -180,8 +180,8 @@ class PythonFunction(AbstractType):
         # if clazz.__name__.lower()=="flatten":
         #     print("A")
         if hasattr(clazz,"args"):
-            args=[p for p in clazz.args if "input" not in p]
-        else: args=[p for p in s.parameters if "input" not in p]
+            args=[p for p in clazz.args if "input" not in p and "inp" not in p]
+        else: args=[p for p in s.parameters if "input" not in p and "inp" not in p]
         self.args=args
 
         def create(*args,**kwargs):

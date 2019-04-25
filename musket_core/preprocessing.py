@@ -89,26 +89,38 @@ def dataset_transformer(func):
 
 def dataset_preprocessor(func):
     expectsItem = False
+    
+        
     params = inspect.signature(func).parameters
+    inputParam=None
     if 'input' in params:
         inputParam = params['input']
+    if 'inp' in params:
+        inputParam = params['inp']
+    if inputParam is not None:    
         if hasattr(inputParam, 'annotation'):
-            pType = inputParam.annotation
-            if hasattr(pType, "__module__") and hasattr(pType, "__name__"):
-                if pType.__module__ == "musket_core.datasets" and pType.__name__ == "PredictionItem":
-                    expectsItem = True
-
+                pType = inputParam.annotation
+                if hasattr(pType, "__module__") and hasattr(pType, "__name__"):
+                    if pType.__module__ == "musket_core.datasets" and pType.__name__ == "PredictionItem":
+                        expectsItem = True
+    
     def wrapper(input,**kwargs):
+        f=func
+        if inspect.isclass(f):
+            n=f.__name__
+            f=f(**kwargs)
+            f.__name__=n
+            kwargs={}  
         if isinstance(input,CompositeDataSet):
-            components = list(map(lambda x: PreprocessedDataSet(x,func,expectsItem,**kwargs), input.components))
+            components = list(map(lambda x: PreprocessedDataSet(x,f,expectsItem,**kwargs), input.components))
             compositeDS = CompositeDataSet(components)
             inherit_dataset_params(input, compositeDS)
             if hasattr(input, "name"):
-                compositeDS.name = input.name + func.__name__ + str(_sorted_args(kwargs))
+                compositeDS.name = input.name + f.__name__ + str(_sorted_args(kwargs))
                 compositeDS.origName = compositeDS.name
             return compositeDS
         else:
-            return PreprocessedDataSet(input,func,expectsItem,**kwargs)
+            return PreprocessedDataSet(input,f,expectsItem,**kwargs)
     wrapper.args=inspect.signature(func).parameters
     wrapper.preprocessor=True
     wrapper.original=func
