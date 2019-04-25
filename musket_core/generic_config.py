@@ -50,7 +50,7 @@ keras.utils.get_custom_objects().update({'matthews_correlation': musket_core.los
 keras.utils.get_custom_objects().update({'log_loss': musket_core.losses.log_loss})
 from musket_core import net_declaration as net
 
-from musket_core.datasets import DataSet, MeanDataSet, WrappedDS
+from musket_core.datasets import DataSet, MeanDataSet, BasicWriteableDS, WriteableDataSet
 
 dataset_augmenters={
 
@@ -188,10 +188,7 @@ class ScoreAndTreshold:
     def __str__(self):
         return "score:"+str(self.score)+": treshold:"+str(self.treshold)
 
-def threshold_search(predsDS:DataSet, func, batch_size = None):
-
-    #TODO: fix batch_size for image pipeline
-    batch_size = None
+def threshold_search(predsDS:DataSet, func, batch_size:int = -1):
 
     if isinstance(func,str):
         func_=keras.metrics.get(func)
@@ -222,10 +219,7 @@ def need_threshold(func:str)->bool:
     return True
 
 
-def eval_metric(predsDS:DataSet, func, batch_size = None):
-
-    # TODO: fix batch_size for image pipeline
-    batch_size = None
+def eval_metric(predsDS:DataSet, func, batch_size:int = -1):
 
     if isinstance(func,str):
         func_=keras.metrics.get(func)
@@ -240,10 +234,10 @@ def eval_metric(predsDS:DataSet, func, batch_size = None):
     return result
 
 
-def applyFunctionToDS(dsWithPredictions, func, batch_size):
+def applyFunctionToDS(dsWithPredictions, func, batch_size:int):
 
     l = len(dsWithPredictions)
-    if batch_size is None:
+    if batch_size < 0:
         batch_size = l
 
     resultArr = []
@@ -297,7 +291,7 @@ class ReportWork:
         self.cfg.generateReports(self.foldsToExecute, self.subsample)
 
 
-class GenericTaskConfig(model.ConnectedModel):
+class GenericTaskConfig(model.IGenericTaskConfig):
 
     def __init__(self,**atrs):
         self.batch = 8
@@ -469,7 +463,22 @@ class GenericTaskConfig(model.ConnectedModel):
                 pbar.update(batch_size)
         return np.array(res)
 
-    def predict_all_to_dataset(self, dataset, fold=None, stage=None, limit=-1, batch_size=None, ttflips=False):
+
+    def load_writeable_dataset(self, ds, path)->DataSet:
+        rr = np.load(path)
+        resName = (ds.name if hasattr(ds, "name") else "") + "_predictions"
+        result = BasicWriteableDS(ds, resName, path, rr)
+        return result
+
+    def create_writeable_dataset(self, dataset:DataSet, dsPath:str)->WriteableDataSet:
+        resName = (dataset.name if hasattr(dataset, "name") else "") + "_predictions"
+        result = BasicWriteableDS(dataset, resName, dsPath)
+        return result
+
+    def predict_all_to_dataset(self, dataset, fold=None, stage=None, limit=-1, batch_size=None, ttflips=False, dsPath = None)->DataSet:
+
+        result = self.create_writeable_dataset(dataset, dsPath)
+
         if batch_size is None:
             batch_size=self.inference_batch
         if fold is None:
@@ -478,16 +487,15 @@ class GenericTaskConfig(model.ConnectedModel):
             stage=list(range(len(self.stages)))
         if isinstance(dataset,str):
             dataset=self.get_dataset(dataset)
-        res=[]
+
         with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
             for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
                 b=v
                 for i in range(len(b.data)):
-                    res.append(b.results[i])
+                    result.append(b.results[i])
                 pbar.update(batch_size)
 
-        resName = (dataset.name if hasattr(dataset, "name") else "") + "_predictions"
-        result = WrappedDS(dataset, [i for i in range(len(dataset))], resName, None, res)
+        result.commit()
         return result
 
 
@@ -499,16 +507,16 @@ class GenericTaskConfig(model.ConnectedModel):
         if isinstance(stage,list) or isinstance(stage,tuple):
             pa = []
             for i in stage:
-                pa.append(self.predict_all_to_dataset(ds, fold, i))
+                pa.append(predictions.Prediction(self, fold, i, None, ds).calculate())
             predictedDS = MeanDataSet(pa)
-        else: predictedDS = self.predict_all_to_dataset(ds, fold, stage)
-        return threshold_search(predictedDS,func,self.inference_batch)
+        else: predictedDS = predictions.Prediction(self, fold, stage, None, ds).calculate()
+        return threshold_search(predictedDS,func,self.get_eval_batch())
 
     def find_optimal_treshold_by_validation(self,func,stages=None):
         tresh = []
         for fold in range(self.folds_count):
             predsDS = predictions.get_validation_prediction(self,fold,stages)
-            tr = threshold_search(predsDS, func, self.inference_batch)
+            tr = threshold_search(predsDS, func, self.get_eval_batch())
             tresh.append(tr.treshold)
         tr = np.mean(np.array(tresh))
         return tr
@@ -521,12 +529,12 @@ class GenericTaskConfig(model.ConnectedModel):
             all.append(predsDS)
 
         resultPredsDS = all[0] if len(all) == 1 else datasets.CompositeDataSet(all)
-        tr = threshold_search(resultPredsDS,func, self.inference_batch)
+        tr = threshold_search(resultPredsDS,func, self.get_eval_batch())
         return tr.treshold
 
     def find_optimal_treshold_by_holdout(self,func,stages=None):
         predsDS=predictions.get_holdout_prediction(self,None,stages)
-        return threshold_search(predsDS, func, self.inference_batch).treshold
+        return threshold_search(predsDS, func, self.get_eval_batch()).treshold
 
 
     def createAndCompile(self, lr=None, loss=None)->keras.Model:

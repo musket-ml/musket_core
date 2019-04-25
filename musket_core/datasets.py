@@ -53,6 +53,14 @@ class DataSet:
     def get_target(self,item):
         return self[item].y
 
+class WriteableDataSet(DataSet):
+
+    def append(self,item):
+        raise ValueError("Not implemented")
+
+    def commit(self):
+        raise ValueError("Not implemented")
+
 def get_id(d:DataSet)->str:
     if hasattr(d,"id"):
         try:
@@ -723,7 +731,7 @@ class SubDataSet:
 
     def __getitem__(self, item):
         if isinstance(item, slice):
-            result = [self.__getitem__(i) for i in self.indexes[item]]
+            result = [self.ds[i] for i in self.indexes[item]]
             return result
         else:
             return self.ds[self.indexes[item]]
@@ -792,38 +800,33 @@ class MeanDataSet(MergedDataSet):
         super().__init__(components, mergeFunc)
 
 
+class BasicWriteableDS(WriteableDataSet):
 
-
-class WrappedDS(SubDataSet):
-
-    def __init__(self,orig,indexes,name,visualizer,predictions):
-        super().__init__(orig,indexes)
-        self._visualizer=visualizer
+    def __init__(self,orig,name,dsPath,predictions=None):
+        super().__init__()
+        if predictions is None:
+            predictions = []
+        self.parent = orig
         self.name=name
         self.predictions=predictions
-    def len(self):
-        return len(self)
+        self.dsPath=dsPath
 
-    def config(self):
-        return ""
+    def append(self,item):
+        self.predictions.append(item)
 
-    def get_name(self):
-        return self.name
+    def commit(self):
+        np.save(self.dsPath,self.predictions)
 
-    def item(self,num):
-        return self._visualizer[num]
+    def __len__(self):
+        return len(self.parent)
 
     def __getitem__(self, item):
-        it = super().__getitem__(item)
+        it = self.parent[item]
         if self.predictions is not None:
             if isinstance(item, slice):
-                preds = [self.predictions[i] for i in self.indexes[item]]
-                for i in range(len(preds)):
-                    it[i].prediction = preds[i]
+                indSlice = list(range(len(self)))[item]
+                for i in range(len(it)):
+                    it[i].prediction = self.predictions[indSlice[i]]
             else:
-                it.prediction = self.predictions[self.indexes[item]]
+                it.prediction = self.predictions[item]
         return it
-
-    class Java:
-        implements = ["com.onpositive.musket_core.IDataSet"]
-    pass

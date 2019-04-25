@@ -1,6 +1,5 @@
-from musket_core import datasets,generic_config
+from musket_core import datasets
 from musket_core.datasets import DataSet, MeanDataSet
-import numpy as np
 
 
 def block(func):
@@ -19,7 +18,10 @@ class ConnectedModel(Model):
         raise ValueError("Not implemented")
 
 
+class IGenericTaskConfig(ConnectedModel):
 
+    def get_eval_batch(self)->int:
+        return -1
 
 class FoldsAndStages(ConnectedModel):
 

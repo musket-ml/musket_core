@@ -11,7 +11,7 @@ import numpy as np
 import tempfile
 from tqdm import tqdm
 import inspect
-from musket_core.datasets import DataSet, WrappedDS
+from musket_core.datasets import DataSet, SubDataSet
 
 class ProgressMonitor:
 
@@ -456,3 +456,38 @@ class Launch(yaml.YAMLObject):
                         allTasks=[]
             executor.execute(allTasks)
         reporter.done()
+
+
+class WrappedDS(SubDataSet):
+
+    def __init__(self,orig,indexes,name,visualizer,predictions):
+        super().__init__(orig,indexes)
+        self._visualizer=visualizer
+        self.name=name
+        self.predictions=predictions
+    def len(self):
+        return len(self)
+
+    def config(self):
+        return ""
+
+    def get_name(self):
+        return self.name
+
+    def item(self,num):
+        return self._visualizer[num]
+
+    def __getitem__(self, item):
+        it = super().__getitem__(item)
+        if self.predictions is not None:
+            if isinstance(item, slice):
+                preds = [self.predictions[i] for i in self.indexes[item]]
+                for i in range(len(preds)):
+                    it[i].prediction = preds[i]
+            else:
+                it.prediction = self.predictions[self.indexes[item]]
+        return it
+
+    class Java:
+        implements = ["com.onpositive.musket_core.IDataSet"]
+    pass
