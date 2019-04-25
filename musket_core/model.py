@@ -1,6 +1,5 @@
 from musket_core import datasets
 from musket_core.datasets import DataSet, MeanDataSet
-import numpy as np
 import typing
 
 
