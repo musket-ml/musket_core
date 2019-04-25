@@ -1,6 +1,7 @@
 from musket_core import datasets,generic_config
 from musket_core.datasets import DataSet, MeanDataSet
 import numpy as np
+import typing
 
 
 def block(func):
@@ -15,7 +16,7 @@ class Model:
 
 class ConnectedModel(Model):
 
-    def predictions(self,name,**kwargs)->DataSet:
+    def predictions(self,name_or_ds:typing.Union[datasets.DataSet,str],**kwargs)->DataSet:
         raise ValueError("Not implemented")
 
 

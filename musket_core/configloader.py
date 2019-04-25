@@ -196,7 +196,10 @@ class PythonFunction(AbstractType):
                         i=None
                 if i is not None:
                     mm["input"]=i
-                return clazz(**mm)
+                res=clazz(**mm)
+                if res is None:
+                    print(f"{clazz} returned None")    
+                return res 
             return res
         self.clazz=create
 
