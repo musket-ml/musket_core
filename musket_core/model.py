@@ -52,5 +52,5 @@ class AverageBlend(ConnectedModel):
         for v in self.models:
             rm.append(v.predictions(name))
 
-        result = rm[0] if len(rm) == 1 else MeanDataSet(rm, mergeFunc)
+        result = rm[0] if len(rm) == 1 else MeanDataSet(rm)
         return result
