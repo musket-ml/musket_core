@@ -50,7 +50,7 @@ keras.utils.get_custom_objects().update({'matthews_correlation': musket_core.los
 keras.utils.get_custom_objects().update({'log_loss': musket_core.losses.log_loss})
 from musket_core import net_declaration as net
 
-from musket_core.datasets import DataSet, MeanDataSet, BasicWriteableDS, WriteableDataSet
+from musket_core.datasets import DataSet, MeanDataSet, BufferedWriteableDS, WriteableDataSet
 
 dataset_augmenters={
 
@@ -467,12 +467,12 @@ class GenericTaskConfig(model.IGenericTaskConfig):
     def load_writeable_dataset(self, ds, path)->DataSet:
         rr = np.load(path)
         resName = (ds.name if hasattr(ds, "name") else "") + "_predictions"
-        result = BasicWriteableDS(ds, resName, path, rr)
+        result = BufferedWriteableDS(ds, resName, path, rr)
         return result
 
     def create_writeable_dataset(self, dataset:DataSet, dsPath:str)->WriteableDataSet:
         resName = (dataset.name if hasattr(dataset, "name") else "") + "_predictions"
-        result = BasicWriteableDS(dataset, resName, dsPath)
+        result = BufferedWriteableDS(dataset, resName, dsPath)
         return result
 
     def predict_all_to_dataset(self, dataset, fold=None, stage=None, limit=-1, batch_size=None, ttflips=False, dsPath = None)->DataSet:

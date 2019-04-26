@@ -800,7 +800,7 @@ class MeanDataSet(MergedDataSet):
         super().__init__(components, mergeFunc)
 
 
-class BasicWriteableDS(WriteableDataSet):
+class BufferedWriteableDS(WriteableDataSet):
 
     def __init__(self,orig,name,dsPath,predictions=None):
         super().__init__()
@@ -830,3 +830,52 @@ class BasicWriteableDS(WriteableDataSet):
             else:
                 it.prediction = self.predictions[item]
         return it
+
+
+class DirectWriteableDS(WriteableDataSet):
+
+    def __init__(self,orig,name,dsPath, count = 0):
+        super().__init__()
+        self.parent = orig
+        self.name=name
+        self.dsPath=dsPath
+        self.count = count
+
+    def append(self,item):
+        ip = self.itemPath(self.count)
+        self.saveItem(ip,item)
+        self.count += 1
+
+    def commit(self):
+        pass
+
+    def __len__(self):
+        return len(self.parent)
+
+    def __getitem__(self, item):
+        it = self.parent[item]
+        if isinstance(item, slice):
+            indSlice = list(range(len(self)))[item]
+            for i in range(len(it)):
+                ip = self.itemPath(indSlice[i])
+                if os.path.exists(ip):
+                    prediction = self.loadItem(ip)
+                    it[i].prediction = prediction
+        else:
+            ip = self.itemPath(item)
+            if os.path.exists(ip):
+                prediction = self.loadItem(ip)
+                it.prediction = prediction
+        return it
+
+    def itemPath(self, item:int)->str:
+        return f"{self.dsPath}/{item}.npy"
+
+    def saveItem(self, path:str, item):
+        dir = os.path.dirname(path)
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+        np.save(path, item)
+
+    def loadItem(self, path:str):
+        return np.load(path)
