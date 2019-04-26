@@ -1,7 +1,7 @@
 import os
 import sys
 
-from musket_core.datasets import PredictionItem, inherit_dataset_params, CompositeDataSet
+from musket_core.datasets import PredictionItem, inherit_dataset_params, CompositeDataSet,DataSet
 from musket_core.utils import load,save,readArray,dumpArray
 from musket_core import context
 import tqdm
@@ -51,9 +51,7 @@ class DiskCache:
     def __init__(self,parent,items):
         self.parent=parent
         self.items=items
-        if hasattr(parent,"folds"):
-            self.folds=getattr(parent,"folds");
-
+        inherit_dataset_params(parent, self)
 
     def __getitem__(self, item):
         if isinstance(item, slice):
@@ -111,6 +109,14 @@ def get_cache_dir():
     utils.ensure(d)
     return d
 
+def cache_name(input:DataSet):
+    name = "data"
+    id = "dataset"
+    if hasattr(input, "name"):
+        id = getattr(input, "name")
+        name = id.replace("{", "").replace("[", "").replace("/", "").replace("\\", "").replace("]", "").replace("}", "").replace(" ", "").replace(",", "").replace("\'", "").replace(":", "")
+    return name
+
 def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
     def ccc(input):
 
@@ -120,16 +126,14 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
         finally:
             __lock__.release()
 
+
+
+
     def ccc1(input):
         
 
         try:
-            name = "data"
-            id = "dataset"
-
-            if hasattr(input, "name"):
-                id = getattr(input, "name")
-                name = id.replace("{", "").replace("[", "").replace("/", "").replace("\\", "").replace("]", "").replace("}", "").replace(" ", "").replace(",","").replace("\'","").replace(":", "")
+            name = cache_name(input)
             name=get_cache_dir()+name
             if name in storage:
                 return storage[name]
@@ -155,7 +159,7 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
 
                 xData, yData = init_buffers(xStruct, yStruct)
 
-                for blockInd in tqdm.tqdm(range(blocksCount), "loading disk cache for:" + id):
+                for blockInd in tqdm.tqdm(range(blocksCount), "loading disk cache for:" + name):
                     if not xIsListOrTuple:
                         blockPath = f"{name}/x_{blockInd}.dscache"
                         if os.path.exists(blockPath):

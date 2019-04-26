@@ -324,6 +324,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         self.optimizer = None
         self.loss = None
         self.testSplit = 0
+        self.validationSplit = 0.2
         self.pretrain_transform=None
         self.testSplitSeed = 123
         self.path = None
@@ -427,7 +428,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
              folds=utils.load_yaml(self.path+".folds_split")
              split_loaded=True
              ds.folds=folds
-        kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count,stratified=self.stratified,groupFunc=self.groupFunc)
+        kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count,stratified=self.stratified,groupFunc=self.groupFunc,validationSplit=self.validationSplit)
         if not split_loaded:
             kf.save(self.path+".folds_split")
         if self.noTrain:
@@ -538,6 +539,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
 
 
     def createAndCompile(self, lr=None, loss=None)->keras.Model:
+        context.projectPath=self.get_project_path()
         return self.compile(self.createNet(), self.createOptimizer(lr=lr), loss=loss)
 
     def validate(self):
@@ -679,7 +681,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
 
     def fit(self, dataset_ = None, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction = None,parallel=False)->typing.Collection[Task]:
         if dataset_ is None:
-          dataset = self.get_dataset()
+            dataset = self.get_dataset()
         else: dataset=dataset_
 
         dataset = self._adapt_before_fit(dataset)
@@ -698,7 +700,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             if not parallel:
                 fw()
             else:
-              units_of_works.append(fw)
+                units_of_works.append(fw)
         if self._reporter is not None and self._reporter.isCanceled():
             return []
         if parallel:

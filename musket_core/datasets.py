@@ -521,7 +521,7 @@ LOADER_THREADED=True
 
 
 class DefaultKFoldedDataSet:
-    def __init__(self,ds,indexes=None,aug=None,transforms=None,folds=5,rs=33,batchSize=16,stratified=True,groupFunc=None):
+    def __init__(self,ds,indexes=None,aug=None,transforms=None,folds=5,rs=33,batchSize=16,stratified=True,groupFunc=None,validationSplit=0.2):
         self.ds=ds;
         if aug==None:
             aug=[]
@@ -533,16 +533,26 @@ class DefaultKFoldedDataSet:
         self.transforms=transforms
         self.batchSize=batchSize
         self.positive={}
-
         if hasattr(ds,"folds"):
             self.folds=getattr(ds,"folds");
         else:
-            if stratified:
-                self.kf = ms.StratifiedKFold(folds, shuffle=True, random_state=rs)
-                self.folds=[v for v in self.kf.split(indexes,dataset_classes(ds,groupFunc))]
-            else:
-                self.kf = ms.KFold(folds, shuffle=True, random_state=rs)
-                self.folds = [v for v in self.kf.split(indexes)]
+            
+            if folds==1:
+                
+                if stratified:
+                    classes=dataset_classes(ds,groupFunc)
+                    r=ms.train_test_split(list(indexes),classes,shuffle=True,stratify=classes,random_state=rs,test_size=validationSplit)
+                else: 
+                    r=ms.train_test_split(list(indexes),shuffle=True,random_state=rs,test_size=validationSplit)
+                self.folds=[r]
+            else:    
+                if stratified:
+                    
+                    self.kf = ms.StratifiedKFold(folds, shuffle=True, random_state=rs)
+                    self.folds=[v for v in self.kf.split(indexes,dataset_classes(ds,groupFunc))]
+                else:
+                    self.kf = ms.KFold(folds, shuffle=True, random_state=rs)
+                    self.folds = [v for v in self.kf.split(indexes)]
 
     def clear_train(self):
         nf = []
@@ -747,7 +757,7 @@ def dataset_classes(ds, groupFunc):
     if groupFunc != None:
         data_classes = groupFunc(ds)
     else:
-        data_classes = np.array([ds[i].y for i in range(len(ds))]);
+        data_classes = get_targets_as_array(ds);
         data_classes = data_classes.mean(axis=1) > 0
     return data_classes
 
@@ -767,9 +777,11 @@ def inherit_dataset_params(ds_from,ds_to):
         ds_to.folds = getattr(ds_from, "folds")
     if hasattr(ds_from, "holdoutArr"):
         ds_to.holdoutArr = getattr(ds_from, "holdoutArr")
+    if hasattr(ds_from, "contribution"):
+        ds_to.contribution = getattr(ds_from, "contribution")    
 
 class MergedDataSet:
-    def __init__(self,components:[DataSet],mergeFunc):
+    def __init__(self,components:[DataSet],mergeFunc=None):
         self.components = components
         self.mergeFunc = mergeFunc
 
@@ -780,6 +792,7 @@ class MergedDataSet:
         componentItems = [x[item] for x in self.components]
         isSlice = isinstance(item, slice)
         lst = list(zip(componentItems)) if isSlice else [ componentItems ]
+
         merged = [ self.mergeFunc(x) for x in lst ]
         result = merged if isSlice else merged[0]
         return result
@@ -796,7 +809,7 @@ def mergeFunc(items: [PredictionItem]) -> PredictionItem:
     return result
 
 class MeanDataSet(MergedDataSet):
-    def __init(components:[DataSet]):
+    def __init__(self,components:[DataSet]):
         super().__init__(components, mergeFunc)
 
 

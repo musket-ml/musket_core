@@ -141,7 +141,15 @@ class SplitPreproccessor(AbstractPreprocessedDataSet):
         self.branches=branches
         if isinstance(branches[0], PreprocessedDataSet) or isinstance(branches[0], DataSet):
             self._parent_supports_target = True
-
+        contributions=[]
+        hasContributions=False    
+        for x in branches:
+            if hasattr(x, "contribution"):    
+                hasContributions=True
+                contributions.append(getattr(x, "contribution"))
+            else: contributions.append(None)
+        if hasContributions:
+            self.contributions=contributions             
     def id(self):
         return "split("+str(self.num)+")"
 

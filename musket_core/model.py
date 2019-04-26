@@ -1,5 +1,6 @@
 from musket_core import datasets
 from musket_core.datasets import DataSet, MeanDataSet
+import typing
 
 
 def block(func):
@@ -14,7 +15,7 @@ class Model:
 
 class ConnectedModel(Model):
 
-    def predictions(self,name,**kwargs)->DataSet:
+    def predictions(self,name_or_ds:typing.Union[datasets.DataSet,str],**kwargs)->DataSet:
         raise ValueError("Not implemented")
 
 
@@ -51,5 +52,5 @@ class AverageBlend(ConnectedModel):
         for v in self.models:
             rm.append(v.predictions(name))
 
-        result = rm[0] if len(rm) == 1 else MeanDataSet(rm, mergeFunc)
+        result = rm[0] if len(rm) == 1 else MeanDataSet(rm)
         return result

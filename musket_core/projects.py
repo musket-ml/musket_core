@@ -109,7 +109,7 @@ class WrappedTask:
                 if issubclass(type,musket_core.model.Model):
                     if p in args:
                         actualArgs[p]=args[p].wrap(config,exp)
-                    actualArgs[p]=config
+                    else: actualArgs[p]=config
 
                 elif issubclass(type,musket_core.datasets.DataSet):
                     actualArgs[p]=config.get_dataset(args[p])

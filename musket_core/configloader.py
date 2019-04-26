@@ -183,7 +183,10 @@ class PythonFunction(AbstractType):
             args=[p for p in clazz.args if "input" not in p and "inp" not in p]
         else: args=[p for p in s.parameters if "input" not in p and "inp" not in p]
         self.args=args
-
+        inpP="input"
+        if "inp" in s.parameters:
+            inpP="inp"
+           
         def create(*args,**kwargs):
             if len(args) == 1 and args[0] is None:
                 args = []
@@ -195,8 +198,11 @@ class PythonFunction(AbstractType):
                     if len(i)==0:
                         i=None
                 if i is not None:
-                    mm["input"]=i
-                return clazz(**mm)
+                    mm[inpP]=i
+                res=clazz(**mm)
+                if res is None:
+                    print(f"{clazz} returned None")    
+                return res 
             return res
         self.clazz=create
 

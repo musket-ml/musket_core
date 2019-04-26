@@ -5,6 +5,7 @@ import numpy as np
 from musket_core.structure_constants import constructPredictionsDirPath
 from musket_core.datasets import DataSet, PredictionItem
 from musket_core.preprocessing import PreprocessedDataSet
+from typing import Union
 
 from musket_core.model import IGenericTaskConfig
 
@@ -14,7 +15,7 @@ class Prediction:
         self.cfg = cfg
         self.fold = fold
         self.stage=stage
-        self.name=name
+        self.name=name        
         self.srcDataset=srcDataset
 
     def calculate(self)->DataSet:
@@ -63,8 +64,10 @@ def _fix_fold_and_stage(cfg, fold, stage):
     return fold, stage
 
 
-def get_predictions(cfg,name,fold=None,stage=None)->DataSet:
-    return Prediction(cfg,fold,stage,name).calculate()
+def get_predictions(cfg,name_or_ds:Union[str,DataSet],fold=None,stage=None)->DataSet:
+    if isinstance(name_or_ds   , str):
+        return Prediction(cfg,fold,stage,name_or_ds,None).calculate()
+    else: return Prediction(cfg,fold,stage,None,name_or_ds).calculate()
 
 def stat(metrics):
     return {"mean":float(np.mean(metrics)),"max":float(np.max(metrics)),"min":float(np.min(metrics)),"std":float(np.std(metrics))}
