@@ -533,7 +533,6 @@ class DefaultKFoldedDataSet:
         self.transforms=transforms
         self.batchSize=batchSize
         self.positive={}
-        print(validationSplit)
         if hasattr(ds,"folds"):
             self.folds=getattr(ds,"folds");
         else:
