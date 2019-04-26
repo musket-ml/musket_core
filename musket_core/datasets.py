@@ -777,6 +777,8 @@ def inherit_dataset_params(ds_from,ds_to):
         ds_to.folds = getattr(ds_from, "folds")
     if hasattr(ds_from, "holdoutArr"):
         ds_to.holdoutArr = getattr(ds_from, "holdoutArr")
+    if hasattr(ds_from, "contribution"):
+        ds_to.contribution = getattr(ds_from, "contribution")    
 
 class MergedDataSet:
     def __init__(self,components:[DataSet],mergeFunc=None):

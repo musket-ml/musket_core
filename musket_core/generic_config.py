@@ -539,6 +539,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
 
 
     def createAndCompile(self, lr=None, loss=None)->keras.Model:
+        context.projectPath=self.get_project_path()
         return self.compile(self.createNet(), self.createOptimizer(lr=lr), loss=loss)
 
     def validate(self):

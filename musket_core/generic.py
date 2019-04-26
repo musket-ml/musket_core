@@ -6,7 +6,7 @@ import numpy as np
 import keras
 import musket_core.net_declaration as net
 import musket_core.quasymodels as qm
-
+import os
 import tqdm
 
 
@@ -31,11 +31,22 @@ class GenericPipeline(generic.GenericTaskConfig):
         pass
 
     def createNet(self):
-        input,output=utils.load_yaml(self.path + ".shapes")
-        if isinstance(input,list):
-            inputs=[keras.Input(x) for x in input]
+        inp,output=utils.load_yaml(self.path + ".shapes")
+        contributions=None
+        if os.path.exists(self.path+".contribution"):
+            contributions=utils.load(self.path+".contribution")
         else:
-            inputs=[keras.Input(input)]
+            contributions=None    
+        if isinstance(input,list):
+            
+            inputs=[keras.Input(x) for x in inp]
+            if contributions is not None:
+                for i in range(len(inputs)):
+                    inputs[i].contribution=contributions[i]
+        else:
+            i=keras.Input(inp);
+            i.contribution=contributions
+            inputs=[i]
         m=net.create_model_from_config(self.declarations,inputs,self.architecture,self.imports)
         return m
 
@@ -129,6 +140,8 @@ class GenericPipeline(generic.GenericTaskConfig):
         if self.preprocessing is not None:
             dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing, self.imports)
         predItem = dataset[0]
+        if hasattr(dataset, "contribution"):
+            utils.save(self.path+ ".contribution",getattr(dataset, "contribution"))
         utils.save_yaml(self.path + ".shapes", (_shape(predItem.x), _shape(predItem.y)))
         return dataset
 
