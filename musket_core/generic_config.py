@@ -329,6 +329,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         self.testSplitSeed = 123
         self.path = None
         self.metrics = []
+        self.final_metrics=[]
         self.resume = False
         self.weights = None
         self.transforms=[]
@@ -354,6 +355,8 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         pass
         if isinstance(self.metrics,str):
             self.metrics=[self.metrics]
+        if isinstance(self.final_metrics, str):
+            self.final_metrics = [self.final_metrics]
 
     def _update_from_config(self, v, val):
         if v == 'callbacks':
@@ -731,6 +734,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
 
     def createSummary(self,foldsToExecute, subsample):
         stagesStat=[]
+        all_metrics=self.metrics+self.final_metrics
         metric = self.primary_metric
         if "val_" in metric:
             metric=metric[4:]
@@ -740,7 +744,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
                 return {"canceled": True }
             #tr=self.find_optimal_treshold_by_validation2(metric, [stage])
             #tr0 = self.find_optimal_treshold_by_validation(metric, [stage])
-            for m in self.metrics:
+            for m in all_metrics:
                ms[m]=predictions.cross_validation_stat(self,m,[stage])
 
                if self.testSplit > 0:
@@ -753,7 +757,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         all={}
         #tr = self.find_optimal_treshold_by_validation2(metric)
         #tr0 = self.find_optimal_treshold_by_validation(metric)
-        for m in self.metrics:
+        for m in all_metrics:
             if self._reporter is not None and self._reporter.isCanceled():
                 return {"canceled": True }
             all[m] = predictions.cross_validation_stat(self, m)

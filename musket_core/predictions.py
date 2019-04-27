@@ -6,8 +6,10 @@ from musket_core.structure_constants import constructPredictionsDirPath
 from musket_core.datasets import DataSet, PredictionItem
 from musket_core.preprocessing import PreprocessedDataSet
 from typing import Union
+import keras
+from musket_core import configloader
 
-from musket_core.model import IGenericTaskConfig
+from musket_core.model import IGenericTaskConfig,FoldsAndStages
 
 class Prediction:
     def __init__(self,cfg,fold,stage,name:str,srcDataset=None):
@@ -72,13 +74,31 @@ def get_predictions(cfg,name_or_ds:Union[str,DataSet],fold=None,stage=None)->Dat
 def stat(metrics):
     return {"mean":float(np.mean(metrics)),"max":float(np.max(metrics)),"min":float(np.min(metrics)),"std":float(np.std(metrics))}
 
+def isFinal(metric:str)->bool:
+    try:
+        mtr = keras.metrics.get(metric)
+        return False
+    except:
+        return True
 
 def cross_validation_stat(cfg:IGenericTaskConfig, metric,stage=None,treshold=0.5):
     metrics=[]
-    cfg.get_dataset()
+    cfg.get_dataset()# this is actually needed
+
+    if isFinal(metric):
+        fnc=configloader.load("layers").catalog[metric]
+        #if isinstance(fnc,configloader.PythonFunction):
+        fnc=fnc.func
+        for i in range(cfg.folds_count):
+            fa=FoldsAndStages(cfg,i,stage)
+            val=cfg.validation(None,i)
+            metrics.append(fnc(fa,val))
+        return stat(metrics)
+
     for i in range(cfg.folds_count):
         if cfg._reporter is not None and cfg._reporter.isCanceled():
             return {"canceled": True}
+
         predictionDS = get_validation_prediction(cfg, i, stage)
         val = considerThreshold(predictionDS, metric, treshold)
         eval_metric = generic_config.eval_metric(val, metric, cfg.get_eval_batch())
@@ -89,6 +109,14 @@ def cross_validation_stat(cfg:IGenericTaskConfig, metric,stage=None,treshold=0.5
 def holdout_stat(cfg:IGenericTaskConfig, metric,stage=None,treshold=0.5):
     if cfg._reporter is not None and cfg._reporter.isCanceled():
         return {"canceled": True}
+    if isFinal(metric):
+        fnc=configloader.load("layers").catalog[metric]
+        #if isinstance(fnc,configloader.PythonFunction):
+        fnc=fnc.func
+        for i in range(cfg.folds_count):
+            fa=FoldsAndStages(cfg,i,stage)
+            val=cfg.validation(None,i)
+            return fnc(fa,val)
     predictionDS = get_holdout_prediction(cfg, None, stage)
     val = considerThreshold(predictionDS, metric, treshold)
     eval_metric = generic_config.eval_metric(val, metric, cfg.get_eval_batch())

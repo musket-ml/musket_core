@@ -21,8 +21,17 @@ class ConnectedModel(Model):
 
 class IGenericTaskConfig(ConnectedModel):
 
+    folds_count=None
+    _reporter=None
+
     def get_eval_batch(self)->int:
         return -1
+
+    def validation(self,ds:typing.Optional[DataSet],fold:int)->DataSet:
+        raise ValueError("Not implemented")
+
+    def get_dataset(self,name:str=None)->DataSet:
+        raise  ValueError("Not implemented")
 
 class FoldsAndStages(ConnectedModel):
 

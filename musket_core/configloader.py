@@ -179,6 +179,7 @@ class PythonFunction(AbstractType):
         super(PythonFunction,self).__init__()
         # if clazz.__name__.lower()=="flatten":
         #     print("A")
+        self.func=clazz
         if hasattr(clazz,"args"):
             args=[p for p in clazz.args if "input" not in p and "inp" not in p]
         else: args=[p for p in s.parameters if "input" not in p and "inp" not in p]

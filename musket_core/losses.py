@@ -3,6 +3,11 @@ from keras import backend as K
 import keras
 # credits: https://www.kaggle.com/guglielmocamporese/macro-f1-score-keras
 
+
+def keras_loss(func):
+    keras.utils.get_custom_objects()[func.__name__]=func
+    return func
+
 def macro_f1(y_true, y_pred):
     # y_pred = K.round(y_pred)
     # y_pred = K.cast(K.greater(K.clip(y_pred, 0, 1), THRESHOLD), K.floatx())
