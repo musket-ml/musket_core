@@ -371,7 +371,7 @@ class AnalizePredictions(yaml.YAMLObject):
                 pr=predictions[i]
                 if analizerFunc.usePredictionItem:
                     gr = analizerFunc(i,ds[i],pr, **self.analzierArgs)
-                else: gr=analizerFunc(gt,pr,**self.analzierArgs)
+                else: gr=analizerFunc(gt,pr.prediction,**self.analzierArgs)
                 if gr in res:
                     res[gr].append(i)
                 else:
@@ -485,7 +485,7 @@ class WrappedDS(SubDataSet):
                 for i in range(len(preds)):
                     it[i].prediction = preds[i]
             else:
-                it.prediction = self.predictions[self.indexes[item]]
+                it.prediction = self.predictions[self.indexes[item]].prediction
         return it
 
     class Java:
