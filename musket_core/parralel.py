@@ -91,13 +91,20 @@ class Worker(threading.Thread):
                 self.respond.put(exp)
                 continue
             if exp.requiresSession:
-                with self.create_session(gpus).as_default():
-                    with tf.device("/gpu:" + str(gpus)):
+                if _executor.num_workers>1:
+                    with self.create_session(gpus).as_default():
+                        with tf.device("/gpu:" + str(gpus)):
                                 try:
                                     exp.run()
                                 finally:
                                      K.clear_session()
                                      self.respond.put(exp)
+                else:
+                    try:
+                        exp.run()
+                    finally:
+                        K.clear_session()
+                        self.respond.put(exp)
             else:
                 exp.run()
                 self.respond.put(exp)

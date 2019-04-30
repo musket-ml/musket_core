@@ -309,6 +309,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         self.preprocessing=None
         self.verbose = 1
         self._projectDir=None
+        self.manualResize=None
         self.dataset=None
         self.noTrain = False
         self.inference_batch=32
@@ -319,6 +320,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         self.primary_metric = "val_binary_accuracy"
         self.primary_metric_mode = "auto"
         self.stages = []
+        self.shape=None
         self.gpus = 1
         self.lr = 0.001
         self.callbacks = []
@@ -464,6 +466,8 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
             for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
                 b=v
+                
+                #fixme: b.data is empty
                 for i in range(len(b.data)):
                     res.append(b.results[i])
                 pbar.update(batch_size)
@@ -1008,7 +1012,8 @@ class GenericImageTaskConfig(GenericTaskConfig):
         return there_res
 
     def inject_task_specific_transforms(self, ds, transforms):
-        transforms.append(imgaug.augmenters.Scale({"height": self.shape[0], "width": self.shape[1]}))
+        if not self.manualResize:
+            transforms.append(imgaug.augmenters.Scale({"height": self.shape[0], "width": self.shape[1]}))
         if self.bgr is not None:
             ds = WithBackgrounds(ds, self.bgr)
         return ds
@@ -1034,7 +1039,8 @@ class GenericImageTaskConfig(GenericTaskConfig):
 
     def transformAugmentor(self):
         transforms = [] + self.transforms
-        transforms.append(imgaug.augmenters.Scale({"height": self.shape[0], "width": self.shape[1]}))
+        if not self.manualResize:
+            transforms.append(imgaug.augmenters.Scale({"height": self.shape[0], "width": self.shape[1]}))
         return imgaug.augmenters.Sequential(transforms)
 
     def adaptNet(self, model, model1, copy=False):
@@ -1231,7 +1237,7 @@ class Stage:
     def loadBestWeightsFromPrevStageIfExists(self, ec, model):
         bestWeightsLoaded = False
         if ec.stage > 0:
-            ec.stage = ec.stage - 1;
+            ec.stage = ec.stage - 1
             try:
                 if os.path.exists(ec.weightsPath()):
                     print("Loading best weights from previous stage...")
@@ -1239,7 +1245,7 @@ class Stage:
                     bestWeightsLoaded = True
             except:
                 pass
-            ec.stage = ec.stage + 1;
+            ec.stage = ec.stage + 1
         return bestWeightsLoaded
 
     def unfreeze(self, model):
