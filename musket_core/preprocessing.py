@@ -72,13 +72,16 @@ class PreprocessedDataSet(AbstractPreprocessedDataSet):
 
         newList = []
         for pi in piList:
-            arg = pi if self.expectsItem else pi.x
-            result = self.func(arg,**self.kw)
-            newPi = result if self.expectsItem else PreproccedPredictionItem(pi.id,result,pi.y,pi)
+            newPi = self.execute_transformation(pi)
             newList.append(newPi)
 
         return newList if isSlice else newList[0]
 
+    def execute_transformation(self, pi):
+        arg = pi if self.expectsItem else pi.x
+        result = self.func(arg, **self.kw)
+        newPi = result if self.expectsItem else PreproccedPredictionItem(pi.id, result, pi.y, pi)
+        return newPi
 
 
 def dataset_transformer(func):
@@ -185,3 +188,44 @@ class SplitConcatPreprocessor(SplitPreproccessor):
     def __getitem__(self, item):
         items=[x[item] for x in self.branches]
         return PreproccedPredictionItem(items[0].id,np.concatenate([x.x for x in items],axis=self.axis),items[0].y,items[0].original())
+
+class Augmentation(AbstractPreprocessedDataSet):
+
+    def __init__(self,parent,seq:List[PreprocessedDataSet],weights:[float],seed:int):
+        super().__init__(parent)
+        self.seq = zip(seq, weights)
+        self.seed = seed
+        self.state = seed
+
+    def id(self):
+        str1 = "; ".join([f"{x[0].id}:{x[1]}" for x in self.seq])
+        result = f"augment({self.seed}; {str1})"
+        return result
+
+    def __getitem__(self, item: int or slice):
+        input = self.parent[item]
+        isSlice = isinstance(item,slice)
+        iArr = [ input ] if not isSlice else input
+        oArr = []
+
+        for x in iArr:
+            for e in self.seq:
+                prep = e[0]
+                w = e[1]
+                if self.flip(w):
+                    x = prep.execute_transformation(x)
+            oArr.append(x)
+
+        output = oArr[0] if not isSlice else oArr
+        return output
+
+    def flip(self, w:float or int)->bool:
+        state = np.random.get_state()
+        np.random.seed(self.state)
+        rand = np.random.uniform()
+        self.state = np.random.get_state()
+        np.random.seed(state)
+        return rand < w
+
+    def get_target(self,item):
+        pass
