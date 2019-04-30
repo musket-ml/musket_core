@@ -217,7 +217,7 @@ def draw_test_batch(batch,path):
         iPic = batch.images_aug[i][:, :, 0:3].astype(np.uint8)
         cells.append(iPic)
         cells.append(batch.segmentation_maps_aug[i].draw_on_image(iPic))  # column 2
-        cells.append(batch.heatmaps_aug[i].draw_on_image(iPic)[0])  # column 2
+        cells.append(batch.heatmaps_aug[i].draw_on_image(iPic))  # column 2
     # Convert cells to grid image and save.
     grid_image = imgaug.draw_grid(cells, cols=3)
     imageio.imwrite(path, grid_image)
@@ -534,7 +534,7 @@ class DefaultKFoldedDataSet:
         self.batchSize=batchSize
         self.positive={}
         if hasattr(ds,"folds"):
-            self.folds=getattr(ds,"folds");
+            self.folds=getattr(ds,"folds")
         else:
             
             if folds==1:
