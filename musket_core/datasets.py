@@ -673,16 +673,19 @@ class ImageKFoldedDataSet(DefaultKFoldedDataSet):
         return np.array(r.images_aug), np.array([x.arr for x in r.segmentation_maps_aug])
 
     def generator_from_indexes(self, indexes,isTrain=True,returnBatch=False):
-        m = DataSetLoader(self.ds, indexes, self.batchSize,isTrain=isTrain).generator
         aug = self.augmentor(isTrain)
+        if len(aug)==0:
+            return super().generator_from_indexes(indexes,isTrain,returnBatch)
+        m = DataSetLoader(self.ds, indexes, self.batchSize,isTrain=isTrain).generator
+
         if USE_MULTIPROCESSING:
             l = imgaug.imgaug.BatchLoader(m,nb_workers=NB_WORKERS_IN_LOADER,threaded=LOADER_THREADED,queue_size=LOADER_SIZE)
             g = imgaug.imgaug.BackgroundAugmenter(l, augseq=aug,queue_size=AUGMENTER_QUEUE_LIMIT,nb_workers=NB_WORKERS)
 
             def r():
-                num = 0;
+                num = 0
                 while True:
-                    r = g.get_batch();
+                    r = g.get_batch()
                     x,y= self._prepare_vals_from_batch(r)
                     num=num+1
                     if returnBatch:
@@ -692,7 +695,7 @@ class ImageKFoldedDataSet(DefaultKFoldedDataSet):
             return l,g,r
         else:
             def r():
-                num = 0;
+                num = 0
                 while True:
                     for batch in m():
                         r = list(aug.augment_batches([batch], background=False))[0]
@@ -705,11 +708,11 @@ class ImageKFoldedDataSet(DefaultKFoldedDataSet):
             return NullTerminatable(),NullTerminatable(),r
 
     def augmentor(self, isTrain)->imgaug.augmenters.Augmenter:
-        allAug = [];
+        allAug = []
         if isTrain:
             allAug = allAug + self.aug
         allAug = allAug + self.transforms
-        aug = imgaug.augmenters.Sequential(allAug);
+        aug = imgaug.augmenters.Sequential(allAug)
         return aug
 
 
