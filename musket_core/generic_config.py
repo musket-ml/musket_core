@@ -466,6 +466,8 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
             for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
                 b=v
+                
+                #fixme: b.data is empty
                 for i in range(len(b.data)):
                     res.append(b.results[i])
                 pbar.update(batch_size)
