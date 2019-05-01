@@ -53,6 +53,9 @@ class DataSet:
     def get_target(self,item):
         return self[item].y
 
+    def get_train_item(self,item):
+        return self[item]
+
 class WriteableDataSet(DataSet):
 
     def append(self,item):
@@ -348,11 +351,12 @@ def generic_batch_generator(ds,batchSize,maxItems=-1):
 
 class GenericDataSetSequence(keras.utils.Sequence):
 
-    def __init__(self,ds,batch_size,indexes=None,infinite=True):
+    def __init__(self,ds,batch_size,indexes=None,infinite=True,isTrain=False):
         self.ds=ds
         self.batchSize=batch_size
         self._dim=None
         self.inifinite=infinite
+        self.isTrain = isTrain
         if indexes is None:
             indexes =range(len(self.ds))
         self.indexes=indexes
@@ -385,7 +389,7 @@ class GenericDataSetSequence(keras.utils.Sequence):
                 i=i%l
                 if not self.inifinite:
                     break
-            r=self.ds[self.indexes[i]]
+            r=self.ds.get_train_item(self.indexes[i]) if self.isTrain else self.ds[self.indexes[i]]
             X.append(r.x)
             y.append(r.y)
         return np.array(X),np.array(y)
@@ -408,7 +412,7 @@ class GenericDataSetSequence(keras.utils.Sequence):
                 i=i%l
                 if not self.inifinite:
                     break
-            r=self.ds[self.indexes[i]]
+            r=self.ds.get_train_item(self.indexes[i]) if self.isTrain else self.ds[self.indexes[i]]
             for j in range(xd):
                 r_x = r.x
                 if not isinstance(r_x, list) and not isinstance(r_x, tuple):
@@ -618,7 +622,7 @@ class DefaultKFoldedDataSet:
 
     def generator_from_indexes(self, indexes, isTrain=True, returnBatch=False):
         def _factory():
-            return GenericDataSetSequence(self.ds,self.batchSize,indexes)
+            return GenericDataSetSequence(self.ds,self.batchSize,indexes, isTrain = isTrain)
         return NullTerminatable(),NullTerminatable(),_factory
 
     def trainOnFold(self,fold:int,model:keras.Model,callbacks=[],numEpochs:int=100,negatives="all",
@@ -724,8 +728,9 @@ class NullTerminatable:
     def terminate(self):
         pass
 
-class SubDataSet:
+class SubDataSet(DataSet):
     def __init__(self,orig,indexes):
+        super().__init__()
         if isinstance(orig,int) or orig is None or isinstance(orig,list):
             raise ValueError("Dataset is expected")
         self.ds=orig
@@ -745,6 +750,9 @@ class SubDataSet:
             return result
         else:
             return self.ds[self.indexes[item]]
+
+    def get_train_item(self,item:int):
+        return self.ds.get_train_item(self.indexes[item])
 
     def __len__(self):
         return len(self.indexes)
