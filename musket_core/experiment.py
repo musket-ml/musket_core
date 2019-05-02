@@ -59,10 +59,11 @@ class Experiment:
             cfg = generic.parse(self.getConfigYamlConcretePath(),extra)
         if self.allowResume:
             cfg.setAllowResume(self.allowResume)
-        if self.project is not None:            
-            for m in os.listdir(self.project.modulesPath()):
-                if ".py" in m:
-                    cfg.imports.append(m[0:m.index(".py")])
+        if self.project is not None:
+            if os.path.exists(self.project.modulesPath()):
+                for m in os.listdir(self.project.modulesPath()):
+                    if ".py" in m:
+                        cfg.imports.append(m[0:m.index(".py")])
             if os.path.exists(self.project.dataPath()):
                 cfg.datasets_path=self.project.dataPath()
         return cfg
