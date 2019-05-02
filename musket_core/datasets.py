@@ -56,8 +56,6 @@ class DataSet:
     def get_target(self,item):
         return self[item].y
 
-    def get_train_item(self,item):
-        return self[item]
 
 class WriteableDataSet(DataSet):
 
