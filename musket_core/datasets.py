@@ -42,6 +42,9 @@ class DataSet:
     def __getitem__(self, item)->PredictionItem:
         raise ValueError("Not implemented")
 
+    def get_train_item(self, item)->PredictionItem:
+        return self[item]
+
     def __len__(self):
         raise ValueError("Not implemented")
 
@@ -416,7 +419,7 @@ class GenericDataSetSequence(keras.utils.Sequence):
                 batch_x[j].append(r_x[j])
             for j in range(yd):
                 r_y = r.y
-                if not isinstance(r_y, list) and not isinstance(r_x, tuple):
+                if not isinstance(r_y, list) and not isinstance(r_y, tuple):
                     r_y = [ r_y ]
                 batch_y[j].append(r_y[j])
         batch_x=[np.array(x) for x in batch_x]
@@ -741,6 +744,7 @@ class SubDataSet:
 
     def isPositive(self, item):
         return self.ds.isPositive(self.indexes[item])
+
 
     def __getitem__(self, item):
         if isinstance(item, slice):
