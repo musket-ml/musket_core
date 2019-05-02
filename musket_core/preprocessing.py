@@ -191,41 +191,50 @@ class SplitConcatPreprocessor(SplitPreproccessor):
 
 class Augmentation(AbstractPreprocessedDataSet):
 
-    def __init__(self,parent,seq:List[PreprocessedDataSet],weights:[float],seed:int):
+    def __init__(self,parent,seq:List[PreprocessedDataSet],weights:[float] or np.ndarray,seed:int):
         super().__init__(parent)
-        self.seq = zip(seq, weights)
+        self.seq = seq
+        self.weights = weights if isinstance(weights,np.ndarray) else np.array(weights)
         self.seed = seed
-        self.state = seed
+
+        state = np.random.get_state()
+        np.random.seed(self.seed)
+        self.state = np.random.get_state()
+        np.random.set_state(state)
 
     def id(self):
-        str1 = "; ".join([f"{x[0].id}:{x[1]}" for x in self.seq])
+        str1 = "; ".join([f"{x[0].id}:{x[1]}" for x in zip(self.seq,self.weights.tolist())])
         result = f"augment({self.seed}; {str1})"
         return result
 
     def __getitem__(self, item: int or slice):
+        return self.parent[item]
+
+    def get_train_item(self, item):
         input = self.parent[item]
         isSlice = isinstance(item,slice)
         iArr = [ input ] if not isSlice else input
         oArr = []
 
         for x in iArr:
-            for e in self.seq:
-                prep = e[0]
-                w = e[1]
-                if self.flip(w):
-                    x = prep.execute_transformation(x)
+
+            activate = self.flip()
+            for i in range(len(self.seq)):
+                if activate[i]:
+                    x = self.seq[i].execute_transformation(x)
+
             oArr.append(x)
 
         output = oArr[0] if not isSlice else oArr
         return output
 
-    def flip(self, w:float or int)->bool:
+    def flip(self)->np.ndarray:
         state = np.random.get_state()
-        np.random.seed(self.state)
-        rand = np.random.uniform()
-        self.state = np.random.get_state()
-        np.random.seed(state)
-        return rand < w
+        np.random.set_state(self.state)
 
-    def get_target(self,item):
-        pass
+        rand = np.random.uniform(size=len(self.weights))
+
+        self.state = np.random.get_state()
+        np.random.set_state(state)
+
+        return rand < self.weights

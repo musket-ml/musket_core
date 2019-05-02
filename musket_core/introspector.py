@@ -91,7 +91,23 @@ def createPars(c:str):
         }
 
     ]
-    if "pass" in c: return []
+    if "pass" == c: return []
+    if c == "augmentation":
+        return [
+            {
+                "name": "body",
+                "type": "Preprocessor[]"
+            },
+            {
+                "name": "weights",
+                "type": "int[]"
+            },
+            {
+                "name": "seed",
+                "type": "int",
+                "defaultValue": 0
+            }
+        ]
     if "preprocessor" in c:
         return [
             {
