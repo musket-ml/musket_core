@@ -55,7 +55,6 @@ class DataSet:
 
     def get_target(self,item):
         return self[item].y
-   
 
 class WriteableDataSet(DataSet):
 
