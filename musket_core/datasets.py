@@ -55,9 +55,7 @@ class DataSet:
 
     def get_target(self,item):
         return self[item].y
-
-    def get_train_item(self,item):
-        return self[item]
+   
 
 class WriteableDataSet(DataSet):
 
@@ -707,6 +705,8 @@ class ImageKFoldedDataSet(DefaultKFoldedDataSet):
                     for batch in m():
                         r = list(aug.augment_batches([batch], background=False))[0]
                         x,y= self._prepare_vals_from_batch(r)
+                        #Think about normalization
+                        #x=(x/255.0-(0.485, 0.456, 0.406))
                         num=num+1
                         if returnBatch:
                             yield x,y,r
@@ -907,3 +907,53 @@ class DirectWriteableDS(WriteableDataSet):
 
     def loadItem(self, path:str):
         return np.load(path)
+    
+class CompressibleWriteableDS(WriteableDataSet):
+
+    def __init__(self,orig,name,dsPath, count = 0):
+        super().__init__()
+        self.parent = orig
+        self.name=name
+        self.dsPath=dsPath
+        self.count = count
+
+    def append(self,item):
+        ip = self.itemPath(self.count)
+        self.saveItem(ip,item)
+        self.count += 1
+
+    def commit(self):
+        pass
+
+    def __len__(self):
+        return len(self.parent)
+
+    def __getitem__(self, item):
+        it = self.parent[item]
+        if isinstance(item, slice):
+            indSlice = list(range(len(self)))[item]
+            for i in range(len(it)):
+                ip = self.itemPath(indSlice[i])
+                if os.path.exists(ip):
+                    prediction = self.loadItem(ip)
+                    it[i].prediction = prediction
+        else:
+            ip = self.itemPath(item)
+            if os.path.exists(ip):
+                prediction = self.loadItem(ip)
+                it.prediction = prediction
+        return it
+
+    def itemPath(self, item:int)->str:
+        return f"{self.dsPath}/{item}.npy.npz"
+
+    def saveItem(self, path:str, item):
+        dir = os.path.dirname(path)
+        item=(item*255).astype(np.uint8)
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+        np.savez_compressed(path, item)
+
+    def loadItem(self, path:str):
+        x=np.load(path)["arr_0.npy"].astype(np.float32)/255.0  
+        return x; 
