@@ -39,6 +39,8 @@ class NegativeDataSet:
         #out = out / np.max(out)
 
         return PredictionItem(self.ids[item] + str(), image, out)
+    
+    
 
 
 class BlendedDataSet:
@@ -466,6 +468,9 @@ class CropAndSplit:
 
     def __len__(self):
         return len(self.ds)*self.parts*self.parts
+    
+    def get_train_item(self,item):
+        return self[item]
 
 class AspectRatioDataSet:
     def __init__(self, child, target_ratio=(1, 1), strategy="center"):
