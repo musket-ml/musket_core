@@ -63,6 +63,11 @@ def _fix_fold_and_stage(cfg, fold, stage):
         stage = list(range(len(cfg.stages)))
     if fold is None:
         fold = list(range(cfg.folds_count))
+    if isinstance(stage, int): 
+        stage=[stage]
+    if isinstance(fold, list):
+        if len(fold)==1: 
+            fold=fold[0]
     return fold, stage
 
 
