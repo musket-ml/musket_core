@@ -28,8 +28,18 @@ types:
     type: HasLoss
     discriminator: architecture
     properties:
-      testSplit?: number
-      testSplitSeed?: number
+      inference_batch:
+         (meta.custom): true
+         type: number
+      testSplit?: 
+         (meta.custom): true
+         type: number
+      testSplitSeed?:
+         (meta.custom): true 
+         type: number
+      testTimeAugmentation:
+         (meta.custom): true
+         type: string   
       classifier:
         type: string
         (meta.custom): true
