@@ -952,7 +952,7 @@ class GenericImageTaskConfig(GenericTaskConfig):
                     img = resList[ind]
                     # FIXME
                     unaug = original_batch.images[ind]
-                    if not self.manualResize and False:
+                    if not self.manualResize and self.flipPred:
                         restored = imgaug.imresize_single_image(img,(unaug.shape[0],unaug.shape[1]),cv2.INTER_AREA)
                     else:
                         restored=img    
