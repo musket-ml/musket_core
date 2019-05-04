@@ -30,7 +30,7 @@ import imgaug
 import keras.utils.data_utils as _du
 import copy
 from musket_core.clr_callback import CyclicLR
-
+import tensorflow as tf
 from musket_core.context import context
 keras.callbacks.CyclicLR= CyclicLR
 from musket_core import predictions
@@ -92,7 +92,7 @@ def patch_concurency_issues():
 patch_concurency_issues()
 
 class Rotate90(imgaug.augmenters.Affine):
-    def __init__(self, enabled):
+    def __init__(self, enabled=True):
         if enabled:
             super(Rotate90, self).__init__(rotate=imgaug.parameters.Choice([0, 90, 180, 270]))
         else:
@@ -225,12 +225,19 @@ def eval_metric(predsDS:DataSet, func, batch_size:int = -1):
 
     if isinstance(func,str):
         func_=keras.metrics.get(func)
-        def wrapped(x,y):
-
-            v1= K.constant(x)
-            v2 = K.constant(y)
-            return K.eval(func_(v1,v2))
-        func=wrapped
+        if (func=="binary_accuracy"):
+            func=losses.binary_accuracy_numpy
+        elif (func=="iou_coef"):
+            func=losses.iou_coef_numpy
+        elif (func=="dice"):
+            func=losses.dice_numpy
+        else:    
+            def wrapped(x,y):
+                with tf.device("/cpu:0"):
+                    v1= K.constant(x)
+                    v2 = K.constant(y)
+                    return K.eval(func_(v1,v2))
+            func=wrapped
 
     result = applyFunctionToDS(predsDS, func, batch_size)
     return result
@@ -244,14 +251,14 @@ def applyFunctionToDS(dsWithPredictions, func, batch_size:int):
 
     resultArr = []
     resultScalarArr = []
-    for ind in range(0, l, batch_size):
+    for ind in tqdm.tqdm(range(0, l, batch_size)):
         end = min(ind + batch_size, l)
         items = dsWithPredictions[ind:end]
         y_true = np.array([i.y for i in items])
         y_proba = np.array([i.prediction for i in items])
         batch_value = func(y_true, y_proba)
         if isinstance(batch_value, np.ndarray):
-            resultArr.append(batch_value)
+            resultArr.append(batch_value.mean())
         else:
             resultScalarArr.append(batch_value)
 
@@ -892,6 +899,7 @@ class TaskConfigInfo:
         self.lr = lr
 
 
+import cv2
 class GenericImageTaskConfig(GenericTaskConfig):
 
     def __init__(self,**atrs):
@@ -928,6 +936,8 @@ class GenericImageTaskConfig(GenericTaskConfig):
         return self.predict_on_dataset(datasets.DirectoryDataSet(path), fold, stage, limit, batch_size, ttflips)
 
     def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=None, ttflips=False):
+        if self.testTimeAugmentation is not None:
+            ttflips=self.testTimeAugmentation
         if batch_size is None:
             batch_size=self.inference_batch
         mdl = self.load_model(fold, stage)
@@ -940,9 +950,12 @@ class GenericImageTaskConfig(GenericTaskConfig):
                 resList = [x for x in res]
                 for ind in range(len(resList)):
                     img = resList[ind]
-                    unaug = batch.images_unaug[ind]
-                    resize = imgaug.augmenters.Scale({"height": unaug.shape[0], "width": unaug.shape[1]})
-                    restored = resize.augment_image(img)
+                    # FIXME
+                    unaug = original_batch.images[ind]
+                    if not self.manualResize and False:
+                        restored = imgaug.imresize_single_image(img,(unaug.shape[0],unaug.shape[1]),cv2.INTER_AREA)
+                    else:
+                        restored=img    
                     resList[ind] = restored
                 self.update(batch,resList)
                 batch.results=resList
