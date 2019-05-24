@@ -556,7 +556,11 @@ class GenericTaskConfig(model.IGenericTaskConfig):
 
     def createAndCompile(self, lr=None, loss=None)->keras.Model:
         context.projectPath=self.get_project_path()
-        return self.compile(self.createNet(), self.createOptimizer(lr=lr), loss=loss)
+
+        model = self.createNet()
+        optimizer = self.createOptimizer(lr=lr)
+
+        return self.compile(model, optimizer, loss=loss)
 
     def validate(self):
         model = self.createAndCompile()
@@ -1145,7 +1149,8 @@ class Stage:
 
         cb = [] + self.cfg.callbacks
         if self.initial_weights is not None:
-            model.load_weights(self.initial_weights)
+            model.layers[-1].name = "LastLayerToCut"
+            model.load_weights(self.initial_weights, by_name=True)
         ll=LRFinder(model)
         num_batches=kf.numBatches(ec.fold,self.negatives,ec.subsample)*epochs
         ll.lr_mult = (float(end_lr) / float(start_lr)) ** (float(1) / float(num_batches))
@@ -1182,7 +1187,8 @@ class Stage:
             self.cfg.compile(model, self.cfg.createOptimizer(self.lr), self.loss)
 
         if self.initial_weights is not None:
-            model.load_weights(self.initial_weights)
+            model.layers[-1].name = "LastLayerToCut"
+            model.load_weights(self.initial_weights, by_name=True)
         if 'callbacks' in self.dict:
             cb = configloader.parse("callbacks", self.dict['callbacks'])
         if 'extra_callbacks' in self.dict:
