@@ -482,6 +482,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
 
 
     def load_writeable_dataset(self, ds, path)->DataSet:
+        
         rr = np.load(path)
         resName = (ds.name if hasattr(ds, "name") else "") + "_predictions"
         result = BufferedWriteableDS(ds, resName, path, rr)
@@ -508,7 +509,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
             for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
                 b=v
-                for i in range(len(b.data)):
+                for i in range(len(b.results)):
                     result.append(b.results[i])
                 pbar.update(batch_size)
 
@@ -653,6 +654,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         ec = ExecutionConfig(fold=fold, stage=stage, subsample=1.0, dr=self.directory())
         model = self.createAndCompile()
         model.load_weights(ec.weightsPath(),False)
+        #model.load_weights("D:/best-0.0.weights")
         return model
 
     def info(self,metric=None):
@@ -851,12 +853,14 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         if self._projectDir is not None:
             return self._projectDir
         v=self.path
-        while v is not None:
+        while v is not None and len(v)>0:
             v=os.path.dirname(v)
             if os.path.exists(os.path.join(v,"modules")):
                 self._projectDir=v
                 return v
-        self._projectDir=os.path.pardir(self.path)
+        self._projectDir=os.path.dirname(self.path)
+        self._projectDir=os.path.dirname(self._projectDir)
+        print(self._projectDir)
         return self._projectDir
 
     def parse_dataset(self,datasetName=None):
@@ -1180,9 +1184,10 @@ class Stage:
 
         if self.loss or self.lr:
             self.cfg.compile(model, self.cfg.createOptimizer(self.lr), self.loss)
-
+            
         if self.initial_weights is not None:
-            model.load_weights(self.initial_weights)
+            model.layers[-1].name="SomeNweName"
+            model.load_weights(self.initial_weights,by_name=True)
         if 'callbacks' in self.dict:
             cb = configloader.parse("callbacks", self.dict['callbacks'])
         if 'extra_callbacks' in self.dict:
@@ -1230,11 +1235,15 @@ class Stage:
             self.cfg.compile(model, self.cfg.createOptimizer(lr), loss)
             print("Restoring weights...")
             # weights are destroyed by some reason
-            bestWeightsLoaded = self.loadBestWeightsFromPrevStageIfExists(ec, model.layers[-2])
+            mda=None
+            for q in model.layers:
+                if isinstance(q,keras.Model):
+                    mda=q
+            bestWeightsLoaded = self.loadBestWeightsFromPrevStageIfExists(ec, mda)
             if not bestWeightsLoaded:
-                model.layers[-2].load_weights(ec.weightsPath()+".tmp",False)
+                mda.load_weights(ec.weightsPath()+".tmp",False)
 
-            amcp = alt.AltModelCheckpoint(ec.weightsPath(), model.layers[-2], save_best_only=True,
+            amcp = alt.AltModelCheckpoint(ec.weightsPath(), mda, save_best_only=True,
                                                 monitor=self.cfg.primary_metric, mode=md, verbose=1)
             if prevInfo != None:
                 amcp.best = prevInfo.best

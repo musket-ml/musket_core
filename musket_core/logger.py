@@ -56,6 +56,9 @@ class CSVLogger(keras.callbacks.Callback):
         epoch=epoch+self.start
         def handle_value(k):
             is_zero_dim_ndarray = isinstance(k, np.ndarray) and k.ndim == 0
+            is_one_dim_ndarray = isinstance(k, np.ndarray) and k.size == 1
+            if is_one_dim_ndarray:
+                return float(k) 
             if isinstance(k, six.string_types):
                 return k
             elif isinstance(k, collections.Iterable) and not is_zero_dim_ndarray:

@@ -32,8 +32,9 @@ def _find_path():
         
 
 def get_current_project_path():
-    if not hasattr(context,"projectPath"):
-        context.projectPath=_find_path();
-    return context.projectPath
+    return _find_path()
+#     if not hasattr(context,"projectPath") and False:
+#         context.projectPath=_find_path();
+#     return context.projectPath
 
 

@@ -21,7 +21,7 @@ class Prediction:
         self.srcDataset=srcDataset
 
     def calculate(self)->DataSet:
-
+        os.chdir("C:/Users/Павел/git/project_kaggle_fashion")
         ds = self.srcDataset
         nm = self.name
         if ds is None:

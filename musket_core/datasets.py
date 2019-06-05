@@ -428,16 +428,19 @@ class GenericDataSetSequence(keras.utils.Sequence):
         return batch_x,batch_y
 
 class SimplePNGMaskDataSet:
-    def __init__(self, path, mask, detect_exts=False, in_ext="jpg", out_ext="png", generate=False):
+    def __init__(self, path, mask, detect_exts=False, in_ext="jpg", out_ext="png", generate=False,list=None):
         self.path = path;
         self.mask = mask;
 
-        ldir = os.listdir(path)
-
-        if ".DS_Store" in ldir:
-            ldir.remove(".DS_Store")
-
-        self.ids = [x[0:x.index('.')] for x in ldir]
+        if list is None:
+            ldir = os.listdir(path)
+    
+            if ".DS_Store" in ldir:
+                ldir.remove(".DS_Store")
+    
+            self.ids = [x[0:x.index('.')] for x in ldir]
+        else:
+            self.ids=list    
 
         self.exts = []
 
@@ -829,12 +832,13 @@ class MeanDataSet(MergedDataSet):
 
 class BufferedWriteableDS(WriteableDataSet):
 
-    def __init__(self,orig,name,dsPath,predictions=None):
+    def __init__(self,orig,name,dsPath,predictions=None,pickle=False):
         super().__init__()
         if predictions is None:
             predictions = []
         self.parent = orig
         self.name=name
+        self.pickle=pickle
         self.predictions=predictions
         self.dsPath=dsPath
 
@@ -842,7 +846,10 @@ class BufferedWriteableDS(WriteableDataSet):
         self.predictions.append(item)
 
     def commit(self):
-        np.save(self.dsPath,self.predictions)
+        if self.pickle:
+            utils.save(self.dsPath, self.predictions)
+        else: 
+            np.save(self.dsPath,self.predictions)
 
     def __len__(self):
         return len(self.parent)
