@@ -389,7 +389,7 @@ class GenericDataSetSequence(keras.utils.Sequence):
                 i=i%l
                 if not self.inifinite:
                     break
-            r=self.ds.get_train_item(self.indexes[i]) if self.isTrain else self.ds[self.indexes[i]]
+            r=self.ds.get_train_item(self.indexes, i) if self.isTrain else self.ds[self.indexes[i]]
             X.append(r.x)
             y.append(r.y)
         return np.array(X),np.array(y)
@@ -412,7 +412,7 @@ class GenericDataSetSequence(keras.utils.Sequence):
                 i=i%l
                 if not self.inifinite:
                     break
-            r=self.ds.get_train_item(self.indexes[i]) if self.isTrain else self.ds[self.indexes[i]]
+            r=self.ds.get_train_item(self.indexes, i) if self.isTrain else self.ds[self.indexes[i]]
             for j in range(xd):
                 r_x = r.x
                 if not isinstance(r_x, list) and not isinstance(r_x, tuple):

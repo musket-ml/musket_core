@@ -4,10 +4,32 @@ import numpy as np
 import keras
 # credits: https://www.kaggle.com/guglielmocamporese/macro-f1-score-keras
 
+from . import metrics_colab
+
+from . import tf_lwlrap_1
 
 def keras_loss(func):
     keras.utils.get_custom_objects()[func.__name__]=func
     return func
+
+def smoothed_bce(y_true, y_pred):
+    alpha = 0.3
+
+    #keras.losses.categorical_crossentropy()
+
+    return keras.losses.binary_crossentropy((1 - alpha) * y_true + 0.5 * alpha, y_pred)
+
+# keras_loss(smoothed_bce)
+#
+def lwlrap(y_true, y_pred):
+    return tf.py_func(metrics_colab.calculate_overall_lwlrap_custom, [y_true, y_pred], tf.float32)
+
+def val_lwlrap(y_true, y_pred):
+    return tf.py_func(metrics_colab.calculate_overall_lwlrap_custom, [y_true, y_pred], tf.float32)
+
+
+keras.utils.get_custom_objects()["lwlrap"] = lwlrap
+keras.utils.get_custom_objects()["val_lwlrap"] = val_lwlrap
 
 def macro_f1(y_true, y_pred):
     # y_pred = K.round(y_pred)

@@ -46,7 +46,7 @@ class CachedPredictionItem(PredictionItem):
         return self.original().rootItem()
 
 
-class DiskCache:
+class DiskCache(DataSet):
 
     def __init__(self,parent,items):
         self.parent=parent
