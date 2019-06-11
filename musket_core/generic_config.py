@@ -1175,7 +1175,8 @@ class Stage:
             filtered = list(filter(lambda x: x.stage == ec.stage and x.fold == ec.fold, allBest))
             if len(filtered) > 0:
                 prevInfo = filtered[0]
-                self.lr = 0.0000000001
+                self.lr = 0.001
+                #self.lr = 0.0000000001
 
         if self.loss or self.lr:
             self.cfg.compile(model, self.cfg.createOptimizer(self.lr), self.loss)
@@ -1194,7 +1195,7 @@ class Stage:
             if kepoch!=-1:
                 if os.path.exists(ec.weightsPath()):
                     #!!!
-                    model.load_weights(ec.weightsPath(), True)
+                    model.load_weights(ec.weightsPath(), False)
                 cb.append(CSVLogger(ec.metricsPath(),append=True))
             else:
                 cb.append(CSVLogger(ec.metricsPath()))
