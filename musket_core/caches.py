@@ -12,7 +12,7 @@ from musket_core import utils
 __lock__ = threading.Lock()
 storage = {}
 
-class Cache:
+class Cache(DataSet):
 
     def __init__(self,parent):
         self.parent=parent
@@ -46,7 +46,7 @@ class CachedPredictionItem(PredictionItem):
         return self.original().rootItem()
 
 
-class DiskCache:
+class DiskCache(DataSet):
 
     def __init__(self,parent,items):
         self.parent=parent
@@ -68,7 +68,7 @@ class DiskCache:
     def __len__(self):
         return len(self.parent)
 
-class DiskCache1:
+class DiskCache1(DataSet):
 
     def __init__(self,parent,items,xIsListOrTuple,yIsListOrTuple):
         self.parent=parent
