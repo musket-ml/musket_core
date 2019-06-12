@@ -12,6 +12,8 @@ class AnsembleModel:
         rm=res[0]
         for r in range(1,len(self.models)):
             rm=rm+res[r];
+        if isinstance(rm, list):
+            return [x/float(len(self.models)) for x in rm]    
         return rm/float(len(self.models));
 
 
@@ -29,6 +31,8 @@ class TestTimeAugModel:
         rm=res[0]
         for r in range(1,len(aug)):
             rm=rm+res[r]
+        if isinstance(rm, list):
+            return [x/float(len(aug)) for x in rm]    
         return rm/float(len(aug))
 
 

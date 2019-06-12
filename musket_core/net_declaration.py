@@ -34,6 +34,7 @@ def repeat(num):
 
 def split(layers,declarations,config,outputs,linputs,pName,withArgs):
     m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
+    
     return m
 
 
@@ -197,13 +198,19 @@ class Layers:
 
                 layerImpl =builtins[key](self,declarations,config,outputs,linputs,pName,withArgs)
                 if isinstance(layerImpl,list):
-
+                    isAll=True
+#                     if hasattr(layerImpl,"all"):
+#                         isAll=True
+                    self.output=[]
                     for i in layerImpl:
                         inputs = pName
                         name = i.name
                         self._add(config, inputs, i, name)
                         #pName = name
-                        self.output = name
+                        if isAll:
+                            self.output.append(name)
+                        else: self.output = name
+                        
                         if outputs is not None:
                             self.output = outputs
                     pName = [i.name for i in layerImpl]
