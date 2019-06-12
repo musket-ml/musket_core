@@ -20,8 +20,7 @@ class Prediction:
         self.name=name        
         self.srcDataset=srcDataset
 
-    def calculate(self)->DataSet:
-        os.chdir("C:/Users/Павел/git/project_kaggle_fashion")
+    def calculate(self)->DataSet:    
         ds = self.srcDataset
         nm = self.name
         if ds is None:
