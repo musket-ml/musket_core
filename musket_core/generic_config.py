@@ -263,6 +263,8 @@ def applyFunctionToDS(dsWithPredictions, func, batch_size:int):
             resultScalarArr.append(batch_value)
 
     if len(resultArr) > 0:
+        if len(resultArr)==1:
+            return resultArr[0] 
         return np.concatenate(resultArr)
     else:
         return np.array(resultScalarArr)
@@ -1182,7 +1184,8 @@ class Stage:
             self.cfg.compile(model, self.cfg.createOptimizer(self.lr), self.loss)
 
         if self.initial_weights is not None:
-            model.load_weights(self.initial_weights)
+            model.layers[-1].name="NNNwew"
+            model.load_weights(self.initial_weights,by_name=True)
         if 'callbacks' in self.dict:
             cb = configloader.parse("callbacks", self.dict['callbacks'])
         if 'extra_callbacks' in self.dict:

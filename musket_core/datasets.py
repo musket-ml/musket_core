@@ -740,10 +740,7 @@ class SubDataSet(DataSet):
             raise ValueError("Dataset is expected")
         self.ds=orig
         self.parent=orig
-        if hasattr(self.parent,"get_target"):
-            def trg(index):
-                return self.parent.get_target(self.indexes[index])
-            self.get_target=trg
+        
         self.indexes=indexes
 
     def isPositive(self, item):
@@ -764,6 +761,8 @@ class SubDataSet(DataSet):
         return len(self.indexes)
 
     def get_target(self, item):
+        if hasattr(self.parent,"get_target"):
+            return self.parent.get_target(self.indexes[item])
         return self.parent[self.indexes[item]].y
 
 
