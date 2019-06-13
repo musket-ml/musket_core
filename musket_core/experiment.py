@@ -21,7 +21,11 @@ class Experiment:
     def cleanup(self):
         if os.path.exists(self.getPredictionsDirPath()):
             for pr in os.listdir(self.getPredictionsDirPath()):
-                os.remove(f"{self.getPredictionsDirPath()}/{pr}")
+                fPath = f"{self.getPredictionsDirPath()}/{pr}"
+                if os.path.isdir(fPath):
+                    for f in os.listdir(fPath):
+                        os.remove(f"{fPath}/{f}")
+                os.remove(fPath)
         if os.path.exists(self.getSummaryYamlPath()):
             os.remove(self.getSummaryYamlPath())
 
