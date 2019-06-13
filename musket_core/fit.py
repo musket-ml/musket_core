@@ -43,7 +43,7 @@ def main():
         for x in experiments:
             if x.name() in mmm:
                 res.append(x)
-        experiments=res
+        experiments = sorted(res, key = lambda x: mmm.index(x.name()))
     else:
         experiments=[x for x in experiments if not x.isCompleted()]
 

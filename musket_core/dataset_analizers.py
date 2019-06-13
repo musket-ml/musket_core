@@ -237,6 +237,9 @@ class MultiClassMetricsAnalizer:
         self.gt=[]
     
     def __call__(self, index, p: datasets.PredictionItem,prediction:datasets.PredictionItem,**args):   
+        x=np.where(prediction.prediction==prediction.prediction.max())
+        prediction.prediction=np.zeros(prediction.prediction.shape)
+        prediction.prediction[x[0]]=1
         self.predictions.append(prediction.prediction)     
         self.ground_truth.append(prediction.y)
         self.ids.append(prediction.id)

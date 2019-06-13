@@ -40,9 +40,19 @@ types:
       dataset_augmenter?:
         type: AugmenterConfig
         (meta.custom): true
-      
+      steps_per_epoch: 
+        type: integer
+        (meta.custom): true
+      backbone: 
+        type: string
+        enum: [ resnet101, resnet50 ]
+        (meta.custom): true  
+        
+      validation_steps: 
+        type: integer
+        (meta.custom): true  
       weights?:
-        enum: [imagenet, imagenet11k-places365ch,imagenet11k]
+        enum: [imagenet, coco]
       classes:
         type: integer
         minimum: 1

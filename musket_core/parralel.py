@@ -101,7 +101,8 @@ class Worker(threading.Thread):
                                      self.respond.put(exp)
                 else:
                     try:
-                        exp.run()
+                        with self.create_session(gpus).as_default():
+                            exp.run()
                     finally:
                         K.clear_session()
                         self.respond.put(exp)

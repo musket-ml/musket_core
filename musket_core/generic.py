@@ -27,7 +27,7 @@ class GenericPipeline(generic.GenericTaskConfig):
     def __init__(self,**atrs):
         super().__init__(**atrs)
         self.dataset_clazz = datasets.DefaultKFoldedDataSet
-
+        self._multiOutput=None
         pass
 
     def createNet(self):
@@ -37,7 +37,7 @@ class GenericPipeline(generic.GenericTaskConfig):
             contributions=utils.load(self.path+".contribution")
         else:
             contributions=None    
-        if isinstance(input,list):
+        if isinstance(inp,list):
             
             inputs=[keras.Input(x) for x in inp]
             if contributions is not None:
@@ -50,9 +50,44 @@ class GenericPipeline(generic.GenericTaskConfig):
         m=net.create_model_from_config(self.declarations,inputs,self.architecture,self.imports)
         return m
 
+    def load_writeable_dataset(self, ds, path):
+        if self.isMultiOutput():
+            rr = utils.load(path)
+            resName = (ds.name if hasattr(ds, "name") else "") + "_predictions"
+            result = datasets.BufferedWriteableDS(ds, resName, path, rr)
+        else:
+            rr = np.load(path)
+            resName = (ds.name if hasattr(ds, "name") else "") + "_predictions"
+            result = datasets.BufferedWriteableDS(ds, resName, path, rr)
+        return result
+
+
+
+    def create_writeable_dataset(self, dataset:datasets.DataSet, dsPath:str)->datasets.WriteableDataSet:
+        inp,output=utils.load_yaml(self.path + ".shapes")
+        resName = (dataset.name if hasattr(dataset, "name") else "") + "_predictions"
+        result = datasets.BufferedWriteableDS(dataset, resName, dsPath,pickle=self.isMultiOutput())
+        return result
+
+    def isMultiOutput(self):
+        if self._multiOutput is not None:
+            return self._multiOutput
+        inp,output=utils.load_yaml(self.path + ".shapes")
+        self._multiOutput= len(output)>1
+        return self._multiOutput
+
     def predict_on_batch(self, mdl, ttflips, batch):
 
         res =  mdl.predict(batch.images)
+        if self.isMultiOutput():
+            result=[]
+            for i in range(len(res[0])):
+                elementOutputs=[]
+                for x in res:
+                    elementOutputs.append(x[i])
+                result.append(elementOutputs)
+            return result
+
         return res
 
     def evaluateAll(self,ds, fold:int,stage=-1,negatives="real",ttflips=None,batchSize=32):
@@ -90,7 +125,7 @@ class GenericPipeline(generic.GenericTaskConfig):
                 lastFullValLabels = np.append(lastFullValLabels, v.ground_truth, axis=0)
         return lastFullValPred,lastFullValLabels
 
-    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
+    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False, cacheModel=False):
         mdl = self.load_model(fold, stage)
         if self.testTimeAugmentation is not None:
             mdl=qm.TestTimeAugModel(mdl,net.create_test_time_aug(self.testTimeAugmentation,self.imports))
@@ -102,7 +137,7 @@ class GenericPipeline(generic.GenericTaskConfig):
             yield original_batch
 
     def predict_in_dataset(self, dataset, fold, stage, cb, data, limit=-1, batch_size=32, ttflips=False):
-        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
+        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediction from  " + str(dataset)) as pbar:
             for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
                 b=v
                 for i in range(len(b.data)):
@@ -115,7 +150,7 @@ class GenericPipeline(generic.GenericTaskConfig):
     def predict_all_to_array_with_ids(self, dataset, fold, stage, limit=-1, batch_size=32, ttflips=False):
         res=[]
         ids=[]
-        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
+        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediction from  " + str(dataset)) as pbar:
             for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
                 b=v
                 for i in range(len(b.data)):
