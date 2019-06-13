@@ -256,14 +256,11 @@ def applyFunctionToDS(dsWithPredictions, func, batch_size:int):
         items = dsWithPredictions[ind:end]
         y_true = np.array([i.y for i in items])
         y_proba = np.array([i.prediction for i in items])
-<<<<<<< HEAD
-=======
         #y_true = y_true.reshape(y_proba.shape)
         if y_true.dtype == np.bool:
             y_true = y_true.astype(np.float32)
         if y_proba.dtype == np.bool:
             y_proba = y_proba.astype(np.float32)
->>>>>>> origin/master
         batch_value = func(y_true, y_proba)
         if isinstance(batch_value, np.ndarray):
             resultArr.append(batch_value.mean())
@@ -271,11 +268,8 @@ def applyFunctionToDS(dsWithPredictions, func, batch_size:int):
             resultScalarArr.append(batch_value)
 
     if len(resultArr) > 0:
-<<<<<<< HEAD
         if len(resultArr)==1:
             return resultArr[0] 
-=======
->>>>>>> origin/master
         return np.concatenate(resultArr)
     else:
         return np.array(resultScalarArr)
@@ -370,10 +364,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         self.crops = None
         self.flipPred = True
         self.copyWeights = False
-<<<<<<< HEAD
-=======
         self.maxEpochSize = None
->>>>>>> origin/master
         self.dropout = 0
         self.dataset_clazz = datasets.DefaultKFoldedDataSet
         for v in atrs:
@@ -459,11 +450,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
              folds=utils.load_yaml(self.path+".folds_split")
              split_loaded=True
              ds.folds=folds
-<<<<<<< HEAD
-        kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count,stratified=self.stratified,groupFunc=self.groupFunc,validationSplit=self.validationSplit)
-=======
         kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count,stratified=self.stratified,groupFunc=self.groupFunc,validationSplit=self.validationSplit,maxEpochSize=self.maxEpochSize)
->>>>>>> origin/master
         if not split_loaded:
             kf.save(self.path+".folds_split")
         if self.noTrain:
@@ -478,11 +465,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             pass
         return kf
 
-<<<<<<< HEAD
-    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
-=======
     def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False, cacheModel=False):
->>>>>>> origin/master
         raise ValueError("Not implemented")
 
     def predict_all_to_array(self, dataset, fold=None, stage=None, limit=-1, batch_size=None, ttflips=False):
@@ -495,11 +478,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         if isinstance(dataset,str):
             dataset=self.get_dataset(dataset)
         res=[]
-<<<<<<< HEAD
-        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
-=======
         with tqdm.tqdm(total=len(dataset), unit="files", desc="prediction from  " + str(dataset)) as pbar:
->>>>>>> origin/master
             for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
                 b=v
                 
@@ -521,11 +500,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         result = BufferedWriteableDS(dataset, resName, dsPath)
         return result
 
-<<<<<<< HEAD
-    def predict_all_to_dataset(self, dataset, fold=None, stage=None, limit=-1, batch_size=None, ttflips=False, dsPath = None)->DataSet:
-=======
     def predict_all_to_dataset(self, dataset, fold=None, stage=None, limit=-1, batch_size=None, ttflips=False, dsPath = None, cacheModel=False)->DataSet:
->>>>>>> origin/master
 
         result = self.create_writeable_dataset(dataset, dsPath)
 
@@ -538,17 +513,10 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         if isinstance(dataset,str):
             dataset=self.get_dataset(dataset)
 
-<<<<<<< HEAD
-        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
-            for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
-                b=v
-                for i in range(len(b.data)):
-=======
         with tqdm.tqdm(total=len(dataset), unit="files", desc="prediction from  " + str(dataset)) as pbar:
             for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips, cacheModel=cacheModel):
                 b=v
                 for i in range(len(b.results)):
->>>>>>> origin/master
                     result.append(b.results[i])
                 pbar.update(batch_size)
 
@@ -891,22 +859,14 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         if self._projectDir is not None:
             return self._projectDir
         v=self.path
-<<<<<<< HEAD
-        while v is not None:
-=======
         while v is not None and len(v)>0:
->>>>>>> origin/master
             v=os.path.dirname(v)
             if os.path.exists(os.path.join(v,"modules")):
                 self._projectDir=v
                 return v
-<<<<<<< HEAD
-        self._projectDir=os.path.pardir(self.path)
-=======
         self._projectDir=os.path.dirname(self.path)
         self._projectDir=os.path.dirname(self._projectDir)
         print(self._projectDir)
->>>>>>> origin/master
         return self._projectDir
 
     def parse_dataset(self,datasetName=None):
@@ -939,10 +899,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         cleaned.pop("dataset", None)
         cleaned.pop("run_tasks", None)
         cleaned.pop("import_tasks", None)
-<<<<<<< HEAD
-=======
         cleaned.pop("maxEpochSize", None)
->>>>>>> origin/master
 
 class TaskConfigInfo:
 
@@ -958,10 +915,7 @@ class GenericImageTaskConfig(GenericTaskConfig):
 
     def __init__(self,**atrs):
         super().__init__(**atrs)
-<<<<<<< HEAD
-=======
         self.mdl = None
->>>>>>> origin/master
 
     def _update_from_config(self, v, val):
         if v == 'augmentation' and val is not None:
@@ -993,18 +947,11 @@ class GenericImageTaskConfig(GenericTaskConfig):
     def predict_on_directory(self, path, fold=0, stage=0, limit=-1, batch_size=None, ttflips=False):
         return self.predict_on_dataset(datasets.DirectoryDataSet(path), fold, stage, limit, batch_size, ttflips)
 
-<<<<<<< HEAD
-    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=None, ttflips=False):
-=======
     def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=None, ttflips=False, cacheModel=False):
->>>>>>> origin/master
         if self.testTimeAugmentation is not None:
             ttflips=self.testTimeAugmentation
         if batch_size is None:
             batch_size=self.inference_batch
-<<<<<<< HEAD
-        mdl = self.load_model(fold, stage)
-=======
 
         if cacheModel:
             if self.mdl is None:
@@ -1013,7 +960,6 @@ class GenericImageTaskConfig(GenericTaskConfig):
         else:
             mdl = self.load_model(fold, stage)
 
->>>>>>> origin/master
         if self.crops is not None:
             mdl=BatchCrop(self.crops,mdl)
         ta = self.transformAugmentor()
@@ -1255,11 +1201,7 @@ class Stage:
             self.cfg.compile(model, self.cfg.createOptimizer(self.lr), self.loss)
 
         if self.initial_weights is not None:
-<<<<<<< HEAD
-            model.layers[-1].name="NNNwew"
-=======
             model.layers[-1].name="SomeNewName"
->>>>>>> origin/master
             model.load_weights(self.initial_weights,by_name=True)
         if 'callbacks' in self.dict:
             cb = configloader.parse("callbacks", self.dict['callbacks'])
@@ -1308,13 +1250,6 @@ class Stage:
             self.cfg.compile(model, self.cfg.createOptimizer(lr), loss)
             print("Restoring weights...")
             # weights are destroyed by some reason
-<<<<<<< HEAD
-            bestWeightsLoaded = self.loadBestWeightsFromPrevStageIfExists(ec, model.layers[-2])
-            if not bestWeightsLoaded:
-                model.layers[-2].load_weights(ec.weightsPath()+".tmp",False)
-
-            amcp = alt.AltModelCheckpoint(ec.weightsPath(), model.layers[-2], save_best_only=True,
-=======
             mda=None
             for q in model.layers:
                 if isinstance(q,keras.Model):
@@ -1324,7 +1259,6 @@ class Stage:
                 mda.load_weights(ec.weightsPath()+".tmp",False)
 
             amcp = alt.AltModelCheckpoint(ec.weightsPath(), mda, save_best_only=True,
->>>>>>> origin/master
                                                 monitor=self.cfg.primary_metric, mode=md, verbose=1)
             if prevInfo != None:
                 amcp.best = prevInfo.best
