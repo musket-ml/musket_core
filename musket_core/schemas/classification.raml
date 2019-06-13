@@ -28,6 +28,10 @@ types:
     type: HasLoss
     discriminator: architecture
     properties:
+      imports:
+        (meta.custom): true
+        type: string[]
+
       inference_batch:
          (meta.custom): true
          type: number
