@@ -177,6 +177,8 @@ class GenericPipeline(generic.GenericTaskConfig):
         predItem = dataset[0]
         if hasattr(dataset, "contribution"):
             utils.save(self.path+ ".contribution",getattr(dataset, "contribution"))
+        elif hasattr(dataset, "contributions"):
+            utils.save(self.path+ ".contribution",getattr(dataset, "contributions"))
         utils.save_yaml(self.path + ".shapes", (_shape(predItem.x), _shape(predItem.y)))
         return dataset
 
