@@ -37,6 +37,11 @@ class AbstractPreprocessedDataSet(DataSet):
         if self._parent_supports_target and not self.expectsItem:
             return self.parent.get_target(item)
         return self[item].y
+    
+    def root(self):
+        if hasattr(self.parent,"root"):
+            return self.parent.root()
+        return self.parent
 
 def _sorted_args(args):
     rs={}

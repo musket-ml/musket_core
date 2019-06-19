@@ -345,7 +345,11 @@ def generic_batch_generator(ds,batchSize,maxItems=-1):
         indexes=list(range(min(maxItems,len(ds))))
     dg=GenericDataSetSequence(ds,batchSize,indexes,False)
     for i in range(len(dg)):
-        X,y=dg[i]
+        zz=dg[i]
+        if len(zz)==3:
+            X,y,s=zz
+        else:
+            X,y=zz
         yield imgaug.Batch(images=X,data=y)
     return
 
@@ -384,6 +388,11 @@ class GenericDataSetSequence(keras.utils.Sequence):
         l = len(self.indexes)
         X=[]
         y=[]
+        hasSample=False
+        if hasattr(self.ds.root(),"sample_weight"):
+            hasSample=True
+            S=[]
+            
         for i in range(idx * self.batchSize,(idx + 1) * self.batchSize):
             if i>=l:
                 i=i%l
@@ -392,6 +401,10 @@ class GenericDataSetSequence(keras.utils.Sequence):
             r=self.ds.get_train_item(self.indexes[i]) if self.isTrain else self.ds[self.indexes[i]]
             X.append(r.x)
             y.append(r.y)
+            if hasSample:
+                S.append(self.ds.root().sample_weight(self.indexes[i]))
+        if hasSample:        
+            return np.array(X),np.array(y),np.array(S)
         return np.array(X),np.array(y)
 
     def on_epoch_end(self):
@@ -406,7 +419,10 @@ class GenericDataSetSequence(keras.utils.Sequence):
 
         batch_x = [[] for i in range(xd)]
         batch_y = [[] for i in range(yd)]
-
+        hasSample=False
+        if hasattr(self.ds.root(),"sample_weight"):
+            hasSample=True
+            S=[]
         for i in range(idx * self.batchSize,(idx + 1) * self.batchSize):
             if i>=l:
                 i=i%l
@@ -423,8 +439,16 @@ class GenericDataSetSequence(keras.utils.Sequence):
                 if not isinstance(r_y, list) and not isinstance(r_y, tuple):
                     r_y = [ r_y ]
                 batch_y[j].append(r_y[j])
+            if hasSample:
+                S.append(self.ds.root().sample_weight(self.indexes[i]))    
         batch_x=[np.array(x) for x in batch_x]
         batch_y = np.array(batch_y[0]) if yd == 1 else [np.array(y) for y in batch_y]
+        if hasSample:
+            sd=[]
+            for i in range(yd):
+                sd.append(np.array(S))        
+            return batch_x,batch_y,sd
+        
         return batch_x,batch_y
 
 class SimplePNGMaskDataSet:
@@ -762,6 +786,11 @@ class SubDataSet(DataSet):
 
     def get_train_item(self,item:int):
         return self.ds.get_train_item(self.indexes[item])
+    
+    def root(self):
+        if hasattr(self.ds,"root"):
+            return self.ds.root()
+        return self.ds
 
     def __len__(self):
         return len(self.indexes)

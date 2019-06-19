@@ -381,7 +381,12 @@ def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
                 shapeX = np.concatenate(([l], i0x.shape))
             else:
                 shapeX = list(map(lambda x: np.concatenate(([l], x.shape)), i0x))
-            shapeY = np.concatenate(([l], i0y.shape))
+            
+            yIsList = isinstance(i0y,list)    
+            if not yIsList:
+                shapeY = np.concatenate(([l], i0y.shape))
+            else:
+                shapeY = list(map(lambda x: np.concatenate(([l], x.shape)), i0y))    
             data = None
             ext = "dscache"
             if os.path.exists(name):
