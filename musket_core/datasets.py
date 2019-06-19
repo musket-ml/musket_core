@@ -458,13 +458,13 @@ class SimplePNGMaskDataSet:
 
         if list is None:
             ldir = os.listdir(path)
-    
+
             if ".DS_Store" in ldir:
                 ldir.remove(".DS_Store")
-    
+
             self.ids = [x[0:x.index('.')] for x in ldir]
         else:
-            self.ids=list    
+            self.ids=list
 
         self.exts = []
 
@@ -552,7 +552,7 @@ LOADER_THREADED=True
 
 
 class DefaultKFoldedDataSet:
-    def __init__(self,ds,indexes=None,aug=None,transforms=None,folds=5,rs=33,batchSize=16,stratified=True,groupFunc=None,validationSplit=0.2):
+    def __init__(self,ds,indexes=None,aug=None,transforms=None,folds=5,rs=33,batchSize=16,stratified=True,groupFunc=None,validationSplit=0.2,maxEpochSize=None):
         self.ds=ds;
         if aug==None:
             aug=[]
@@ -563,6 +563,7 @@ class DefaultKFoldedDataSet:
             indexes=range(len(ds))
         self.transforms=transforms
         self.batchSize=batchSize
+        self.maxEpochSize = maxEpochSize
         self.positive={}
         if hasattr(ds,"folds"):
             self.folds=getattr(ds,"folds")
@@ -665,14 +666,17 @@ class DefaultKFoldedDataSet:
             v_steps = len(test_indexes)//(round(subsample*self.batchSize))
 
             if v_steps < 1: v_steps = 1
-            
-            model.fit_generator(train_g(), len(train_indexes)//(round(subsample*self.batchSize)),
-                             epochs=numEpochs,
-                             validation_data=test_g(),
-                             callbacks=callbacks,
-                             verbose=verbose,
-                             validation_steps=v_steps,
-                             initial_epoch=initial_epoch)
+
+            iterations = len(train_indexes) // (round(subsample * self.batchSize))
+            if self.maxEpochSize is not None:
+                iterations = min(iterations, self.maxEpochSize)
+            model.fit_generator(train_g(), iterations,
+                                epochs=numEpochs,
+                                validation_data=test_g(),
+                                callbacks=callbacks,
+                                verbose=verbose,
+                                validation_steps=v_steps,
+                                initial_epoch=initial_epoch)
         finally:
             tl.terminate()
             tg.terminate()
@@ -767,10 +771,7 @@ class SubDataSet(DataSet):
             raise ValueError("Dataset is expected")
         self.ds=orig
         self.parent=orig
-        if hasattr(self.parent,"get_target"):
-            def trg(index):
-                return self.parent.get_target(self.indexes[index])
-            self.get_target=trg
+        
         self.indexes=indexes
 
     def isPositive(self, item):
@@ -796,6 +797,8 @@ class SubDataSet(DataSet):
         return len(self.indexes)
 
     def get_target(self, item):
+        if hasattr(self.parent,"get_target"):
+            return self.parent.get_target(self.indexes[item])
         return self.parent[self.indexes[item]].y
 
 
@@ -875,10 +878,11 @@ class BufferedWriteableDS(WriteableDataSet):
         self.predictions.append(item)
 
     def commit(self):
-        if self.pickle:
-            utils.save(self.dsPath, self.predictions)
-        else: 
-            np.save(self.dsPath,self.predictions)
+        if self.dsPath is not None:
+            if self.pickle:
+                utils.save(self.dsPath, self.predictions)
+            else:
+                np.save(self.dsPath,self.predictions)
 
     def __len__(self):
         return len(self.parent)

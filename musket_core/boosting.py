@@ -1,6 +1,8 @@
+import numpy as np
+
 import musket_core.generic_config as generic
 import musket_core.datasets as datasets
-
+import tqdm
 
 class BoostingPipeline(generic.GenericTaskConfig):
 
@@ -53,7 +55,7 @@ class BoostingPipeline(generic.GenericTaskConfig):
                 lastFullValLabels = np.append(lastFullValLabels, v.ground_truth, axis=0)
         return lastFullValPred,lastFullValLabels
 
-    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
+    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False, cacheModel=False):
         mdl = self.load_model(fold, stage)
         if self.testTimeAugmentation is not None:
             mdl=qm.TestTimeAugModel(mdl,net.create_test_time_aug(self.testTimeAugmentation,self.imports))
@@ -65,7 +67,7 @@ class BoostingPipeline(generic.GenericTaskConfig):
             yield original_batch
 
     def predict_in_dataset(self, dataset, fold, stage, cb, data, limit=-1, batch_size=32, ttflips=False):
-        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
+        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediction from  " + str(dataset)) as pbar:
             for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
                 b=v
                 for i in range(len(b.data)):
@@ -78,7 +80,7 @@ class BoostingPipeline(generic.GenericTaskConfig):
     def predict_all_to_array_with_ids(self, dataset, fold, stage, limit=-1, batch_size=32, ttflips=False):
         res=[]
         ids=[]
-        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
+        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediction from  " + str(dataset)) as pbar:
             for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
                 b=v
                 for i in range(len(b.data)):

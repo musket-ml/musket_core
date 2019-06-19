@@ -1,4 +1,3 @@
-
 import os
 import numpy as np
 import yaml
@@ -257,6 +256,11 @@ def applyFunctionToDS(dsWithPredictions, func, batch_size:int):
         items = dsWithPredictions[ind:end]
         y_true = np.array([i.y for i in items])
         y_proba = np.array([i.prediction for i in items])
+        #y_true = y_true.reshape(y_proba.shape)
+        if y_true.dtype == np.bool:
+            y_true = y_true.astype(np.float32)
+        if y_proba.dtype == np.bool:
+            y_proba = y_proba.astype(np.float32)
         batch_value = func(y_true, y_proba)
         if isinstance(batch_value, np.ndarray):
             resultArr.append(batch_value.mean())
@@ -264,6 +268,8 @@ def applyFunctionToDS(dsWithPredictions, func, batch_size:int):
             resultScalarArr.append(batch_value)
 
     if len(resultArr) > 0:
+        if len(resultArr)==1:
+            return resultArr[0] 
         return np.concatenate(resultArr)
     else:
         return np.array(resultScalarArr)
@@ -358,6 +364,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         self.crops = None
         self.flipPred = True
         self.copyWeights = False
+        self.maxEpochSize = None
         self.dropout = 0
         self.dataset_clazz = datasets.DefaultKFoldedDataSet
         for v in atrs:
@@ -443,7 +450,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
              folds=utils.load_yaml(self.path+".folds_split")
              split_loaded=True
              ds.folds=folds
-        kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count,stratified=self.stratified,groupFunc=self.groupFunc,validationSplit=self.validationSplit)
+        kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count,stratified=self.stratified,groupFunc=self.groupFunc,validationSplit=self.validationSplit,maxEpochSize=self.maxEpochSize)
         if not split_loaded:
             kf.save(self.path+".folds_split")
         if self.noTrain:
@@ -458,7 +465,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             pass
         return kf
 
-    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
+    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False, cacheModel=False):
         raise ValueError("Not implemented")
 
     def predict_all_to_array(self, dataset, fold=None, stage=None, limit=-1, batch_size=None, ttflips=False):
@@ -471,7 +478,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         if isinstance(dataset,str):
             dataset=self.get_dataset(dataset)
         res=[]
-        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
+        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediction from  " + str(dataset)) as pbar:
             for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
                 b=v
                 
@@ -483,7 +490,6 @@ class GenericTaskConfig(model.IGenericTaskConfig):
 
 
     def load_writeable_dataset(self, ds, path)->DataSet:
-        
         rr = np.load(path)
         resName = (ds.name if hasattr(ds, "name") else "") + "_predictions"
         result = BufferedWriteableDS(ds, resName, path, rr)
@@ -494,7 +500,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         result = BufferedWriteableDS(dataset, resName, dsPath)
         return result
 
-    def predict_all_to_dataset(self, dataset, fold=None, stage=None, limit=-1, batch_size=None, ttflips=False, dsPath = None)->DataSet:
+    def predict_all_to_dataset(self, dataset, fold=None, stage=None, limit=-1, batch_size=None, ttflips=False, dsPath = None, cacheModel=False)->DataSet:
 
         result = self.create_writeable_dataset(dataset, dsPath)
 
@@ -507,8 +513,8 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         if isinstance(dataset,str):
             dataset=self.get_dataset(dataset)
 
-        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
-            for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
+        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediction from  " + str(dataset)) as pbar:
+            for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips, cacheModel=cacheModel):
                 b=v
                 for i in range(len(b.results)):
                     result.append(b.results[i])
@@ -655,7 +661,6 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         ec = ExecutionConfig(fold=fold, stage=stage, subsample=1.0, dr=self.directory())
         model = self.createAndCompile()
         model.load_weights(ec.weightsPath(),False)
-        #model.load_weights("D:/best-0.0.weights")
         return model
 
     def info(self,metric=None):
@@ -894,6 +899,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         cleaned.pop("dataset", None)
         cleaned.pop("run_tasks", None)
         cleaned.pop("import_tasks", None)
+        cleaned.pop("maxEpochSize", None)
 
 class TaskConfigInfo:
 
@@ -909,6 +915,7 @@ class GenericImageTaskConfig(GenericTaskConfig):
 
     def __init__(self,**atrs):
         super().__init__(**atrs)
+        self.mdl = None
 
     def _update_from_config(self, v, val):
         if v == 'augmentation' and val is not None:
@@ -940,12 +947,19 @@ class GenericImageTaskConfig(GenericTaskConfig):
     def predict_on_directory(self, path, fold=0, stage=0, limit=-1, batch_size=None, ttflips=False):
         return self.predict_on_dataset(datasets.DirectoryDataSet(path), fold, stage, limit, batch_size, ttflips)
 
-    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=None, ttflips=False):
+    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=None, ttflips=False, cacheModel=False):
         if self.testTimeAugmentation is not None:
             ttflips=self.testTimeAugmentation
         if batch_size is None:
             batch_size=self.inference_batch
-        mdl = self.load_model(fold, stage)
+
+        if cacheModel:
+            if self.mdl is None:
+                self.mdl = self.load_model(fold, stage)
+            mdl = self.mdl
+        else:
+            mdl = self.load_model(fold, stage)
+
         if self.crops is not None:
             mdl=BatchCrop(self.crops,mdl)
         ta = self.transformAugmentor()
@@ -1185,9 +1199,9 @@ class Stage:
 
         if self.loss or self.lr:
             self.cfg.compile(model, self.cfg.createOptimizer(self.lr), self.loss)
-            
+
         if self.initial_weights is not None:
-            model.layers[-1].name="SomeNweName"
+            model.layers[-1].name="SomeNewName"
             model.load_weights(self.initial_weights,by_name=True)
         if 'callbacks' in self.dict:
             cb = configloader.parse("callbacks", self.dict['callbacks'])

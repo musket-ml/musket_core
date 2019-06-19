@@ -15,4 +15,6 @@ def main():
         results = obj.perform(projects.Workspace(), tools.ProgressMonitor())
         with open(out,"w") as f:
             f.write(yaml.dump(results))
-main()
+
+if __name__ == '__main__':            
+    main()
