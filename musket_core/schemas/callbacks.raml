@@ -62,3 +62,10 @@ types:
       step_size:
         type: integer
         minimum: 0
+  WarmupLR:
+    type: Callback
+    properties:
+      base: number
+      max: number
+      relSize: number
+      then?: Callback
