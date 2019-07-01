@@ -3,6 +3,7 @@ from keras import backend as K
 import math
 
 lambdas = {
+    "const": "custom handling",
     "linear":    lambda x: x,
     "sin"   :    lambda x: math.sin(2 * x / math.pi),
     "sin+"  :    lambda x: math.sin(2 * x / math.pi),
@@ -43,7 +44,10 @@ class LRVariator(CallbackModule):
             if self.core is None:
                 if self.fromVal is None:
                     self.fromVal = K.get_value(self.model.optimizer.lr)
-                if self.style in lambdas:
+
+                if self.style == "const":
+                    self.core = lambda x: self.fromVal
+                elif self.style in lambdas:
                     self.core = lambdas[self.style]
                 elif self.style == 1:
                     self.core = lambdas["linear"]
