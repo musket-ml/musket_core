@@ -62,3 +62,14 @@ types:
       step_size:
         type: integer
         minimum: 0
+  CallbackModule:
+    type: Callback
+    properties:
+      relSize?: number
+      absSize?: number
+  LRVariator:
+    type: CallbackModule
+    properties:
+      fromVal?: number
+      toVal: number
+      style?: string | number
