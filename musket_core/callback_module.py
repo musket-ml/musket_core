@@ -3,6 +3,35 @@ import configloader
 
 
 class CallbackModule(Callback):
+    """
+        # Example
+            ```yaml
+                  LRVariator:
+                    absSize: 100
+                    toVal: 0.002
+                    style: 2
+                    then:
+                      LRVariator:
+                        relSize: 0.001
+                        toVal: 0.001
+                        style: 0.5
+                        then:
+                          ReduceLROnPlateau:
+                            patience: 8
+                            factor: 0.5
+                            monitor: val_binary_accuracy
+                            mode: auto
+                            cooldown: 5
+                            verbose: 1
+            ```
+
+        # Arguments
+            relSize: activity time expressed in epochs, mutually exclusive with 'absSize'
+            absSize: activity time expressed in batches, mutually exclusive with 'relSize'
+            periodEpochs: cycle length expressed in epochs, omited value means no cycle, mutually exclusive with 'periodSteps'
+            periodSteps: cycle length expressed in epochs, omited value means no cycle,  mutually exclusive with 'periodEpochs'
+            then: callback to be applied after activity time elapses. The callback inherits 'periodEpochs' and 'periodSteps' values
+        """
 
     def on_train_begin_action(self, logs = None):
         pass

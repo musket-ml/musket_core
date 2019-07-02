@@ -14,6 +14,43 @@ lambdas = {
 }
 
 class LRVariator(CallbackModule):
+    """ This callback allows learning rate variations within or across epochs.
+        # Example
+            ```yaml
+                  LRVariator:
+                    absSize: 100
+                    toVal: 0.002
+                    style: 2
+                    then:
+                      LRVariator:
+                        relSize: 0.001
+                        toVal: 0.001
+                        style: 0.5
+                        then:
+                          ReduceLROnPlateau:
+                            patience: 8
+                            factor: 0.5
+                            monitor: val_binary_accuracy
+                            mode: auto
+                            cooldown: 5
+                            verbose: 1
+            ```
+
+        # Arguments
+            fromVal: start value. If the param is omited, its value is taken from the keras model
+            toVal: end value
+            style: shape of the variation graphic. One of
+              - linear
+              - const
+              - cos+ ascending cosine segment: -1 * cos(2x/pi) + 1 for x in [0;1]
+              - cos- descending cosine segment: cos(2x/pi) for x in [0;1]
+              - cos  same as 'cos-'
+              - sin+ ascending sine segment: sin(2x/pi) x in [0;1]
+              - sin- descending sine segment: -1 * sin(2x/pi) + 1 for x in [0;1]
+              - sin  same as 'sin+'
+              - any positive float or integer value 'a'. x^a for x in [0;1]
+            args: see CallbackModule for details
+        """
 
     def __init__(self, fromVal=None, toVal=0.006, style="linear", **args):
         super(LRVariator, self).__init__(**args)
