@@ -1,0 +1,126 @@
+#%RAML 1.0 Library
+uses:
+  meta: meta.raml
+  aug: augmenters.raml
+  cb: callbacks.raml
+(meta.module):  musket_core.gradientboosting
+types:
+  HasLoss:
+    type: object
+    (meta.abstract): true
+    properties:
+      loss?:
+        (meta.custom): true
+        type: string
+        (meta.suggestions):
+          - binary_crossentropy
+          - categorical_crossentropy
+          - dice_loss
+          - jaccard_loss
+          - focal_loss #This one is very unstable
+          - lovasz_loss
+  AugmenterConfig:
+      type: object
+      properties?:
+        name: string
+  GradientBoosting:
+    (meta.entry): true
+    type: HasLoss
+    discriminator: architecture
+    properties:
+      testSplit?: number
+      testSplitSeed?: number
+      inference_batch?:
+         type: integer
+         default: 32
+      stratified?: boolean
+      folds_count?:
+        type: integer
+        (meta.custom): true
+      copyWeights?:
+        type: boolean
+        (meta.custom): true
+      random_state?:
+        type: integer
+        (meta.custom): true
+      extra_train_data?:
+        type: string
+        (meta.custom): true
+      dropout?:
+        type: number
+        (meta.custom): true
+      dataset_augmenter?:
+        type: AugmenterConfig
+        (meta.custom): true
+      architecture?:
+        (meta.custom): true
+        type: any
+        #enum: []
+      classes:
+        type: integer
+        minimum: 1
+      activation:
+        (meta.custom): true
+        enum: [ sigmoid, softmax ]
+      augmentation:
+        type: aug.Augmenter[]
+        (meta.custom): true
+      transforms:
+        type: aug.Augmenter[]
+        (meta.custom): true
+      ###Optimizer configuration
+      optimizer?:
+        type: string
+        enum: [SGD,Adam,RMSprop,Nadam]
+        (meta.custom): true
+      lr?:
+        type: number
+        (meta.custom): true
+      clipnorm?:
+        type: number
+        (meta.custom): true
+      clipvalue?:
+        type: number
+        (meta.custom): true
+      #####################################
+      loss?: #Remove it when we have better python loader
+        (meta.custom): true
+      batch?:
+        type: integer
+        (meta.custom): true
+        minimum: 1
+        default: 16
+      metrics:
+        type: string[]
+        (meta.custom): true
+        (meta.suggestions):
+          - binary_accuracy
+          - dice
+          - iou
+          - iot #at 0.5 treshold
+      primary_metric:
+        type: string
+        (meta.custom): true
+      primary_metric_mode?:
+        type: string
+        enum: [auto,min,max]
+        (meta.custom): true
+        default: auto
+      callbacks?:
+        type: cb.Callback[]
+        (meta.custom): true
+      stages  :
+        type: StageConfig[]
+        (meta.custom): true
+      freeze_encoder?: boolean
+  St:
+    type: string
+    enum: [ none  , real ]
+  StageConfig:
+    type: HasLoss
+    properties:
+      initial_weights?: string
+      epochs?: number
+      lr?: number
+      callbacks?: cb.Callback[]
+      extra_callbacks?: cb.Callback[]

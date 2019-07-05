@@ -417,7 +417,6 @@ class Declaration:
 
 
 class Declarations:
-
     def __init__(self,declarations_yaml):
         self.declarationMap:{str:Declaration}={ x:Declaration(declarations_yaml[x]) for x in declarations_yaml}
         pass
@@ -453,6 +452,10 @@ class Declarations:
 
     def model(self,name,inputs):
         m=self.instantiate(name,inputs)
+
+        if hasattr(m, "output_meta"):
+            return m.model
+
         return keras.Model(inputs,m)
 
     def preprocess(self,name,inputs):
