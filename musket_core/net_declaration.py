@@ -9,6 +9,7 @@ from builtins import isinstance
 layers=configloader.load("layers")
 from  musket_core.preprocessing import SplitPreproccessor,SplitConcatPreprocessor, Augmentation
 import musket_core.builtin_datasets
+import musket_core.builtin_trainables
 import importlib
 
 def take_input(layers,declarations,config,outputs,linputs,pName,withArgs):
@@ -499,6 +500,8 @@ def create_dataset_from_config(n,name="net",imports=[]):
 
     compositeDS = None
     layers.register_module(musket_core.builtin_datasets)
+    layers.register_module(musket_core.builtin_trainables)
+
     if isinstance(name,dict):
         holdout = extract_datasets(n, imports, name, 'holdout')
         train = extract_datasets(n, imports, name, 'train')
@@ -547,6 +550,7 @@ def create_dataset_from_config(n,name="net",imports=[]):
         os.chdir(str(DEFAULT_DATASET_DIR))
     d=Declarations(n)
     for x in imports: layers.register(x)
+
     out=d.preprocess(name, None)
     out.name=str(name)
     return out
