@@ -783,6 +783,7 @@ class ImageKFoldedDataSet(DefaultKFoldedDataSet):
                     for batch in m():
                         r = list(aug.augment_batches([batch], background=False))[0]
                         x,y= self._prepare_vals_from_batch(r)
+                        print (x,y)
                         #Think about normalization
                         #x=(x/255.0-(0.485, 0.456, 0.406))
                         num=num+1
