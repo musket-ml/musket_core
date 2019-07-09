@@ -1,4 +1,4 @@
-from callback_module import CallbackModule
+from musket_core.callback_module import CallbackModule
 from keras import backend as K
 import math
 
