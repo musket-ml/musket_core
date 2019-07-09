@@ -29,7 +29,7 @@ import keras.backend as K
 import imgaug
 import keras.utils.data_utils as _du
 import copy
-from musket_core.clr_callback import CyclicLR
+from musket_core.clr_callback import CyclicLR,AllLogger
 import tensorflow as tf
 from musket_core.context import context
 keras.callbacks.CyclicLR= CyclicLR
@@ -1075,26 +1075,31 @@ class GenericImageTaskConfig(GenericTaskConfig):
             transforms.append(imgaug.augmenters.Scale({"height": self.shape[0], "width": self.shape[1]}))
         return imgaug.augmenters.Sequential(transforms)
 
-    def adaptNet(self, model, model1, copy=False):
+    def adaptNet(self, model, model1, copy=False,sh=4):
         notUpdated = True
         for i in range(0, len(model1.layers)):
             if isinstance(model.layers[i], keras.layers.BatchNormalization) and notUpdated:
                 uw = []
                 for w in model1.layers[i].get_weights():
                     val = w
-                    vvv = np.zeros(shape=(4), dtype=np.float32)
-                    vvv[0:3] = val
-                    vvv[3] = (val[0] + val[1] + val[2]) / 3
+                    vvv = np.zeros(shape=(sh), dtype=np.float32)
+                    if sh>1:
+                        vvv[0:sh-1] = val
+                        vvv[sh-1] = (val[0] + val[1] + val[2]) / 3
+                    else:
+                       vvv[sh-1] = (val[0] + val[1] + val[2]) / 3    
                     uw.append(vvv)
                 model.layers[i].set_weights(uw)
 
             elif isinstance(model.layers[i], keras.layers.Conv2D) and notUpdated:
                 val = model1.layers[i].get_weights()[0]
                 # print(val.shape)
-                vvv = np.zeros(shape=(val.shape[0], val.shape[1], 4, val.shape[3]), dtype=np.float32)
-                vvv[:, :, 0:3, :] = val
+                
+                vvv = np.zeros(shape=(val.shape[0], val.shape[1], sh, val.shape[3]), dtype=np.float32)
+                if sh>1:
+                    vvv[:, :, 0:sh-1, :] = val
                 if copy:
-                    vvv[:, :, 3, :] = val[:, :, 2, :]
+                    vvv[:, :, sh-1, :] = val[:, :, 2, :]
                 model.layers[i].set_weights([vvv])
                 notUpdated = False
             else:
@@ -1174,6 +1179,26 @@ class Stage:
         kf.trainOnFold(ec.fold, model, cb,epochs, self.negatives, subsample=ec.subsample,validation_negatives=self.validation_negatives)
         return ll
 
+
+    def _doTrain(self, kf, model, ec, cb, kepoch):
+        return kf.trainOnFold(ec.fold, model, cb, self.epochs, self.negatives, subsample=ec.subsample, validation_negatives=self.validation_negatives, verbose=self.cfg.verbose, initial_epoch=kepoch)
+
+
+    def _addLogger(self, model, ec, cb, kepoch):
+        if self.cfg.resume:
+            kepoch = maxEpoch(ec.metricsPath())
+            if kepoch != -1:
+                if os.path.exists(ec.weightsPath()):
+                    model.load_weights(ec.weightsPath())
+                cb.append(CSVLogger(ec.metricsPath(), append=True))
+            else:
+                cb.append(CSVLogger(ec.metricsPath()))
+                kepoch = 0
+        else:
+            kepoch = 0
+            cb.append(CSVLogger(ec.metricsPath()))
+        return kepoch
+
     def execute(self, kf: datasets.DefaultKFoldedDataSet, model: keras.Model, ec: ExecutionConfig,callbacks=None):
         if 'unfreeze_encoder' in self.dict and self.dict['unfreeze_encoder']:
             self.unfreeze(model)
@@ -1201,27 +1226,17 @@ class Stage:
             self.cfg.compile(model, self.cfg.createOptimizer(self.lr), self.loss)
 
         if self.initial_weights is not None:
-            model.layers[-1].name="SomeNewName"
-            model.load_weights(self.initial_weights,by_name=True)
+            #model.layers[-1].name="SomeNewName"
+            model.load_weights(self.initial_weights)
         if 'callbacks' in self.dict:
             cb = configloader.parse("callbacks", self.dict['callbacks'])
         if 'extra_callbacks' in self.dict:
             cb = cb + configloader.parse("callbacks", self.dict['extra_callbacks'])
         kepoch=-1
-
+        if "logAll" in self.dict and self.dict["logAll"]:
+            cb=cb+[AllLogger(ec.metricsPath()+"all.csv")]
         cb.append(KFoldCallback(kf))
-        if self.cfg.resume:
-            kepoch=maxEpoch(ec.metricsPath())
-            if kepoch!=-1:
-                if os.path.exists(ec.weightsPath()):
-                    model.load_weights(ec.weightsPath())
-                cb.append(CSVLogger(ec.metricsPath(),append=True))
-            else:
-                cb.append(CSVLogger(ec.metricsPath()))
-                kepoch=0
-        else:
-            kepoch=0
-            cb.append(CSVLogger(ec.metricsPath()))
+        kepoch = self._addLogger(model, ec, cb, kepoch)
         md = self.cfg.primary_metric_mode
 
         if self.cfg.gpus==1:
@@ -1266,7 +1281,7 @@ class Stage:
             cb.append(amcp)
         else:
             self.loadBestWeightsFromPrevStageIfExists(ec, model)
-        kf.trainOnFold(ec.fold, model, cb, self.epochs, self.negatives, subsample=ec.subsample,validation_negatives=self.validation_negatives,verbose=self.cfg.verbose, initial_epoch=kepoch)
+        self._doTrain(kf, model, ec, cb, kepoch)
 
         print('saved')
         pass
@@ -1293,3 +1308,41 @@ class Stage:
 
     def add_visualization_callbacks(self, cb, ec, kf):
         pass
+    
+class MultiSplitStage(Stage):
+    def _doTrain(self, kf, model:keras.Model, ec, cb, kepoch):
+        bestIndex=-1
+        for stage in range(0,10):
+            
+            coef=[0.1,0.2,0.3,0.5,1,1.5,2,3]
+            if bestIndex!=-1:
+                print("Loading from :",bestIndex)
+                model.load_weights(ec.weightsPath()+"."+str(stage-1)+"."+str(bestIndex)+".weights",True)
+            else:
+                model.load_weights("D:/jigsaw/experiments/e9/weights/best.weights")
+            model.save_weights(ec.weightsPath()+"."+"def."+str(stage)+".weights", True)    
+            bestRes=100000
+            bestIndex=-1
+            list=[]
+            for i in range(len(coef)):
+                model.load_weights(ec.weightsPath()+"."+"def."+str(stage)+".weights", True)
+                
+                K.set_value(model.optimizer.lr, self.cfg.lr*coef[i])
+                kf.trainOnIndexes(ec.fold, model, cb+[CSVLogger(ec.metricsPath()+"."+str(stage)+"."+str(i)+".csv"),AllLogger(ec.metricsPath()+"."+str(stage)+"."+str(i)+".all.csv")], "all",
+                            stage,True)
+                vvl=pd.read_csv(ec.metricsPath()+"."+str(stage)+"."+str(i)+".csv")
+                res=vvl["val_loss"].values[0]
+                print(res)
+                if res<bestRes:
+                    bestRes=res
+                    bestIndex=i
+                    model.save_weights(ec.weightsPath()+"."+str(stage)+"."+str(i)+".weights", True)
+                list.append([self.cfg.lr*coef[i],res])
+                print(list)    
+                
+            
+            
+            
+    def _addLogger(self, model, ec, cb, kepoch):
+        return 0        
+            
