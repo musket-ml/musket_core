@@ -1,5 +1,5 @@
 from keras.callbacks import *
-import configloader
+from musket_core import configloader
 
 
 class CallbackModule(Callback):
