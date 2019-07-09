@@ -30,9 +30,11 @@ import imgaug
 import keras.utils.data_utils as _du
 import copy
 from musket_core.clr_callback import CyclicLR,AllLogger
+from musket_core.lr_variation_callback import LRVariator
 import tensorflow as tf
 from musket_core.context import context
 keras.callbacks.CyclicLR= CyclicLR
+keras.callbacks.LRVariator = LRVariator
 from musket_core import predictions
 keras.utils.get_custom_objects()["macro_f1"]= musket_core.losses.macro_f1
 keras.utils.get_custom_objects()["f1_loss"]= musket_core.losses.f1_loss

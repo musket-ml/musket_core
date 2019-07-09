@@ -398,7 +398,7 @@ class GenericDataSetSequence(keras.utils.Sequence):
         X=[]
         y=[]
         hasSample=False
-        if hasattr(self.ds.root(),"sample_weight"):
+        if hasattr(self.ds, "root") and hasattr(self.ds.root(),"sample_weight"):
             hasSample=True
             S=[]
             
