@@ -55,6 +55,15 @@ class DataSet:
 
     def get_target(self,item):
         return self[item].y
+    
+    def root(self):
+        if not hasattr(self,"parent"):
+            return self
+        if self.parent is None:
+            return self
+        if hasattr(self.parent,"root"):
+            return self.parent.root()
+        return self.parent
 
 class WriteableDataSet(DataSet):
 
@@ -444,10 +453,11 @@ class GenericDataSetSequence(keras.utils.Sequence):
         batch_x=[np.array(x) for x in batch_x]
         batch_y = np.array(batch_y[0]) if yd == 1 else [np.array(y) for y in batch_y]
         if hasSample:
-            sd=[]
-            for i in range(yd):
-                sd.append(np.array(S))        
-            return batch_x,batch_y,sd
+#             sd=[]
+#             
+#             sd.append(np.array(S))
+#             sd.append(np.ones(len(S)))        
+            return batch_x,batch_y,np.array(S)
         
         return batch_x,batch_y
 
@@ -682,6 +692,44 @@ class DefaultKFoldedDataSet:
             tg.terminate()
             vl.terminate()
             vg.terminate()
+            
+    def trainOnIndexes(self,fold:int,model:keras.Model,callbacks,negatives,
+                    indexes,doValidation=False):
+        train_indexes = self.sampledIndexes(fold, True, negatives)
+        vl=len(train_indexes)
+        train_indexes=train_indexes[indexes*vl//10:(indexes+1)*vl//10]
+        
+        test_indexes = self.sampledIndexes(fold, False,negatives)
+
+        tl,tg,train_g=self.generator_from_indexes(train_indexes) 
+        vl,vg,test_g = self.generator_from_indexes(test_indexes,isTrain=False)
+        try:
+            v_steps = len(test_indexes)//self.batchSize
+
+            if v_steps < 1: v_steps = 1
+
+            iterations = len(train_indexes) // (self.batchSize)
+            if self.maxEpochSize is not None:
+                iterations = min(iterations, self.maxEpochSize)
+            if doValidation:    
+                model.fit_generator(train_g(), iterations,
+                                    epochs=1,
+                                    validation_data=test_g(),
+                                    callbacks=callbacks,
+                                    verbose=1,
+                                    validation_steps=v_steps,
+                                    initial_epoch=0)
+            else:
+                model.fit_generator(train_g(), iterations,
+                                    epochs=1,
+                                    callbacks=callbacks,
+                                    verbose=1,                                    
+                                    initial_epoch=0)    
+        finally:
+            tl.terminate()
+            tg.terminate()
+            vl.terminate()
+            vg.terminate()        
 
     def numBatches(self,fold,negatives,subsample):
         train_indexes = self.sampledIndexes(fold, True, negatives)
