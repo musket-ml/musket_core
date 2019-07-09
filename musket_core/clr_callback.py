@@ -153,3 +153,34 @@ class CyclicLR(Callback):
             self.history.setdefault(k, []).append(v)
 
         K.set_value(self.model.optimizer.lr, self.clr())
+        
+        
+class AllLogger(Callback):
+    
+    def __init__(self,file):
+        self.file=open(file,"w")
+        self.seen = 0
+        self.totals = {}
+    
+        
+        
+        
+    def on_batch_end(self, batch, logs=None):
+        logs = logs or {}
+        batch_size = logs.get('size', 0)
+        keys=[]        
+        if self.seen==0:
+            for k, v in logs.items():
+                keys.append(k)
+        self.file.write(",".join(keys)+"\n")
+        self.seen += batch_size
+        vals=[]
+        for k, v in logs.items():
+            if k not in self.totals:
+                self.totals[k]=[]
+            
+            self.totals[k].append(v)
+            vals.append(str(v))
+        self.file.write(",".join(vals)+"\n")
+        
+                
