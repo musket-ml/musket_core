@@ -91,7 +91,7 @@ class GradientBoosting:
             arg1 = self.custom_metrics[item][1]
             arg2 = self.custom_metrics[item][2]
 
-            result[item] = session.run(func, {arg1: y_true, arg2: y_pred})
+            result[item] = np.mean(session.run(func, {arg1: y_true, arg2: y_pred}))
 
         return result
 
@@ -199,7 +199,7 @@ class GradientBoosting:
             results = self.eval_metrics(true, pred, tf.get_default_session())
 
             for item in list(results.keys()):
-                results["val_" + item] = np.mean(results[item])
+                results["val_" + item] = results[item]
 
             self.rgetter.__dict__ = results
 
@@ -208,6 +208,8 @@ class GradientBoosting:
         def custom_callback(*args, **kwargs):
             iter = args[0][2]
 
+            self.model._Booster = args[0][0]
+
             for item in callbacks:
                 if "ReduceLROnPlateau" in str(item):
                     continue
@@ -215,12 +217,6 @@ class GradientBoosting:
                 item.on_epoch_end(iter, self.rgetter)
 
         self.model.fit(train_x, train_y, eval_set=[(val_x, val_y)], callbacks = [custom_callback], eval_metric = custom_metric)
-
-        # for item in callbacks:
-        #     if "ReduceLROnPlateau" in str(callbacks):
-        #         continue
-        #
-        #     item.on_epoch_end(0, self.rgetter)
 
         for item in callbacks:
             item.on_train_end()
