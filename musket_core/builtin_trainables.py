@@ -117,6 +117,8 @@ class GradientBoosting:
 
         if self.output_dim > 1:
             result_y = np.argmax(result_y, 1)
+        else:
+            result_y = result_y > 0.5
 
         return result_x.astype(np.float32), result_y.astype(np.int32)
 
