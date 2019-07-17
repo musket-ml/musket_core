@@ -269,3 +269,5 @@ def rescale(input,size):
 
 
 
+## Gradient Boosting
+Example config: musket_core/examples/gb_multiclass.yaml
