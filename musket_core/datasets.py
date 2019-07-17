@@ -197,6 +197,8 @@ class DataSetLoader:
         id = ""
         if hasattr(self.dataset, "item"):
             item = self.dataset.item(self.indeces[i], self.isTrain)
+        elif hasattr(self.dataset, "get_train_item") and self.isTrain:
+            item = self.dataset.get_train_item(self.indeces[i])    
         else:
             item = self.dataset[self.indeces[i]]
         x, y = item.x, item.y
