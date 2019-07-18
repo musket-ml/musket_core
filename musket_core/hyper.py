@@ -8,19 +8,56 @@ import numpy as np
 
 from hyperopt import fmin, tpe, hp, Trials
 
-def create_parameter(name,v):
-    if isinstance(v,list):
-        return hp.uniform(name,v[0],v[1])
-    return None
+def expand(value):
+    if isinstance(value, list):
+        res = {}
+
+        res["range"] = v
+        res["type"] = "float"
+
+        return  res
+
+    res = copy.deepcopy(value)
+
+    if not "type" in res.keys():
+        res["type"] = "float"
+
+    return res
+
+def create_parameter(name, value):
+    val = expand(value)
+
+    if "range" in val.keys():
+        min = val["range"][0]
+        max = val["range"][1]
+
+        if val["type"] == "float":
+            return hp.uniform(name, min, max)
+
+        return hp.choice(name, list(range(min, max + 1)))
+
+    enum = np.array(val["enum"])
+
+    if val["type"] == "float":
+        enum = enum.astype(np.float32)
+    else:
+        enum = enum.astype(np.int32)
+
+    return hp.choice(name, [value.item() for value in enum])
 
 def create_search_space(e:experiment.Experiment):
-    space={}
+    space = {}
     for p in e.hyperparameters():
         space[p]=create_parameter(p,e.hyperparameters()[p])
     return space
 num = 0
 scores={}
 
+def get_score(num_or_dict):
+    if isinstance(num_or_dict, (float, int, np.number)):
+        return num_or_dict
+
+    return num_or_dict["mean"]
 
 class OperationCanceled(BaseException):
     def __init__(self):
@@ -45,8 +82,9 @@ def optimize(e:experiment.Experiment,ex:parralel.Executor,reporter):
 
         save(e.path+"/hyperopt.trials",trials)
         global num,scores
-        for p in parameters:
-            parameters[p]=round(parameters[p])
+        # for p in list(parameters.keys()):
+        #     parameters[p]=round(parameters[p])
+
         resolved=templating.resolveTemplates(copy.deepcopy(dcopy),parameters)
 
         num_ = e.path + "/trial" + str(num)
@@ -62,7 +100,7 @@ def optimize(e:experiment.Experiment,ex:parralel.Executor,reporter):
         ex.execute(tasks)
         num=num+1
         print(num)
-        score=experiment_experiment.result()
+        score=get_score(experiment_experiment.result())
         scores[num]=score
         save_yaml(e.path + "/hyperopt.scores",scores)
         if reporter.isCanceled():

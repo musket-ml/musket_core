@@ -272,5 +272,3 @@ class GradientBoosting:
 
         for item in callbacks:
             item.on_train_end()
-
-        #self.model.booster_.save_model(file_path)
