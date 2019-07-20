@@ -1,4 +1,4 @@
-from musket_core import datasets
+from musket_core import datasets, generic_config
 
 import numpy as np
 
@@ -137,7 +137,12 @@ class GradientBoosting:
         result = {}
 
         for item in self.custom_metrics.keys():
-            result[item] = self.eval_func(y_true, y_pred, self.custom_metrics[item], session)
+            preds = y_pred
+
+            if generic_config.need_threshold(item):
+                preds = (preds > 0.5).astype(np.float32)
+
+            result[item] = self.eval_func(y_true, preds, self.custom_metrics[item], session)
 
         return result
 
@@ -227,6 +232,8 @@ class GradientBoosting:
         generator_train = args[0]
         generator_test = kwargs["validation_data"]
 
+        generator_test.batchSize = len(generator_test.indexes)
+
         train_x, train_y = self.convert_data(generator_train)
         val_x, val_y = self.convert_data(generator_test)
 
@@ -261,7 +268,6 @@ class GradientBoosting:
             for item in callbacks:
                 if "ReduceLROnPlateau" in str(item):
                     continue
-
                 item.on_epoch_end(iter, self.rgetter)
 
         if self.custom_loss_callable:
