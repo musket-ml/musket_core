@@ -323,7 +323,7 @@ hyperparameters:
     enum: [5, 6, 7]
     type: int
 ```
-x param will take value 5, 6, 7 (or 5.0, 6.0, 7.0) if type is 'float'
+x param will take value 5, 6, 7 (or 5.0, 6.0, 7.0 if type is 'float')
 
 ```
 max_evals: 3
