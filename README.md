@@ -323,7 +323,7 @@ hyperparameters:
     enum: [5, 6, 7]
     type: int
 ```
-x param will take value 5, 6, 7 (or 5.0, 6.0, 7.0 if type is 'float')
+x param will take value 5, 6, 7 (or 5.0, 6.0, 7.0 if type is 'float'), values will be taken 3 times. Uniform distribution will be used. No values will be chosen twise if size of list is less then 'max_evals'.  if 'max_evals' is equal size of list, then all values from list will be taken.
 
 ```
 max_evals: 3
