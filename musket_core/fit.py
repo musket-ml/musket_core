@@ -5,6 +5,7 @@ import argparse
 from musket_core.projects import Workspace
 from musket_core import caches
 from musket_core.tools import Launch,ProgressMonitor
+import tensorflow as tf
 
 
 def main():
@@ -47,6 +48,10 @@ def main():
     else:
         experiments=[x for x in experiments if not x.isCompleted()]
 
+    if tf.test.gpu_device_name():
+        print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
+    else:
+        print("Please install GPU version of TF")
     l=Launch(args.gpus_per_net,args.num_gpus,args.num_workers,[x.path for x in experiments],args.allow_resume,args.only_report,args.launch_tasks)
     l.perform(w,ProgressMonitor())
     exit(0)

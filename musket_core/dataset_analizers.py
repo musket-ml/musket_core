@@ -28,6 +28,10 @@ def class_num_analizer(y):
         return int(y[0])
     return int(y)
 
+@visualization.caption('Simple analyzer for testing purposes, just gving value 1 for all samples')
+@visualization.dataset_analizer
+def constant_analizer(y):
+    return 1
 
 class FixedShape:
     def __init__(self,shape,pos):
