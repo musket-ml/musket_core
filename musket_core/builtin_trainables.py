@@ -1,4 +1,4 @@
-from musket_core import datasets
+from musket_core import datasets, generic_config
 
 import numpy as np
 
@@ -58,7 +58,7 @@ class RGetter:
 
 class GradientBoosting:
     def __init__(self, output_dim, boosting_type='gbdt', num_leaves=31, max_depth=-1, learning_rate=0.1, n_estimators=100, subsample_for_bin=200000, class_weight=None, min_split_gain=0., min_child_weight=1e-3, min_child_samples=20, subsample=1., subsample_freq=0, colsample_bytree=1., reg_alpha=0., reg_lambda=0., random_state=None, n_jobs=-1, silent=True, importance_type='split'):
-        if output_dim > 1:
+        if output_dim > 2:
             objective = "multiclass"
         else:
             objective = "regression"
@@ -75,23 +75,74 @@ class GradientBoosting:
 
         self.stop_training = False
 
+        self.custom_loss_callable = None
+
     def __call__(self, *args, **kwargs):
         return OutputMeta(self.output_dim, self)
 
+    def loss_to_gb(self, loss):
+        result = np.array(loss)
+
+        if len(result.shape) == 2:
+            result = result.transpose([0, 1]).flatten()
+
+        return result
+
     def compile(self, *args, **kwargs):
+        custom_loss = args[1]
+
+        if not custom_loss in ["multiclass", "regression"]:
+            custom_loss_tf = keras.losses.get(custom_loss)
+
+            t_true = keras.layers.Input((self.output_dim,))
+            t_pred = keras.layers.Input((self.output_dim,))
+
+            def grad1(y_true, y_pred):
+                return tf.gradients(custom_loss_tf(y_true, y_pred), [y_true, y_pred], stop_gradients=[y_true])
+
+            def grad2(y_true, y_pred):
+                return tf.gradients(grad1(y_true, y_pred), [y_true, y_pred], stop_gradients=[y_true])
+
+            def custom_loss_func(y_true, y_pred):
+                true, pred = self.to_tf(y_true, y_pred)
+
+                pred[np.where(pred == 0)] = 0.000001
+
+                pred[np.where(pred == 1)] = 1.0 - 0.000001
+
+                s = tf.get_default_session()
+
+                res_1 = self.eval_func(true, pred, [grad1(t_true, t_pred), t_true, t_pred], s, False)[1]
+                res_2 = self.eval_func(true, pred, [grad2(t_true, t_pred), t_true, t_pred], s, False)[1]
+
+                return self.loss_to_gb(res_1), self.loss_to_gb(res_2)
+
+            self.custom_loss_callable = custom_loss_func
+
         for item in args[2]:
             self.custom_metrics[item] = self.to_tensor(keras.metrics.get(item))
+
+    def eval_func(self, y_true, y_pred, f, session, mean=True):
+        func = f[0]
+
+        arg1 = f[1]
+        arg2 = f[2]
+
+        if mean:
+            return np.mean(session.run(func, {arg1: y_true, arg2: y_pred}))
+
+        return session.run(func, {arg1: y_true, arg2: y_pred})
 
     def eval_metrics(self, y_true, y_pred, session):
         result = {}
 
         for item in self.custom_metrics.keys():
-            func = self.custom_metrics[item][0]
+            preds = y_pred
 
-            arg1 = self.custom_metrics[item][1]
-            arg2 = self.custom_metrics[item][2]
+            if generic_config.need_threshold(item):
+                preds = (preds > 0.5).astype(np.float32)
 
-            result[item] = session.run(func, {arg1: y_true, arg2: y_pred})
+            result[item] = self.eval_func(y_true, preds, self.custom_metrics[item], session)
 
         return result
 
@@ -117,6 +168,8 @@ class GradientBoosting:
 
         if self.output_dim > 1:
             result_y = np.argmax(result_y, 1)
+        else:
+            result_y = (result_y > 0.5).flatten()
 
         return result_x.astype(np.float32), result_y.astype(np.int32)
 
@@ -129,6 +182,9 @@ class GradientBoosting:
 
         predictions = self.model.predict(input)
 
+        if self.output_dim in [1, 2]:
+            return self.groups_to_vectors(predictions, len(predictions))
+
         return predictions
 
     def load_weights(self, path, val):
@@ -140,6 +196,14 @@ class GradientBoosting:
 
         count = 0
 
+        if self.output_dim == 1:
+            for item in numbers:
+                result[count, 0] = item
+
+                count += 1
+
+            return result
+
         for item in numbers:
             result[count, item] = 1
 
@@ -149,6 +213,20 @@ class GradientBoosting:
 
     def groups_to_vectors(self, data, length):
         result = np.zeros((length, self.output_dim))
+
+        if self.output_dim == 1:
+            result[:, 0] = data
+
+            return result
+
+        if self.output_dim == 2:
+            ids = np.array(range(length), np.int32)
+
+            ids = [ids, (data > 0.5).astype(np.int32)]
+
+            result[ids] = 1
+
+            return result
 
         for item in range(self.output_dim):
             result[:, item] = data[length * item : length * (item + 1)]
@@ -179,6 +257,8 @@ class GradientBoosting:
         generator_train = args[0]
         generator_test = kwargs["validation_data"]
 
+        generator_test.batchSize = len(generator_test.indexes)
+
         train_x, train_y = self.convert_data(generator_train)
         val_x, val_y = self.convert_data(generator_test)
 
@@ -199,7 +279,7 @@ class GradientBoosting:
             results = self.eval_metrics(true, pred, tf.get_default_session())
 
             for item in list(results.keys()):
-                results["val_" + item] = np.mean(results[item])
+                results["val_" + item] = results[item]
 
             self.rgetter.__dict__ = results
 
@@ -208,21 +288,18 @@ class GradientBoosting:
         def custom_callback(*args, **kwargs):
             iter = args[0][2]
 
+            self.model._Booster = args[0][0]
+
             for item in callbacks:
                 if "ReduceLROnPlateau" in str(item):
                     continue
-
                 item.on_epoch_end(iter, self.rgetter)
+
+        if self.custom_loss_callable:
+            self.model.objective = self.custom_loss_callable
+            self.model._objective = self.custom_loss_callable
 
         self.model.fit(train_x, train_y, eval_set=[(val_x, val_y)], callbacks = [custom_callback], eval_metric = custom_metric)
 
-        # for item in callbacks:
-        #     if "ReduceLROnPlateau" in str(callbacks):
-        #         continue
-        #
-        #     item.on_epoch_end(0, self.rgetter)
-
         for item in callbacks:
             item.on_train_end()
-
-        #self.model.booster_.save_model(file_path)

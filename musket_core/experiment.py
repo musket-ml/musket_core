@@ -90,7 +90,7 @@ class Experiment:
                         save_string(rp,template.replace("${metrics}",m))
 
 
-    def result(self,forseRecalc=False):
+    def result(self,forseRecalc=False, use_primary_metric=False):
         pi = self.apply(True)
         if forseRecalc:
             self.cleanup()
@@ -135,6 +135,17 @@ class Experiment:
                     am=self.config()["aggregation_metric"]
                     if am in m["allStages"]:
                        mv = m["allStages"][am]
+                elif use_primary_metric:
+                    am = self.config()["primary_metric"]
+                    mode = self.config()["primary_metric_mode"]
+                    if am in m["allStages"]:
+                        mv = {
+                            "value": m["allStages"][am],
+                            "name": am,
+                            "mode": mode
+                        }
+
+
 
 
                 return mv

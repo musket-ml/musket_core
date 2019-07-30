@@ -25,7 +25,7 @@ types:
         name: string
   GradientBoosting:
     (meta.entry): true
-    type: HasLoss
+    type: object
     discriminator: architecture
     properties:
       testSplit?: number
@@ -33,22 +33,18 @@ types:
       inference_batch?:
          type: integer
          default: 32
-      stratified?: boolean
+
       folds_count?:
         type: integer
         (meta.custom): true
       copyWeights?:
         type: boolean
         (meta.custom): true
-      random_state?:
-        type: integer
-        (meta.custom): true
+
       extra_train_data?:
         type: string
         (meta.custom): true
-      dropout?:
-        type: number
-        (meta.custom): true
+
       dataset_augmenter?:
         type: AugmenterConfig
         (meta.custom): true

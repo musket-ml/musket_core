@@ -595,6 +595,9 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         return r
 
     def createOptimizer(self, lr=None):
+        if not self.optimizer:
+            return None
+
         r = getattr(opt, self.optimizer)
         ds = create_with(["lr", "clipnorm", "clipvalue"], self.all)
         if lr:
