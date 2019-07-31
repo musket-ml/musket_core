@@ -548,7 +548,8 @@ class SimplePNGMaskDataSet:
             newImage[:, :, 2] = image[:, :, 2]
 
             image = newImage
-
+        
+        image=image.astype(np.uint8)    
         return PredictionItem(self.ids[item] + str(), image, out)
 
     def isPositive(self, item):

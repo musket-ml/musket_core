@@ -421,6 +421,20 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             return test
             pass
         raise ValueError("This configuration does not have holdout")
+    
+    def train_without_holdout(self, ds=None):
+        if ds is None:
+            ds=self.get_dataset()
+        if os.path.exists(self.path + ".holdout_split"):
+            trI,hI = utils.load_yaml(self.path + ".holdout_split")
+            train=datasets.SubDataSet(ds,trI)
+            test = datasets.SubDataSet(ds,hI)
+            return train
+        if self.testSplit>0 or self.holdoutArr is not None:
+            train,test=self.doGetHoldout(ds)
+            return train
+            pass
+        raise ValueError("This configuration does not have holdout")
 
     def kfold(self, ds=None, indeces=None,batch=None)-> datasets.DefaultKFoldedDataSet:
         if ds is None:
