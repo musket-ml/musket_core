@@ -1,128 +1,34 @@
 #%RAML 1.0 Library
 uses:
   meta: meta.raml
-  aug: augmenters.raml
-  cb: callbacks.raml
+  generic: generic.raml
 (meta.module):  instance_segmentation_pipeline.instance_segmentation
 types:
-  AugmenterConfig:
-      type: object
-      properties?:
-        name: string
   InstanceSegmentationPipeline:
     (meta.entry): true
-    type: object
+    type: generic.GenericPipeline
     properties:
       inference_batch:
-         (meta.custom): true
-         type: number
-      testSplit?: 
-         (meta.custom): true
-         type: number
+        (meta.custom): true
+      testSplit?:
+        (meta.custom): true
       testSplitSeed?:
-         (meta.custom): true 
-         type: number
-      testTimeAugmentation:
-         (meta.custom): true
-         type: string
-     
-      folds_count?:
+        (meta.custom): true
+      steps_per_epoch:
         type: integer
         (meta.custom): true
-      
-      random_state?:
-        type: integer
-        (meta.custom): true
-      extra_train_data?:
-        type: string
-        (meta.custom): true
-      
-      dataset_augmenter?:
-        type: AugmenterConfig
-        (meta.custom): true
-      steps_per_epoch: 
-        type: integer
-        (meta.custom): true
-      backbone: 
+      backbone:
         type: string
         enum: [ resnet101, resnet50 ]
-        (meta.custom): true  
-        
-      validation_steps: 
+        (meta.custom): true
+      validation_steps:
         type: integer
-        (meta.custom): true  
+        (meta.custom): true
       weights?:
         enum: [imagenet, coco]
-      classes:
-        type: integer
-        minimum: 1
       crops?:
         type: integer
         (meta.custom): true
-      activation:
-        (meta.custom): true
-        enum: [ sigmoid, softmax ]
       shape:
         (meta.alias): input_shape
         type: meta.image_shape
-      augmentation:
-        type: aug.Augmenter[]
-        (meta.custom): true
-      transforms:
-        type: aug.Augmenter[]
-        (meta.custom): true
-      ###Optimizer configuration
-      optimizer?:
-        type: string
-        enum: [SGD,Adam,RMSprop,Nadam]
-        (meta.custom): true
-      lr?:
-        type: number
-        (meta.custom): true
-      clipnorm?:
-        type: number
-        (meta.custom): true
-      clipvalue?:
-        type: number
-        (meta.custom): true
-      
-      batch?:
-        type: integer
-        (meta.custom): true
-        minimum: 1
-        default: 16
-      metrics:
-        type: string[]
-        (meta.custom): true
-        (meta.suggestions):
-          - binary_accuracy
-          - dice
-          - iou
-          - iot #at 0.5 treshold
-      primary_metric:
-        type: string
-        (meta.custom): true
-      primary_metric_mode?:
-        type: string
-        enum: [auto,min,max]
-        (meta.custom): true
-        default: auto
-      callbacks?:
-        type: cb.Callback[]
-        (meta.custom): true
-      stages  :
-        type: StageConfig[]
-        (meta.custom): true
-      freeze_encoder?: boolean
-  St:
-    type: string
-    enum: [ none  , real ]
-  StageConfig:
-    type: HasLoss
-    properties:
-      initial_weights?: string
-      epochs?: number
-      unfreeze_encoder?: boolean
-      lr?: number
-      callbacks?: cb.Callback[]
-      extra_callbacks?: cb.Callback[]
