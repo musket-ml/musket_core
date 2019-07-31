@@ -23,14 +23,21 @@ def save_string(path,data):
     with open(path, 'w') as myfile:
         myfile.write(data)
 
-def save_yaml(path,data):
+def save_yaml(path, data, header=None):
     _l.acquire()
     try:
         with open(path, "w") as f:
-            return yaml.dump(data,f)
+            if header:
+                text = yaml.dump(data)
+
+                text = header + "\n" + text;
+
+                f.write(text)
+
+                return None
+            return yaml.dump(data, f)
     finally:
         _l.release()
-
 
 def load(path):
     with open(path, "rb") as f:

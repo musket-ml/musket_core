@@ -124,6 +124,8 @@ class GradientBoosting(generic.GenericTaskConfig):
         return lastFullValPred,lastFullValLabels
 
     def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False, cacheModel=False):
+        batch_size = len(dataset)
+
         mdl = self.load_model(fold, stage)
         if self.testTimeAugmentation is not None:
             mdl=qm.TestTimeAugModel(mdl,net.create_test_time_aug(self.testTimeAugmentation,self.imports))
@@ -160,6 +162,7 @@ class GradientBoosting(generic.GenericTaskConfig):
 
     def fit(self, dataset=None, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction=None,parallel = False):
         dataset = self.init_shapes(dataset)
+
         return super().fit(dataset,subsample,foldsToExecute,start_from_stage,drawingFunction,parallel=parallel)
 
     def validate(self):
@@ -179,3 +182,11 @@ class GradientBoosting(generic.GenericTaskConfig):
             utils.save(self.path+ ".contribution",getattr(dataset, "contributions"))
         utils.save_yaml(self.path + ".shapes", (_shape(predItem.x), _shape(predItem.y)))
         return dataset
+
+    def kfold(self, ds=None, indeces=None, batch=None) -> datasets.DefaultKFoldedDataSet:
+
+        kf = super().kfold(ds, indeces)
+
+        kf.batchSize = len(kf.folds[0][0])
+
+        return kf

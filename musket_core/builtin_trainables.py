@@ -1,4 +1,4 @@
-from musket_core import datasets
+from musket_core import datasets, generic_config
 
 import numpy as np
 
@@ -138,7 +138,12 @@ class GradientBoosting:
         result = {}
 
         for item in self.custom_metrics.keys():
-            result[item] = self.eval_func(y_true, y_pred, self.custom_metrics[item], session)
+            preds = y_pred
+
+            if generic_config.need_threshold(item):
+                preds = (preds > 0.5).astype(np.float32)
+
+            result[item] = self.eval_func(y_true, preds, self.custom_metrics[item], session)
 
         return result
 
@@ -165,7 +170,7 @@ class GradientBoosting:
         if self.output_dim > 1:
             result_y = np.argmax(result_y, 1)
         else:
-            result_y = result_y > 0.5
+            result_y = (result_y > 0.5).flatten()
 
         return result_x.astype(np.float32), result_y.astype(np.int32)
 
@@ -178,6 +183,9 @@ class GradientBoosting:
 
         predictions = self.model.predict(input)
 
+        if self.output_dim in [1, 2]:
+            return self.groups_to_vectors(predictions, len(predictions))
+
         return predictions
 
     def load_weights(self, path, val):
@@ -189,6 +197,14 @@ class GradientBoosting:
 
         count = 0
 
+        if self.output_dim == 1:
+            for item in numbers:
+                result[count, 0] = item
+
+                count += 1
+
+            return result
+
         for item in numbers:
             result[count, item] = 1
 
@@ -198,6 +214,20 @@ class GradientBoosting:
 
     def groups_to_vectors(self, data, length):
         result = np.zeros((length, self.output_dim))
+
+        if self.output_dim == 1:
+            result[:, 0] = data
+
+            return result
+
+        if self.output_dim == 2:
+            ids = np.array(range(length), np.int32)
+
+            ids = [ids, (data > 0.5).astype(np.int32)]
+
+            result[ids] = 1
+
+            return result
 
         for item in range(self.output_dim):
             result[:, item] = data[length * item : length * (item + 1)]
@@ -227,6 +257,8 @@ class GradientBoosting:
 
         generator_train = args[0]
         generator_test = kwargs["validation_data"]
+
+        generator_test.batchSize = len(generator_test.indexes)
 
         train_x, train_y = self.convert_data(generator_train)
         val_x, val_y = self.convert_data(generator_test)
@@ -262,7 +294,6 @@ class GradientBoosting:
             for item in callbacks:
                 if "ReduceLROnPlateau" in str(item):
                     continue
-
                 item.on_epoch_end(iter, self.rgetter)
 
         if self.custom_loss_callable:
@@ -273,5 +304,3 @@ class GradientBoosting:
 
         for item in callbacks:
             item.on_train_end()
-
-        #self.model.booster_.save_model(file_path)
