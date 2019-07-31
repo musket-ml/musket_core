@@ -27,19 +27,25 @@ from musket_core.structure_constants import constructSummaryYamlPath
 from keras.callbacks import  LambdaCallback
 import keras.backend as K
 import imgaug
-import musket_core
+import keras.utils.data_utils as _du
 import copy
-from musket_core.clr_callback import CyclicLR
+from musket_core.clr_callback import CyclicLR,AllLogger
+from musket_core.lr_variation_callback import LRVariator
+import tensorflow as tf
+from musket_core.context import context
 keras.callbacks.CyclicLR= CyclicLR
+keras.callbacks.LRVariator = LRVariator
 from musket_core import predictions
 keras.utils.get_custom_objects()["macro_f1"]= musket_core.losses.macro_f1
 keras.utils.get_custom_objects()["f1_loss"]= musket_core.losses.f1_loss
 keras.utils.get_custom_objects()["dice"]= musket_core.losses.dice
 keras.utils.get_custom_objects()["iou"]= musket_core.losses.iou_coef
+keras.utils.get_custom_objects()["iou_coef"]= musket_core.losses.iou_coef
 keras.utils.get_custom_objects()["iot"]= musket_core.losses.iot_coef
 keras.utils.get_custom_objects()["lovasz_loss"]= musket_core.losses.lovasz_loss
 keras.utils.get_custom_objects()["iou_loss"]= musket_core.losses.iou_coef_loss
 keras.utils.get_custom_objects()["dice_loss"]= musket_core.losses.dice_coef_loss
+keras.utils.get_custom_objects()["dice"]= musket_core.losses.dice
 keras.utils.get_custom_objects()["jaccard_loss"]= musket_core.losses.jaccard_distance_loss
 keras.utils.get_custom_objects()["focal_loss"]= musket_core.losses.focal_loss
 keras.utils.get_custom_objects()["l2_loss"]= musket_core.losses.l2_loss
@@ -47,13 +53,48 @@ from musket_core.parralel import  Task
 keras.utils.get_custom_objects().update({'matthews_correlation': musket_core.losses.matthews_correlation})
 keras.utils.get_custom_objects().update({'log_loss': musket_core.losses.log_loss})
 from musket_core import net_declaration as net
+
+from musket_core.datasets import DataSet, MeanDataSet, BufferedWriteableDS, WriteableDataSet
+
 dataset_augmenters={
 
 }
 extra_train={}
 
+from  threading import Lock
+
+_patched=False
+def patch_concurency_issues():
+    global _patched
+    if _patched:
+        return
+    _patched=True
+    global tmpMethod, z, _keras_seq_lock
+    tmpMethod = tqdm.tqdm._decr_instances
+
+    def replacementMethod(*args, **kwargs):
+        try:
+            tmpMethod(*args, **kwargs)
+        except:
+            pass
+
+    z = _du.SequenceEnqueuer.__init__
+    _keras_seq_lock = Lock()
+
+    def new_Constructor(*args, **kwargs):
+        _keras_seq_lock.acquire()
+        try:
+            z(*args, **kwargs)
+        finally:
+            _keras_seq_lock.release()
+
+    _du.SequenceEnqueuer.__init__ = new_Constructor
+    tqdm.tqdm._decr_instances = replacementMethod
+
+patch_concurency_issues()
+
 class Rotate90(imgaug.augmenters.Affine):
-    def __init__(self, enabled):
+    def __init__(self, enabled=True):
         if enabled:
             super(Rotate90, self).__init__(rotate=imgaug.parameters.Choice([0, 90, 180, 270]))
         else:
@@ -151,7 +192,8 @@ class ScoreAndTreshold:
     def __str__(self):
         return "score:"+str(self.score)+": treshold:"+str(self.treshold)
 
-def threshold_search(y_true, y_proba,func):
+def threshold_search(predsDS:DataSet, func, batch_size:int = -1):
+
     if isinstance(func,str):
         func_=keras.metrics.get(func)
         def wrapped(x,y):
@@ -164,7 +206,11 @@ def threshold_search(y_true, y_proba,func):
     best_score = 0
     K.clear_session()
     for threshold in tqdm.tqdm([i * 0.01 for i in range(100)]):
-        score = func(y_true.astype(np.float64), (y_proba > threshold))
+
+        def func1(y_true, y_proba):
+            return func(y_true.astype(np.float64), (y_proba > threshold))
+
+        score = applyFunctionToDS(predsDS, func1, batch_size)
         if np.mean(score) > np.mean(best_score):
             best_threshold = threshold
             best_score = score
@@ -177,16 +223,58 @@ def need_threshold(func:str)->bool:
     return True
 
 
-def eval_metric(y_true,y_proba,func):
+def eval_metric(predsDS:DataSet, func, batch_size:int = -1):
+
     if isinstance(func,str):
         func_=keras.metrics.get(func)
-        def wrapped(x,y):
+        if (func=="binary_accuracy"):
+            func=losses.binary_accuracy_numpy
+        elif (func=="iou_coef"):
+            func=losses.iou_coef_numpy
+        elif (func=="dice"):
+            func=losses.dice_numpy
+        else:    
+            def wrapped(x,y):
+                with tf.device("/cpu:0"):
+                    v1= K.constant(x)
+                    v2 = K.constant(y)
+                    return K.eval(func_(v1,v2))
+            func=wrapped
 
-            v1= K.constant(x)
-            v2 = K.constant(y)
-            return K.eval(func_(v1,v2))
-        func=wrapped
-    return func(y_true,y_proba)
+    result = applyFunctionToDS(predsDS, func, batch_size)
+    return result
+
+
+def applyFunctionToDS(dsWithPredictions, func, batch_size:int):
+
+    l = len(dsWithPredictions)
+    if batch_size < 0:
+        batch_size = l
+
+    resultArr = []
+    resultScalarArr = []
+    for ind in tqdm.tqdm(range(0, l, batch_size)):
+        end = min(ind + batch_size, l)
+        items = dsWithPredictions[ind:end]
+        y_true = np.array([i.y for i in items])
+        y_proba = np.array([i.prediction for i in items])
+        #y_true = y_true.reshape(y_proba.shape)
+        if y_true.dtype == np.bool:
+            y_true = y_true.astype(np.float32)
+        if y_proba.dtype == np.bool:
+            y_proba = y_proba.astype(np.float32)
+        batch_value = func(y_true, y_proba)
+        if isinstance(batch_value, np.ndarray):
+            resultArr.append(batch_value.mean())
+        else:
+            resultScalarArr.append(batch_value)
+
+    if len(resultArr) > 0:
+        if len(resultArr)==1:
+            return resultArr[0] 
+        return np.concatenate(resultArr)
+    else:
+        return np.array(resultScalarArr)
 
 
 class FoldWork:
@@ -221,7 +309,7 @@ class ReportWork:
         self.cfg.generateReports(self.foldsToExecute, self.subsample)
 
 
-class GenericTaskConfig(model.ConnectedModel):
+class GenericTaskConfig(model.IGenericTaskConfig):
 
     def __init__(self,**atrs):
         self.batch = 8
@@ -236,6 +324,8 @@ class GenericTaskConfig(model.ConnectedModel):
         self.stratified=False
         self.preprocessing=None
         self.verbose = 1
+        self._projectDir=None
+        self.manualResize=None
         self.dataset=None
         self.noTrain = False
         self.inference_batch=32
@@ -246,6 +336,7 @@ class GenericTaskConfig(model.ConnectedModel):
         self.primary_metric = "val_binary_accuracy"
         self.primary_metric_mode = "auto"
         self.stages = []
+        self.shape=None
         self.gpus = 1
         self.lr = 0.001
         self.callbacks = []
@@ -253,10 +344,12 @@ class GenericTaskConfig(model.ConnectedModel):
         self.optimizer = None
         self.loss = None
         self.testSplit = 0
+        self.validationSplit = 0.2
         self.pretrain_transform=None
         self.testSplitSeed = 123
         self.path = None
         self.metrics = []
+        self.final_metrics=[]
         self.resume = False
         self.weights = None
         self.transforms=[]
@@ -273,6 +366,7 @@ class GenericTaskConfig(model.ConnectedModel):
         self.crops = None
         self.flipPred = True
         self.copyWeights = False
+        self.maxEpochSize = None
         self.dropout = 0
         self.dataset_clazz = datasets.DefaultKFoldedDataSet
         for v in atrs:
@@ -282,6 +376,8 @@ class GenericTaskConfig(model.ConnectedModel):
         pass
         if isinstance(self.metrics,str):
             self.metrics=[self.metrics]
+        if isinstance(self.final_metrics, str):
+            self.final_metrics = [self.final_metrics]
 
     def _update_from_config(self, v, val):
         if v == 'callbacks':
@@ -325,6 +421,20 @@ class GenericTaskConfig(model.ConnectedModel):
             return test
             pass
         raise ValueError("This configuration does not have holdout")
+    
+    def train_without_holdout(self, ds=None):
+        if ds is None:
+            ds=self.get_dataset()
+        if os.path.exists(self.path + ".holdout_split"):
+            trI,hI = utils.load_yaml(self.path + ".holdout_split")
+            train=datasets.SubDataSet(ds,trI)
+            test = datasets.SubDataSet(ds,hI)
+            return train
+        if self.testSplit>0 or self.holdoutArr is not None:
+            train,test=self.doGetHoldout(ds)
+            return train
+            pass
+        raise ValueError("This configuration does not have holdout")
 
     def kfold(self, ds=None, indeces=None,batch=None)-> datasets.DefaultKFoldedDataSet:
         if ds is None:
@@ -356,7 +466,7 @@ class GenericTaskConfig(model.ConnectedModel):
              folds=utils.load_yaml(self.path+".folds_split")
              split_loaded=True
              ds.folds=folds
-        kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count,stratified=self.stratified,groupFunc=self.groupFunc)
+        kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count,stratified=self.stratified,groupFunc=self.groupFunc,validationSplit=self.validationSplit,maxEpochSize=self.maxEpochSize)
         if not split_loaded:
             kf.save(self.path+".folds_split")
         if self.noTrain:
@@ -371,7 +481,7 @@ class GenericTaskConfig(model.ConnectedModel):
             pass
         return kf
 
-    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False):
+    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False, cacheModel=False):
         raise ValueError("Not implemented")
 
     def predict_all_to_array(self, dataset, fold=None, stage=None, limit=-1, batch_size=None, ttflips=False):
@@ -384,15 +494,53 @@ class GenericTaskConfig(model.ConnectedModel):
         if isinstance(dataset,str):
             dataset=self.get_dataset(dataset)
         res=[]
-        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediiction from  " + str(dataset)) as pbar:
+        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediction from  " + str(dataset)) as pbar:
             for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips):
                 b=v
+                
+                #fixme: b.data is empty
                 for i in range(len(b.data)):
                     res.append(b.results[i])
                 pbar.update(batch_size)
         return np.array(res)
 
-    def predictions(self,name,fold=None,stage=None):
+
+    def load_writeable_dataset(self, ds, path)->DataSet:
+        rr = np.load(path)
+        resName = (ds.name if hasattr(ds, "name") else "") + "_predictions"
+        result = BufferedWriteableDS(ds, resName, path, rr)
+        return result
+
+    def create_writeable_dataset(self, dataset:DataSet, dsPath:str)->WriteableDataSet:
+        resName = (dataset.name if hasattr(dataset, "name") else "") + "_predictions"
+        result = BufferedWriteableDS(dataset, resName, dsPath)
+        return result
+
+    def predict_all_to_dataset(self, dataset, fold=None, stage=None, limit=-1, batch_size=None, ttflips=False, dsPath = None, cacheModel=False)->DataSet:
+
+        result = self.create_writeable_dataset(dataset, dsPath)
+
+        if batch_size is None:
+            batch_size=self.inference_batch
+        if fold is None:
+            fold=list(range(self.folds_count))
+        if stage is None:
+            stage=list(range(len(self.stages)))
+        if isinstance(dataset,str):
+            dataset=self.get_dataset(dataset)
+
+        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediction from  " + str(dataset)) as pbar:
+            for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips, cacheModel=cacheModel):
+                b=v
+                for i in range(len(b.results)):
+                    result.append(b.results[i])
+                pbar.update(batch_size)
+
+        result.commit()
+        return result
+
+
+    def predictions(self,name,fold=None,stage=None)->DataSet:
         return musket_core.predictions.get_predictions(self,name,fold,stage)
 
     def find_treshold(self,ds,fold,func,stage=0):
@@ -400,42 +548,38 @@ class GenericTaskConfig(model.ConnectedModel):
         if isinstance(stage,list) or isinstance(stage,tuple):
             pa = []
             for i in stage:
-                pa.append(self.predict_all_to_array(ds, fold, i))
-            predicted = np.mean(np.array(pa),axis=0)
-        else: predicted = self.predict_all_to_array(ds, fold, stage)
-        vl = datasets.get_targets_as_array(ds)
-        return threshold_search(vl, predicted,func)
+                pa.append(predictions.Prediction(self, fold, i, None, ds).calculate())
+            predictedDS = MeanDataSet(pa)
+        else: predictedDS = predictions.Prediction(self, fold, stage, None, ds).calculate()
+        return threshold_search(predictedDS,func,self.get_eval_batch())
 
     def find_optimal_treshold_by_validation(self,func,stages=None):
         tresh = []
         for fold in range(self.folds_count):
-            arr = predictions.get_validation_prediction(self,fold,stages)
-            val = self.validation( fold)
-            targets = datasets.get_targets_as_array(val)
-            tr = threshold_search(targets,arr , func)
+            predsDS = predictions.get_validation_prediction(self,fold,stages)
+            tr = threshold_search(predsDS, func, self.get_eval_batch())
             tresh.append(tr.treshold)
         tr = np.mean(np.array(tresh))
         return tr
 
     def find_optimal_treshold_by_validation2(self,func,stages=None,ds=None,):
         all=[]
-        allTargets=[]
         for fold in range(self.folds_count):
             val = self.validation(ds, fold)
-            preds=predictions.get_validation_prediction(self,fold,stages)
-            targets=datasets.get_targets_as_array(val)
-            all.append(preds)
-            allTargets.append(targets)
+            predsDS=predictions.get_validation_prediction(self,fold,stages)
+            all.append(predsDS)
 
-        tr = threshold_search(np.concatenate(allTargets,axis=0),np.concatenate(all,axis=0),func)
+        resultPredsDS = all[0] if len(all) == 1 else datasets.CompositeDataSet(all)
+        tr = threshold_search(resultPredsDS,func, self.get_eval_batch())
         return tr.treshold
 
     def find_optimal_treshold_by_holdout(self,func,stages=None):
-        hl=predictions.get_holdout_prediction(self,None,stages)
-        return threshold_search(datasets.get_targets_as_array(self.holdout()), hl, func).treshold
+        predsDS=predictions.get_holdout_prediction(self,None,stages)
+        return threshold_search(predsDS, func, self.get_eval_batch()).treshold
 
 
     def createAndCompile(self, lr=None, loss=None)->keras.Model:
+        context.projectPath=self.get_project_path()
         return self.compile(self.createNet(), self.createOptimizer(lr=lr), loss=loss)
 
     def validate(self):
@@ -452,7 +596,7 @@ class GenericTaskConfig(model.ConnectedModel):
             foldNum=ds
             ds=self.get_dataset()
         if isinstance(foldNum, list):
-            foldNum=foldNum[0]    
+            foldNum=foldNum[0]
         ids=self.kfold(ds).indexes(foldNum,False)
         r=datasets.SubDataSet(ds, ids)
         r.name="validation"+str(foldNum)
@@ -465,6 +609,9 @@ class GenericTaskConfig(model.ConnectedModel):
         return r
 
     def createOptimizer(self, lr=None):
+        if not self.optimizer:
+            return None
+
         r = getattr(opt, self.optimizer)
         ds = create_with(["lr", "clipnorm", "clipvalue"], self.all)
         if lr:
@@ -577,7 +724,7 @@ class GenericTaskConfig(model.ConnectedModel):
 
     def fit(self, dataset_ = None, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction = None,parallel=False)->typing.Collection[Task]:
         if dataset_ is None:
-          dataset = self.get_dataset()
+            dataset = self.get_dataset()
         else: dataset=dataset_
 
         dataset = self._adapt_before_fit(dataset)
@@ -596,7 +743,7 @@ class GenericTaskConfig(model.ConnectedModel):
             if not parallel:
                 fw()
             else:
-              units_of_works.append(fw)
+                units_of_works.append(fw)
         if self._reporter is not None and self._reporter.isCanceled():
             return []
         if parallel:
@@ -627,6 +774,7 @@ class GenericTaskConfig(model.ConnectedModel):
 
     def createSummary(self,foldsToExecute, subsample):
         stagesStat=[]
+        all_metrics=self.metrics+self.final_metrics
         metric = self.primary_metric
         if "val_" in metric:
             metric=metric[4:]
@@ -636,7 +784,7 @@ class GenericTaskConfig(model.ConnectedModel):
                 return {"canceled": True }
             #tr=self.find_optimal_treshold_by_validation2(metric, [stage])
             #tr0 = self.find_optimal_treshold_by_validation(metric, [stage])
-            for m in self.metrics:
+            for m in all_metrics:
                ms[m]=predictions.cross_validation_stat(self,m,[stage])
 
                if self.testSplit > 0:
@@ -649,7 +797,7 @@ class GenericTaskConfig(model.ConnectedModel):
         all={}
         #tr = self.find_optimal_treshold_by_validation2(metric)
         #tr0 = self.find_optimal_treshold_by_validation(metric)
-        for m in self.metrics:
+        for m in all_metrics:
             if self._reporter is not None and self._reporter.isCanceled():
                 return {"canceled": True }
             all[m] = predictions.cross_validation_stat(self, m)
@@ -689,7 +837,7 @@ class GenericTaskConfig(model.ConnectedModel):
                 self.eval_task_set(item, tasks_set, tasks_set_id, path, dataset, fold, stage, callbacks, pbar)
 
             tasks_set_id += 1
-    
+
     def eval_task_set(self, task_item, tasks_set, tasks_set_id, path, dataset, fold, stage, callbacks, progress_bar):
         task_runners = {}
 
@@ -719,11 +867,33 @@ class GenericTaskConfig(model.ConnectedModel):
         for runner in task_runners.values():
             runner.end()
 
+    def get_default_dataset_folder(self):
+        if self.datasets_path is not None:
+            return self.datasets_path
+        return os.path.join(self.get_project_path(),"data")
+
+
+
+    def get_project_path(self):
+        if self._projectDir is not None:
+            return self._projectDir
+        v=self.path
+        while v is not None and len(v)>0:
+            v=os.path.dirname(v)
+            if os.path.exists(os.path.join(v,"modules")):
+                self._projectDir=v
+                return v
+        self._projectDir=os.path.dirname(self.path)
+        self._projectDir=os.path.dirname(self._projectDir)
+        print(self._projectDir)
+        return self._projectDir
+
     def parse_dataset(self,datasetName=None):
-        try:
+        #try:
+            context.projectPath=self.get_project_path()
             fw = self.dataset
             if self.datasets_path is not None:
-                os.chdir(self.datasets_path)  # TODO review
+                os.chdir(self.get_default_dataset_folder())  # TODO review
             if datasetName is not None:
                 fw = self.datasets[datasetName]
             if isinstance(fw, str):
@@ -735,9 +905,9 @@ class GenericTaskConfig(model.ConnectedModel):
                                                                   self.imports)
                 return dataset
             return None
-        except:
-            ds_config = self.pickup_ds_config()
-            return musket_core.image_datasets.DS_Wrapper(self.dataset, ds_config, self.path)
+#         except:
+#             ds_config = self.pickup_ds_config()
+#             return musket_core.image_datasets.DS_Wrapper(self.dataset, ds_config, self.path)
 
 
     def pickup_ds_config(self):
@@ -748,6 +918,7 @@ class GenericTaskConfig(model.ConnectedModel):
         cleaned.pop("dataset", None)
         cleaned.pop("run_tasks", None)
         cleaned.pop("import_tasks", None)
+        cleaned.pop("maxEpochSize", None)
 
 class TaskConfigInfo:
 
@@ -758,10 +929,12 @@ class TaskConfigInfo:
         self.lr = lr
 
 
+import cv2
 class GenericImageTaskConfig(GenericTaskConfig):
 
     def __init__(self,**atrs):
         super().__init__(**atrs)
+        self.mdl = None
 
     def _update_from_config(self, v, val):
         if v == 'augmentation' and val is not None:
@@ -793,18 +966,37 @@ class GenericImageTaskConfig(GenericTaskConfig):
     def predict_on_directory(self, path, fold=0, stage=0, limit=-1, batch_size=None, ttflips=False):
         return self.predict_on_dataset(datasets.DirectoryDataSet(path), fold, stage, limit, batch_size, ttflips)
 
-    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=None, ttflips=False):
+    def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=None, ttflips=False, cacheModel=False):
+        if self.testTimeAugmentation is not None:
+            ttflips=self.testTimeAugmentation
         if batch_size is None:
             batch_size=self.inference_batch
-        mdl = self.load_model(fold, stage)
+
+        if cacheModel:
+            if self.mdl is None:
+                self.mdl = self.load_model(fold, stage)
+            mdl = self.mdl
+        else:
+            mdl = self.load_model(fold, stage)
+
         if self.crops is not None:
             mdl=BatchCrop(self.crops,mdl)
         ta = self.transformAugmentor()
         for original_batch in datasets.batch_generator(dataset, batch_size, limit):
             for batch in ta.augment_batches([original_batch]):
                 res = self.predict_on_batch(mdl, ttflips, batch)
-                self.update(batch,res)
-                batch.results=res
+                resList = [x for x in res]
+                for ind in range(len(resList)):
+                    img = resList[ind]
+                    # FIXME
+                    unaug = original_batch.images[ind]
+                    if not self.manualResize and self.flipPred:
+                        restored = imgaug.imresize_single_image(img,(unaug.shape[0],unaug.shape[1]),cv2.INTER_AREA)
+                    else:
+                        restored=img    
+                    resList[ind] = restored
+                self.update(batch,resList)
+                batch.results=resList
                 yield batch
 
 
@@ -829,17 +1021,17 @@ class GenericImageTaskConfig(GenericTaskConfig):
         elif ttflips:
             res = self.predict_with_all_augs(mdl, ttflips, batch)
         return res
-    
+
     def predict_with_all_augs(self, mdl, ttflips, batch):
         input_left = batch.images_aug
         input_right = imgaug.augmenters.Fliplr(1.0).augment_images(batch.images_aug)
-        
+
         out_left = self.predict_with_all_rot_augs(mdl, ttflips,  input_left)
         out_right = self.predict_with_all_rot_augs(mdl, ttflips,  input_right)
-        
+
         if self.flipPred:
             out_right = imgaug.augmenters.Fliplr(1.0).augment_images(out_right)
-        
+
         return (out_left + out_right) / 2.0
 
     def predict_with_all_rot_augs(self, mdl, ttflips,  input):
@@ -847,22 +1039,22 @@ class GenericImageTaskConfig(GenericTaskConfig):
         rot_180 = imgaug.augmenters.Affine(rotate=180.0)
         rot_270 = imgaug.augmenters.Affine(rotate=270.0)
         count = 2.0
-        
+
         res_0 = mdl.predict(np.array(input))
-        
+
         res_180 = self.predict_there_and_back(mdl, rot_180, rot_180, input)
-        
+
         res_270 = 0;
         res_90 = 0
-        
+
         if ttflips == "Horizontal_and_vertical":
             count = 4.0
-            
+
             res_270 = self.predict_there_and_back(mdl, rot_270, rot_90, input)
             res_90 = self.predict_there_and_back(mdl, rot_90, rot_270, input)
-        
+
         return (res_0 + res_90 + res_180 + res_270) / count
-    
+
     def predict_there_and_back(self, mdl, there, back, input):
         augmented_input = there.augment_images(input)
         there_res = mdl.predict(np.array(augmented_input))
@@ -871,7 +1063,8 @@ class GenericImageTaskConfig(GenericTaskConfig):
         return there_res
 
     def inject_task_specific_transforms(self, ds, transforms):
-        transforms.append(imgaug.augmenters.Scale({"height": self.shape[0], "width": self.shape[1]}))
+        if not self.manualResize:
+            transforms.append(imgaug.augmenters.Scale({"height": self.shape[0], "width": self.shape[1]}))
         if self.bgr is not None:
             ds = WithBackgrounds(ds, self.bgr)
         return ds
@@ -884,36 +1077,48 @@ class GenericImageTaskConfig(GenericTaskConfig):
             for v in datasets.batch_generator(datasets.DirectoryDataSet(path), batch_size, limit):
                 for z in ta.augment_batches([v]):
                     res = self.predict_on_batch(mdl,ttflips,z)
-                    z.predictions = res;
+                    resList = [x for x in res]
+                    for ind in range(len(resList)):
+                        img = resList[ind]
+                        unaug = z.images_unaug[ind]
+                        resize = imgaug.augmenters.Scale({"height": unaug.shape[0], "width": unaug.shape[1]})
+                        restored = resize.augment_image(img)
+                        resList[ind] = restored
+                    z.predictions = resList;
                     pbar.update(batch_size)
                     yield z
 
     def transformAugmentor(self):
         transforms = [] + self.transforms
-        transforms.append(imgaug.augmenters.Scale({"height": self.shape[0], "width": self.shape[1]}))
+        if not self.manualResize:
+            transforms.append(imgaug.augmenters.Scale({"height": self.shape[0], "width": self.shape[1]}))
         return imgaug.augmenters.Sequential(transforms)
 
-
-    def adaptNet(self, model, model1, copy=False):
+    def adaptNet(self, model, model1, copy=False,sh=4):
         notUpdated = True
         for i in range(0, len(model1.layers)):
             if isinstance(model.layers[i], keras.layers.BatchNormalization) and notUpdated:
                 uw = []
                 for w in model1.layers[i].get_weights():
                     val = w
-                    vvv = np.zeros(shape=(4), dtype=np.float32)
-                    vvv[0:3] = val
-                    vvv[3] = (val[0] + val[1] + val[2]) / 3
+                    vvv = np.zeros(shape=(sh), dtype=np.float32)
+                    if sh>1:
+                        vvv[0:sh-1] = val
+                        vvv[sh-1] = (val[0] + val[1] + val[2]) / 3
+                    else:
+                       vvv[sh-1] = (val[0] + val[1] + val[2]) / 3    
                     uw.append(vvv)
                 model.layers[i].set_weights(uw)
 
             elif isinstance(model.layers[i], keras.layers.Conv2D) and notUpdated:
                 val = model1.layers[i].get_weights()[0]
                 # print(val.shape)
-                vvv = np.zeros(shape=(val.shape[0], val.shape[1], 4, val.shape[3]), dtype=np.float32)
-                vvv[:, :, 0:3, :] = val
+                
+                vvv = np.zeros(shape=(val.shape[0], val.shape[1], sh, val.shape[3]), dtype=np.float32)
+                if sh>1:
+                    vvv[:, :, 0:sh-1, :] = val
                 if copy:
-                    vvv[:, :, 3, :] = val[:, :, 2, :]
+                    vvv[:, :, sh-1, :] = val[:, :, 2, :]
                 model.layers[i].set_weights([vvv])
                 notUpdated = False
             else:
@@ -993,6 +1198,26 @@ class Stage:
         kf.trainOnFold(ec.fold, model, cb,epochs, self.negatives, subsample=ec.subsample,validation_negatives=self.validation_negatives)
         return ll
 
+
+    def _doTrain(self, kf, model, ec, cb, kepoch):
+        return kf.trainOnFold(ec.fold, model, cb, self.epochs, self.negatives, subsample=ec.subsample, validation_negatives=self.validation_negatives, verbose=self.cfg.verbose, initial_epoch=kepoch)
+
+
+    def _addLogger(self, model, ec, cb, kepoch):
+        if self.cfg.resume:
+            kepoch = maxEpoch(ec.metricsPath())
+            if kepoch != -1:
+                if os.path.exists(ec.weightsPath()):
+                    model.load_weights(ec.weightsPath())
+                cb.append(CSVLogger(ec.metricsPath(), append=True))
+            else:
+                cb.append(CSVLogger(ec.metricsPath()))
+                kepoch = 0
+        else:
+            kepoch = 0
+            cb.append(CSVLogger(ec.metricsPath()))
+        return kepoch
+
     def execute(self, kf: datasets.DefaultKFoldedDataSet, model: keras.Model, ec: ExecutionConfig,callbacks=None):
         if 'unfreeze_encoder' in self.dict and self.dict['unfreeze_encoder']:
             self.unfreeze(model)
@@ -1020,26 +1245,17 @@ class Stage:
             self.cfg.compile(model, self.cfg.createOptimizer(self.lr), self.loss)
 
         if self.initial_weights is not None:
+            #model.layers[-1].name="SomeNewName"
             model.load_weights(self.initial_weights)
         if 'callbacks' in self.dict:
             cb = configloader.parse("callbacks", self.dict['callbacks'])
         if 'extra_callbacks' in self.dict:
             cb = cb + configloader.parse("callbacks", self.dict['extra_callbacks'])
         kepoch=-1
-
+        if "logAll" in self.dict and self.dict["logAll"]:
+            cb=cb+[AllLogger(ec.metricsPath()+"all.csv")]
         cb.append(KFoldCallback(kf))
-        if self.cfg.resume:
-            kepoch=maxEpoch(ec.metricsPath())
-            if kepoch!=-1:
-                if os.path.exists(ec.weightsPath()):
-                    model.load_weights(ec.weightsPath())
-                cb.append(CSVLogger(ec.metricsPath(),append=True))
-            else:
-                cb.append(CSVLogger(ec.metricsPath()))
-                kepoch=0
-        else:
-            kepoch=0
-            cb.append(CSVLogger(ec.metricsPath()))
+        kepoch = self._addLogger(model, ec, cb, kepoch)
         md = self.cfg.primary_metric_mode
 
         if self.cfg.gpus==1:
@@ -1068,11 +1284,15 @@ class Stage:
             self.cfg.compile(model, self.cfg.createOptimizer(lr), loss)
             print("Restoring weights...")
             # weights are destroyed by some reason
-            bestWeightsLoaded = self.loadBestWeightsFromPrevStageIfExists(ec, model.layers[-2])
+            mda=None
+            for q in model.layers:
+                if isinstance(q,keras.Model):
+                    mda=q
+            bestWeightsLoaded = self.loadBestWeightsFromPrevStageIfExists(ec, mda)
             if not bestWeightsLoaded:
-                model.layers[-2].load_weights(ec.weightsPath()+".tmp",False)
+                mda.load_weights(ec.weightsPath()+".tmp",False)
 
-            amcp = alt.AltModelCheckpoint(ec.weightsPath(), model.layers[-2], save_best_only=True,
+            amcp = alt.AltModelCheckpoint(ec.weightsPath(), mda, save_best_only=True,
                                                 monitor=self.cfg.primary_metric, mode=md, verbose=1)
             if prevInfo != None:
                 amcp.best = prevInfo.best
@@ -1080,7 +1300,7 @@ class Stage:
             cb.append(amcp)
         else:
             self.loadBestWeightsFromPrevStageIfExists(ec, model)
-        kf.trainOnFold(ec.fold, model, cb, self.epochs, self.negatives, subsample=ec.subsample,validation_negatives=self.validation_negatives,verbose=self.cfg.verbose, initial_epoch=kepoch)
+        self._doTrain(kf, model, ec, cb, kepoch)
 
         print('saved')
         pass
@@ -1088,7 +1308,7 @@ class Stage:
     def loadBestWeightsFromPrevStageIfExists(self, ec, model):
         bestWeightsLoaded = False
         if ec.stage > 0:
-            ec.stage = ec.stage - 1;
+            ec.stage = ec.stage - 1
             try:
                 if os.path.exists(ec.weightsPath()):
                     print("Loading best weights from previous stage...")
@@ -1096,7 +1316,7 @@ class Stage:
                     bestWeightsLoaded = True
             except:
                 pass
-            ec.stage = ec.stage + 1;
+            ec.stage = ec.stage + 1
         return bestWeightsLoaded
 
     def unfreeze(self, model):
@@ -1107,3 +1327,41 @@ class Stage:
 
     def add_visualization_callbacks(self, cb, ec, kf):
         pass
+    
+class MultiSplitStage(Stage):
+    def _doTrain(self, kf, model:keras.Model, ec, cb, kepoch):
+        bestIndex=-1
+        for stage in range(0,10):
+            
+            coef=[0.1,0.2,0.3,0.5,1,1.5,2,3]
+            if bestIndex!=-1:
+                print("Loading from :",bestIndex)
+                model.load_weights(ec.weightsPath()+"."+str(stage-1)+"."+str(bestIndex)+".weights",True)
+            else:
+                model.load_weights("D:/jigsaw/experiments/e9/weights/best.weights")
+            model.save_weights(ec.weightsPath()+"."+"def."+str(stage)+".weights", True)    
+            bestRes=100000
+            bestIndex=-1
+            list=[]
+            for i in range(len(coef)):
+                model.load_weights(ec.weightsPath()+"."+"def."+str(stage)+".weights", True)
+                
+                K.set_value(model.optimizer.lr, self.cfg.lr*coef[i])
+                kf.trainOnIndexes(ec.fold, model, cb+[CSVLogger(ec.metricsPath()+"."+str(stage)+"."+str(i)+".csv"),AllLogger(ec.metricsPath()+"."+str(stage)+"."+str(i)+".all.csv")], "all",
+                            stage,True)
+                vvl=pd.read_csv(ec.metricsPath()+"."+str(stage)+"."+str(i)+".csv")
+                res=vvl["val_loss"].values[0]
+                print(res)
+                if res<bestRes:
+                    bestRes=res
+                    bestIndex=i
+                    model.save_weights(ec.weightsPath()+"."+str(stage)+"."+str(i)+".weights", True)
+                list.append([self.cfg.lr*coef[i],res])
+                print(list)    
+                
+            
+            
+            
+    def _addLogger(self, model, ec, cb, kepoch):
+        return 0        
+            

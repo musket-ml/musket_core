@@ -1,7 +1,13 @@
 import tensorflow as tf
 from keras import backend as K
+import numpy as np
 import keras
 # credits: https://www.kaggle.com/guglielmocamporese/macro-f1-score-keras
+
+
+def keras_loss(func):
+    keras.utils.get_custom_objects()[func.__name__]=func
+    return func
 
 def macro_f1(y_true, y_pred):
     # y_pred = K.round(y_pred)
@@ -98,6 +104,29 @@ def iou_coef(y_true, y_pred, smooth=1):
     # intersection = K.sum(K.abs(y_true * y_pred), axis=-1)
     # union = K.sum((y_true,-1) + K.sum(y_pred,-1)) - intersection
     # return (intersection + smooth) / ( union + smooth)
+
+SMOOTH = 1e-6    
+
+def binary_accuracy_numpy(x,y):
+    vl=((x>0.5)==(y>0.5)).sum()
+    return vl/y.size 
+
+def iou_coef_numpy(y_true, y_pred, smooth=1):
+    """
+    IoU = (|X & Y|)/ (|X or Y|)
+    """
+    intersection = np.sum(y_true * y_pred, axis=(1, 2, 3))
+    union = np.sum(y_true, axis=(1, 2, 3)) + np.sum(y_pred, axis=(1, 2, 3))
+    return 2.0*np.mean((intersection + smooth) / (union + smooth), axis=0)    
+
+def dice_numpy(true, pred):
+    true = (true>0.5).astype(np.float)
+    pred = (pred>0.5).astype(np.float)
+
+    intersection =np.sum (true * pred,axis=(1,2,3))
+    im_sum = np.sum(true) + np.sum(pred)
+
+    return 2.0 * np.mean(intersection / (im_sum + EPS),axis=0)    
 
 def dice(true, pred):
     true = tf.to_float(true>0.5)

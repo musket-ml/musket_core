@@ -21,11 +21,11 @@ USE_MULTIPROCESSING=False
 
 
 class PredictionItem:
-    def __init__(self, path, x, y):
+    def __init__(self, path, x, y, prediction = None):
         self.x=x
         self.y=y
         self.id=path
-        self.prediction=None
+        self.prediction=prediction
 
     def original(self):
        return self
@@ -42,6 +42,9 @@ class DataSet:
     def __getitem__(self, item)->PredictionItem:
         raise ValueError("Not implemented")
 
+    def get_train_item(self, item)->PredictionItem:
+        return self[item]
+
     def __len__(self):
         raise ValueError("Not implemented")
 
@@ -52,6 +55,23 @@ class DataSet:
 
     def get_target(self,item):
         return self[item].y
+    
+    def root(self):
+        if not hasattr(self,"parent"):
+            return self
+        if self.parent is None:
+            return self
+        if hasattr(self.parent,"root"):
+            return self.parent.root()
+        return self.parent
+
+class WriteableDataSet(DataSet):
+
+    def append(self,item):
+        raise ValueError("Not implemented")
+
+    def commit(self):
+        raise ValueError("Not implemented")
 
 def get_id(d:DataSet)->str:
     if hasattr(d,"id"):
@@ -177,6 +197,8 @@ class DataSetLoader:
         id = ""
         if hasattr(self.dataset, "item"):
             item = self.dataset.item(self.indeces[i], self.isTrain)
+        elif hasattr(self.dataset, "get_train_item") and self.isTrain:
+            item = self.dataset.get_train_item(self.indeces[i])    
         else:
             item = self.dataset[self.indeces[i]]
         x, y = item.x, item.y
@@ -209,7 +231,7 @@ def draw_test_batch(batch,path):
         iPic = batch.images_aug[i][:, :, 0:3].astype(np.uint8)
         cells.append(iPic)
         cells.append(batch.segmentation_maps_aug[i].draw_on_image(iPic))  # column 2
-        cells.append(batch.heatmaps_aug[i].draw_on_image(iPic)[0])  # column 2
+        cells.append(batch.heatmaps_aug[i].draw_on_image(iPic))  # column 2
     # Convert cells to grid image and save.
     grid_image = imgaug.draw_grid(cells, cols=3)
     imageio.imwrite(path, grid_image)
@@ -222,7 +244,7 @@ class ConstrainedDirectory:
     def __repr__(self):
         return self.path+" (with filter)"
 
-class CompositeDataSet:
+class CompositeDataSet(object):
 
     def __init__(self, components):
         self.components = components
@@ -277,6 +299,9 @@ class CompositeDataSet:
     def __len__(self):
         return self.len
 
+def dataset_provider(func):
+    func.dataset=True
+    return func
 
 class DirectoryDataSet:
 
@@ -325,14 +350,28 @@ def batch_generator(ds, batchSize, maxItems=-1):
         if len(bx)>0:
             yield imgaug.Batch(images=bx,data=ps)
         return
-
+def generic_batch_generator(ds,batchSize,maxItems=-1):
+    indexes=None
+    if maxItems !=-1:
+        indexes=list(range(min(maxItems,len(ds))))
+    dg=GenericDataSetSequence(ds,batchSize,indexes,False)
+    for i in range(len(dg)):
+        zz=dg[i]
+        if len(zz)==3:
+            X,y,s=zz
+        else:
+            X,y=zz
+        yield imgaug.Batch(images=X,data=y)
+    return
 
 class GenericDataSetSequence(keras.utils.Sequence):
 
-    def __init__(self,ds,batch_size,indexes=None):
+    def __init__(self,ds,batch_size,indexes=None,infinite=True,isTrain=False):
         self.ds=ds
         self.batchSize=batch_size
         self._dim=None
+        self.inifinite=infinite
+        self.isTrain = isTrain
         if indexes is None:
             indexes =range(len(self.ds))
         self.indexes=indexes
@@ -360,12 +399,23 @@ class GenericDataSetSequence(keras.utils.Sequence):
         l = len(self.indexes)
         X=[]
         y=[]
+        hasSample=False
+        if hasattr(self.ds, "root") and hasattr(self.ds.root(),"sample_weight"):
+            hasSample=True
+            S=[]
+            
         for i in range(idx * self.batchSize,(idx + 1) * self.batchSize):
             if i>=l:
                 i=i%l
-            r=self.ds[self.indexes[i]]
+                if not self.inifinite:
+                    break
+            r=self.ds.get_train_item(self.indexes[i]) if self.isTrain else self.ds[self.indexes[i]]
             X.append(r.x)
             y.append(r.y)
+            if hasSample:
+                S.append(self.ds.root().sample_weight(self.indexes[i]))
+        if hasSample:        
+            return np.array(X),np.array(y),np.array(S)
         return np.array(X),np.array(y)
 
     def on_epoch_end(self):
@@ -380,11 +430,16 @@ class GenericDataSetSequence(keras.utils.Sequence):
 
         batch_x = [[] for i in range(xd)]
         batch_y = [[] for i in range(yd)]
-
+        hasSample=False
+        if hasattr(self.ds.root(),"sample_weight"):
+            hasSample=True
+            S=[]
         for i in range(idx * self.batchSize,(idx + 1) * self.batchSize):
             if i>=l:
                 i=i%l
-            r=self.ds[self.indexes[i]]
+                if not self.inifinite:
+                    break
+            r=self.ds.get_train_item(self.indexes[i]) if self.isTrain else self.ds[self.indexes[i]]
             for j in range(xd):
                 r_x = r.x
                 if not isinstance(r_x, list) and not isinstance(r_x, tuple):
@@ -392,24 +447,36 @@ class GenericDataSetSequence(keras.utils.Sequence):
                 batch_x[j].append(r_x[j])
             for j in range(yd):
                 r_y = r.y
-                if not isinstance(r_y, list) and not isinstance(r_x, tuple):
+                if not isinstance(r_y, list) and not isinstance(r_y, tuple):
                     r_y = [ r_y ]
                 batch_y[j].append(r_y[j])
+            if hasSample:
+                S.append(self.ds.root().sample_weight(self.indexes[i]))    
         batch_x=[np.array(x) for x in batch_x]
         batch_y = np.array(batch_y[0]) if yd == 1 else [np.array(y) for y in batch_y]
+        if hasSample:
+#             sd=[]
+#             
+#             sd.append(np.array(S))
+#             sd.append(np.ones(len(S)))        
+            return batch_x,batch_y,np.array(S)
+        
         return batch_x,batch_y
 
 class SimplePNGMaskDataSet:
-    def __init__(self, path, mask, detect_exts=False, in_ext="jpg", out_ext="png", generate=False):
+    def __init__(self, path, mask, detect_exts=False, in_ext="jpg", out_ext="png", generate=False,list=None):
         self.path = path;
         self.mask = mask;
 
-        ldir = os.listdir(path)
+        if list is None:
+            ldir = os.listdir(path)
 
-        if ".DS_Store" in ldir:
-            ldir.remove(".DS_Store")
+            if ".DS_Store" in ldir:
+                ldir.remove(".DS_Store")
 
-        self.ids = [x[0:x.index('.')] for x in ldir]
+            self.ids = [x[0:x.index('.')] for x in ldir]
+        else:
+            self.ids=list
 
         self.exts = []
 
@@ -481,7 +548,8 @@ class SimplePNGMaskDataSet:
             newImage[:, :, 2] = image[:, :, 2]
 
             image = newImage
-
+        
+        image=image.astype(np.uint8)    
         return PredictionItem(self.ids[item] + str(), image, out)
 
     def isPositive(self, item):
@@ -497,28 +565,39 @@ LOADER_THREADED=True
 
 
 class DefaultKFoldedDataSet:
-    def __init__(self,ds,indexes=None,aug=None,transforms=None,folds=5,rs=33,batchSize=16,stratified=True,groupFunc=None):
+    def __init__(self,ds,indexes=None,aug=None,transforms=None,folds=5,rs=33,batchSize=16,stratified=True,groupFunc=None,validationSplit=0.2,maxEpochSize=None):
         self.ds=ds;
         if aug==None:
             aug=[]
         if transforms==None:
             transforms=[]
-        self.aug=aug;
+        self.aug=aug
         if indexes==None:
             indexes=range(len(ds))
         self.transforms=transforms
         self.batchSize=batchSize
+        self.maxEpochSize = maxEpochSize
         self.positive={}
-
         if hasattr(ds,"folds"):
-            self.folds=getattr(ds,"folds");
+            self.folds=getattr(ds,"folds")
         else:
-            if stratified:
-                self.kf = ms.StratifiedKFold(folds, shuffle=True, random_state=rs)
-                self.folds=[v for v in self.kf.split(indexes,dataset_classes(ds,groupFunc))]
-            else:
-                self.kf = ms.KFold(folds, shuffle=True, random_state=rs);
-                self.folds = [v for v in self.kf.split(indexes)]
+            
+            if folds==1:
+                
+                if stratified:
+                    classes=dataset_classes(ds,groupFunc)
+                    r=ms.train_test_split(list(indexes),classes,shuffle=True,stratify=classes,random_state=rs,test_size=validationSplit)
+                else: 
+                    r=ms.train_test_split(list(indexes),shuffle=True,random_state=rs,test_size=validationSplit)
+                self.folds=[r]
+            else:    
+                if stratified:
+                    
+                    self.kf = ms.StratifiedKFold(folds, shuffle=True, random_state=rs)
+                    self.folds=[v for v in self.kf.split(indexes,dataset_classes(ds,groupFunc))]
+                else:
+                    self.kf = ms.KFold(folds, shuffle=True, random_state=rs)
+                    self.folds = [v for v in self.kf.split(indexes)]
 
     def clear_train(self):
         nf = []
@@ -584,7 +663,7 @@ class DefaultKFoldedDataSet:
 
     def generator_from_indexes(self, indexes, isTrain=True, returnBatch=False):
         def _factory():
-            return GenericDataSetSequence(self.ds,self.batchSize,indexes)
+            return GenericDataSetSequence(self.ds,self.batchSize,indexes, isTrain = isTrain)
         return NullTerminatable(),NullTerminatable(),_factory
 
     def trainOnFold(self,fold:int,model:keras.Model,callbacks=[],numEpochs:int=100,negatives="all",
@@ -600,19 +679,60 @@ class DefaultKFoldedDataSet:
             v_steps = len(test_indexes)//(round(subsample*self.batchSize))
 
             if v_steps < 1: v_steps = 1
-            
-            model.fit_generator(train_g(), len(train_indexes)//(round(subsample*self.batchSize)),
-                             epochs=numEpochs,
-                             validation_data=test_g(),
-                             callbacks=callbacks,
-                             verbose=verbose,
-                             validation_steps=v_steps,
-                             initial_epoch=initial_epoch)
+
+            iterations = len(train_indexes) // (round(subsample * self.batchSize))
+            if self.maxEpochSize is not None:
+                iterations = min(iterations, self.maxEpochSize)
+            model.fit_generator(train_g(), iterations,
+                                epochs=numEpochs,
+                                validation_data=test_g(),
+                                callbacks=callbacks,
+                                verbose=verbose,
+                                validation_steps=v_steps,
+                                initial_epoch=initial_epoch)
         finally:
             tl.terminate()
             tg.terminate()
             vl.terminate()
             vg.terminate()
+            
+    def trainOnIndexes(self,fold:int,model:keras.Model,callbacks,negatives,
+                    indexes,doValidation=False):
+        train_indexes = self.sampledIndexes(fold, True, negatives)
+        vl=len(train_indexes)
+        train_indexes=train_indexes[indexes*vl//10:(indexes+1)*vl//10]
+        
+        test_indexes = self.sampledIndexes(fold, False,negatives)
+
+        tl,tg,train_g=self.generator_from_indexes(train_indexes) 
+        vl,vg,test_g = self.generator_from_indexes(test_indexes,isTrain=False)
+        try:
+            v_steps = len(test_indexes)//self.batchSize
+
+            if v_steps < 1: v_steps = 1
+
+            iterations = len(train_indexes) // (self.batchSize)
+            if self.maxEpochSize is not None:
+                iterations = min(iterations, self.maxEpochSize)
+            if doValidation:    
+                model.fit_generator(train_g(), iterations,
+                                    epochs=1,
+                                    validation_data=test_g(),
+                                    callbacks=callbacks,
+                                    verbose=1,
+                                    validation_steps=v_steps,
+                                    initial_epoch=0)
+            else:
+                model.fit_generator(train_g(), iterations,
+                                    epochs=1,
+                                    callbacks=callbacks,
+                                    verbose=1,                                    
+                                    initial_epoch=0)    
+        finally:
+            tl.terminate()
+            tg.terminate()
+            vl.terminate()
+            vg.terminate()        
 
     def numBatches(self,fold,negatives,subsample):
         train_indexes = self.sampledIndexes(fold, True, negatives)
@@ -639,16 +759,19 @@ class ImageKFoldedDataSet(DefaultKFoldedDataSet):
         return np.array(r.images_aug), np.array([x.arr for x in r.segmentation_maps_aug])
 
     def generator_from_indexes(self, indexes,isTrain=True,returnBatch=False):
-        m = DataSetLoader(self.ds, indexes, self.batchSize,isTrain=isTrain).generator
         aug = self.augmentor(isTrain)
+        if len(aug)==0:
+            return super().generator_from_indexes(indexes,isTrain,returnBatch)
+        m = DataSetLoader(self.ds, indexes, self.batchSize,isTrain=isTrain).generator
+
         if USE_MULTIPROCESSING:
             l = imgaug.imgaug.BatchLoader(m,nb_workers=NB_WORKERS_IN_LOADER,threaded=LOADER_THREADED,queue_size=LOADER_SIZE)
             g = imgaug.imgaug.BackgroundAugmenter(l, augseq=aug,queue_size=AUGMENTER_QUEUE_LIMIT,nb_workers=NB_WORKERS)
 
             def r():
-                num = 0;
+                num = 0
                 while True:
-                    r = g.get_batch();
+                    r = g.get_batch()
                     x,y= self._prepare_vals_from_batch(r)
                     num=num+1
                     if returnBatch:
@@ -658,11 +781,13 @@ class ImageKFoldedDataSet(DefaultKFoldedDataSet):
             return l,g,r
         else:
             def r():
-                num = 0;
+                num = 0
                 while True:
                     for batch in m():
                         r = list(aug.augment_batches([batch], background=False))[0]
                         x,y= self._prepare_vals_from_batch(r)
+                        #Think about normalization
+                        #x=(x/255.0-(0.485, 0.456, 0.406))
                         num=num+1
                         if returnBatch:
                             yield x,y,r
@@ -671,11 +796,11 @@ class ImageKFoldedDataSet(DefaultKFoldedDataSet):
             return NullTerminatable(),NullTerminatable(),r
 
     def augmentor(self, isTrain)->imgaug.augmenters.Augmenter:
-        allAug = [];
+        allAug = []
         if isTrain:
             allAug = allAug + self.aug
         allAug = allAug + self.transforms
-        aug = imgaug.augmenters.Sequential(allAug);
+        aug = imgaug.augmenters.Sequential(allAug)
         return aug
 
 
@@ -690,28 +815,41 @@ class NullTerminatable:
     def terminate(self):
         pass
 
-class SubDataSet:
+class SubDataSet(DataSet):
     def __init__(self,orig,indexes):
+        super().__init__()
         if isinstance(orig,int) or orig is None or isinstance(orig,list):
             raise ValueError("Dataset is expected")
         self.ds=orig
         self.parent=orig
-        if hasattr(self.parent,"get_target"):
-            def trg(index):
-                return self.parent.get_target(self.indexes[index])
-            self.get_target=trg
+        
         self.indexes=indexes
 
     def isPositive(self, item):
         return self.ds.isPositive(self.indexes[item])
 
+
     def __getitem__(self, item):
-        return self.ds[self.indexes[item]]
+        if isinstance(item, slice):
+            result = [self.ds[i] for i in self.indexes[item]]
+            return result
+        else:
+            return self.ds[self.indexes[item]]
+
+    def get_train_item(self,item:int):
+        return self.ds.get_train_item(self.indexes[item])
+    
+    def root(self):
+        if hasattr(self.ds,"root"):
+            return self.ds.root()
+        return self.ds
 
     def __len__(self):
         return len(self.indexes)
 
     def get_target(self, item):
+        if hasattr(self.parent,"get_target"):
+            return self.parent.get_target(self.indexes[item])
         return self.parent[self.indexes[item]].y
 
 
@@ -719,7 +857,7 @@ def dataset_classes(ds, groupFunc):
     if groupFunc != None:
         data_classes = groupFunc(ds)
     else:
-        data_classes = np.array([ds[i].y for i in range(len(ds))]);
+        data_classes = get_targets_as_array(ds);
         data_classes = data_classes.mean(axis=1) > 0
     return data_classes
 
@@ -733,3 +871,179 @@ def get_targets_as_array(d):
         for i in tqdm.tqdm(range(len(d)),"reading dataset targets "+str(d)):
             preds.append(d[i].y)
     return np.array(preds,dtype=np.float32)
+
+def inherit_dataset_params(ds_from,ds_to):
+    if hasattr(ds_from, "folds"):
+        ds_to.folds = getattr(ds_from, "folds")
+    if hasattr(ds_from, "holdoutArr"):
+        ds_to.holdoutArr = getattr(ds_from, "holdoutArr")
+    if hasattr(ds_from, "contribution"):
+        ds_to.contribution = getattr(ds_from, "contribution")    
+
+class MergedDataSet:
+    def __init__(self,components:[DataSet],mergeFunc=None):
+        self.components = components
+        self.mergeFunc = mergeFunc
+
+    def isPositive(self, item):
+        return self.ds.isPositive(self.indexes[item])
+
+    def __getitem__(self, item):
+        componentItems = [x[item] for x in self.components]
+        isSlice = isinstance(item, slice)
+        lst = list(zip(componentItems)) if isSlice else [ componentItems ]
+
+        merged = [ self.mergeFunc(x) for x in lst ]
+        result = merged if isSlice else merged[0]
+        return result
+
+    def __len__(self):
+        return len(self.components[0])
+
+
+def mergeFunc(items: [PredictionItem]) -> PredictionItem:
+    preds = np.array([x.prediction for x in items])
+    meanPred = np.mean(preds)
+    i = items[0]
+    result = PredictionItem(i.id, i.x, i.y, meanPred)
+    return result
+
+class MeanDataSet(MergedDataSet):
+    def __init__(self,components:[DataSet]):
+        super().__init__(components, mergeFunc)
+
+
+class BufferedWriteableDS(WriteableDataSet):
+
+    def __init__(self,orig,name,dsPath,predictions=None,pickle=False):
+        super().__init__()
+        if predictions is None:
+            predictions = []
+        self.parent = orig
+        self.name=name
+        self.pickle=pickle
+        self.predictions=predictions
+        self.dsPath=dsPath
+
+    def append(self,item):
+        self.predictions.append(item)
+
+    def commit(self):
+        if self.dsPath is not None:
+            if self.pickle:
+                utils.save(self.dsPath, self.predictions)
+            else:
+                np.save(self.dsPath,self.predictions)
+
+    def __len__(self):
+        return len(self.parent)
+
+    def __getitem__(self, item):
+        it = self.parent[item]
+        if self.predictions is not None:
+            if isinstance(item, slice):
+                indSlice = list(range(len(self)))[item]
+                for i in range(len(it)):
+                    it[i].prediction = self.predictions[indSlice[i]]
+            else:
+                it.prediction = self.predictions[item]
+        return it
+
+
+class DirectWriteableDS(WriteableDataSet):
+
+    def __init__(self,orig,name,dsPath, count = 0):
+        super().__init__()
+        self.parent = orig
+        self.name=name
+        self.dsPath=dsPath
+        self.count = count
+
+    def append(self,item):
+        ip = self.itemPath(self.count)
+        self.saveItem(ip,item)
+        self.count += 1
+
+    def commit(self):
+        pass
+
+    def __len__(self):
+        return len(self.parent)
+
+    def __getitem__(self, item):
+        it = self.parent[item]
+        if isinstance(item, slice):
+            indSlice = list(range(len(self)))[item]
+            for i in range(len(it)):
+                ip = self.itemPath(indSlice[i])
+                if os.path.exists(ip):
+                    prediction = self.loadItem(ip)
+                    it[i].prediction = prediction
+        else:
+            ip = self.itemPath(item)
+            if os.path.exists(ip):
+                prediction = self.loadItem(ip)
+                it.prediction = prediction
+        return it
+
+    def itemPath(self, item:int)->str:
+        return f"{self.dsPath}/{item}.npy"
+
+    def saveItem(self, path:str, item):
+        dir = os.path.dirname(path)
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+        np.save(path, item)
+
+    def loadItem(self, path:str):
+        return np.load(path)
+    
+class CompressibleWriteableDS(WriteableDataSet):
+
+    def __init__(self,orig,name,dsPath, count = 0):
+        super().__init__()
+        self.parent = orig
+        self.name=name
+        self.dsPath=dsPath
+        self.count = count
+
+    def append(self,item):
+        ip = self.itemPath(self.count)
+        self.saveItem(ip,item)
+        self.count += 1
+
+    def commit(self):
+        pass
+
+    def __len__(self):
+        return len(self.parent)
+
+    def __getitem__(self, item):
+        it = self.parent[item]
+        if isinstance(item, slice):
+            indSlice = list(range(len(self)))[item]
+            for i in range(len(it)):
+                ip = self.itemPath(indSlice[i])
+                if os.path.exists(ip):
+                    prediction = self.loadItem(ip)
+                    it[i].prediction = prediction
+        else:
+            ip = self.itemPath(item)
+            if os.path.exists(ip):
+                prediction = self.loadItem(ip)
+                it.prediction = prediction
+        return it
+
+    def itemPath(self, item:int)->str:
+        return f"{self.dsPath}/{item}.npy.npz"
+
+    def saveItem(self, path:str, item):
+        dir = os.path.dirname(path)
+        item=(item*255).astype(np.uint8)
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+        np.savez_compressed(path, item)
+
+    def loadItem(self, path:str):
+        x=np.load(path)["arr_0.npy"].astype(np.float32)/255.0  
+        return x; 

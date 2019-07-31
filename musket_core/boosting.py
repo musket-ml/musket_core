@@ -1,93 +1,23 @@
+import numpy as np
+
 import musket_core.generic_config as generic
 import musket_core.datasets as datasets
-import musket_core.configloader as configloader
-import musket_core.utils as utils
-import numpy as np
-import keras
-import musket_core.net_declaration as net
-import musket_core.quasymodels as qm
-import os
 import tqdm
 
-
-
-def model_function(func):
-    func.model=True
-    return func
-
-def _shape(x):
-    if isinstance(x,tuple):
-        return [i.shape for i in x]
-    if isinstance(x,list):
-        return [i.shape for i in x]
-    return x.shape
-
-class GenericPipeline(generic.GenericTaskConfig):
+class BoostingPipeline(generic.GenericTaskConfig):
 
     def __init__(self,**atrs):
         super().__init__(**atrs)
         self.dataset_clazz = datasets.DefaultKFoldedDataSet
-        self._multiOutput=None
+
         pass
 
     def createNet(self):
-        inp,output=utils.load_yaml(self.path + ".shapes")
-        contributions=None
-        if os.path.exists(self.path+".contribution"):
-            contributions=utils.load(self.path+".contribution")
-        else:
-            contributions=None    
-        if isinstance(inp,list):
-            
-            inputs=[keras.Input(x) for x in inp]
-            if contributions is not None:
-                for i in range(len(inputs)):
-                    inputs[i].contribution=contributions[i]
-        else:
-            i=keras.Input(inp);
-            i.contribution=contributions
-            inputs=[i]
-        m=net.create_model_from_config(self.declarations,inputs,self.architecture,self.imports)
-        return m
-
-    def load_writeable_dataset(self, ds, path):
-        if self.isMultiOutput():
-            rr = utils.load(path)
-            resName = (ds.name if hasattr(ds, "name") else "") + "_predictions"
-            result = datasets.BufferedWriteableDS(ds, resName, path, rr)
-        else:
-            rr = np.load(path)
-            resName = (ds.name if hasattr(ds, "name") else "") + "_predictions"
-            result = datasets.BufferedWriteableDS(ds, resName, path, rr)
-        return result
-
-
-
-    def create_writeable_dataset(self, dataset:datasets.DataSet, dsPath:str)->datasets.WriteableDataSet:
-        inp,output=utils.load_yaml(self.path + ".shapes")
-        resName = (dataset.name if hasattr(dataset, "name") else "") + "_predictions"
-        result = datasets.BufferedWriteableDS(dataset, resName, dsPath,pickle=self.isMultiOutput())
-        return result
-
-    def isMultiOutput(self):
-        if self._multiOutput is not None:
-            return self._multiOutput
-        inp,output=utils.load_yaml(self.path + ".shapes")
-        self._multiOutput= len(output)>1
-        return self._multiOutput
+        raise ValueError()
 
     def predict_on_batch(self, mdl, ttflips, batch):
 
-        res =  mdl.predict(batch.images)
-        if self.isMultiOutput():
-            result=[]
-            for i in range(len(res[0])):
-                elementOutputs=[]
-                for x in res:
-                    elementOutputs.append(x[i])
-                result.append(elementOutputs)
-            return result
-
+        res = mdl.predict(np.array(batch.images))
         return res
 
     def evaluateAll(self,ds, fold:int,stage=-1,negatives="real",ttflips=None,batchSize=32):
@@ -131,7 +61,7 @@ class GenericPipeline(generic.GenericTaskConfig):
             mdl=qm.TestTimeAugModel(mdl,net.create_test_time_aug(self.testTimeAugmentation,self.imports))
         if self.preprocessing is not None:
             dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing, self.imports)
-        for original_batch in datasets.generic_batch_generator(dataset, batch_size, limit):
+        for original_batch in datasets.batch_generator(dataset, batch_size, limit):
             res = self.predict_on_batch(mdl, ttflips, original_batch)
             original_batch.results=res
             yield original_batch
@@ -175,15 +105,11 @@ class GenericPipeline(generic.GenericTaskConfig):
         if self.preprocessing is not None:
             dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing, self.imports)
         predItem = dataset[0]
-        if hasattr(dataset, "contribution"):
-            utils.save(self.path+ ".contribution",getattr(dataset, "contribution"))
-        elif hasattr(dataset, "contributions"):
-            utils.save(self.path+ ".contribution",getattr(dataset, "contributions"))
         utils.save_yaml(self.path + ".shapes", (_shape(predItem.x), _shape(predItem.y)))
         return dataset
 
 
 def parse(path,extra=None) -> GenericPipeline:
     cfg = configloader.parse("generic", path,extra)
-    cfg.path = path    
+    cfg.path = path
     return cfg

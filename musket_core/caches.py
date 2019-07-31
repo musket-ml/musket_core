@@ -1,16 +1,18 @@
 import os
 import sys
 
-from musket_core.datasets import PredictionItem
+from musket_core.datasets import PredictionItem, inherit_dataset_params, CompositeDataSet,DataSet
 from musket_core.utils import load,save,readArray,dumpArray
+from musket_core import context
 import tqdm
 import numpy as np
 import threading
+from musket_core import utils
 
 __lock__ = threading.Lock()
 storage = {}
 
-class Cache:
+class Cache(DataSet):
 
     def __init__(self,parent):
         self.parent=parent
@@ -44,44 +46,49 @@ class CachedPredictionItem(PredictionItem):
         return self.original().rootItem()
 
 
-class DiskCache:
+class DiskCache(DataSet):
 
     def __init__(self,parent,items):
         self.parent=parent
         self.items=items
-        if hasattr(parent,"folds"):
-            self.folds=getattr(parent,"folds");
-
+        inherit_dataset_params(parent, self)
 
     def __getitem__(self, item):
-        isList = isinstance(self.items[0],list)
-        if isList:
-            return CachedPredictionItem(item,list(map(lambda x: x[item], self.items[0])),self.items[1][item],self.parent)
+        if isinstance(item, slice):
+            indices = list(item)
+            result = [self.__getitem__(i) for i in indices]
+            return result
         else:
-            return CachedPredictionItem(item,self.items[0][item],self.items[1][item],self.parent)
+            isList = isinstance(self.items[0],list)
+            if isList:
+                return CachedPredictionItem(item,list(map(lambda x: x[item], self.items[0])),self.items[1][item],self.parent)
+            else:
+                return CachedPredictionItem(item,self.items[0][item],self.items[1][item],self.parent)
 
     def __len__(self):
         return len(self.parent)
 
-class DiskCache1:
+class DiskCache1(DataSet):
 
     def __init__(self,parent,items,xIsListOrTuple,yIsListOrTuple):
         self.parent=parent
         self.items=items
         self.xIsListOrTuple = xIsListOrTuple
         self.yIsListOrTuple = yIsListOrTuple
-        if hasattr(parent,"folds"):
-            self.folds=getattr(parent,"folds");
-        if hasattr(parent, "holdoutArr"):
-            self.holdoutArr = getattr(parent,"holdoutArr");
+        inherit_dataset_params(parent, self)
         if hasattr(parent, "name"):
             self.origName = getattr(parent,"name");
 
 
     def __getitem__(self, item):
-        x = self.items[0][item] if not self.xIsListOrTuple else [self.items[0][c][item] for c in range(len(self.items[0]))]
-        y = self.items[1][item] if not self.yIsListOrTuple else [self.items[1][c][item] for c in range(len(self.items[1]))]
-        return CachedPredictionItem(item,x,y,self.parent)
+        if isinstance(item,slice):
+            indices = list(item)
+            result = [self.__getitem__(i) for i in indices]
+            return result
+        else:
+            x = self.items[0][item] if not self.xIsListOrTuple else [self.items[0][c][item] for c in range(len(self.items[0]))]
+            y = self.items[1][item] if not self.yIsListOrTuple else [self.items[1][c][item] for c in range(len(self.items[1]))]
+            return CachedPredictionItem(item,x,y,self.parent)
 
     def __len__(self):
         return len(self.parent)
@@ -92,21 +99,52 @@ def cache(layers,declarations,config,outputs,linputs,pName,withArgs):
 
     return ccc
 
-CACHE_DIR="D:/kostya_work/gap-coreference"
+CACHE_DIR=None
+
+def get_cache_dir():
+    if CACHE_DIR is not None:
+        return CACHE_DIR
+    cp=context.get_current_project_path()
+    d=os.path.join(cp,".cache/")
+    utils.ensure(d)
+    return d
+
+def cache_name(input:DataSet):
+    name = "data"
+    id = "dataset"
+    if hasattr(input, "name"):
+        id = getattr(input, "name")
+        name = id.replace("{", "").replace("[", "").replace("/", "").replace("\\", "").replace("]", "").replace("}", "").replace(" ", "").replace(",", "").replace("\'", "").replace(":", "")
+    return name
+
 def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
     def ccc(input):
-        global CACHE_DIR
+
         __lock__.acquire()
         try:
-            name = "data"
-            id = "dataset"
+            return ccc1(input)
+        finally:
+            __lock__.release()
 
-            if hasattr(input, "name"):
-                id = getattr(input, "name")
-                name = id.replace("{", "").replace("[", "").replace("/", "").replace("\\", "").replace("]", "").replace("}", "").replace(" ", "").replace(",","").replace("\'","").replace(":", "")
-            name=CACHE_DIR+name
+
+
+
+    def ccc1(input):
+        
+
+        try:
+            name = cache_name(input)
+            name=get_cache_dir()+name
             if name in storage:
                 return storage[name]
+
+            if isinstance(input, CompositeDataSet):
+                components = list(map(lambda x:ccc1(x), input.components))
+                compositeDS = CompositeDataSet(components)
+                inherit_dataset_params(input, compositeDS)
+                if hasattr(input, "name"):
+                    compositeDS.origName = input.name
+                return compositeDS
 
             data = None
             xStructPath = f"{name}/x.struct"
@@ -121,7 +159,7 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
 
                 xData, yData = init_buffers(xStruct, yStruct)
 
-                for blockInd in tqdm.tqdm(range(blocksCount), "loading disk cache for:" + id):
+                for blockInd in tqdm.tqdm(range(blocksCount), "loading disk cache for:" + name):
                     if not xIsListOrTuple:
                         blockPath = f"{name}/x_{blockInd}.dscache"
                         if os.path.exists(blockPath):
@@ -231,13 +269,12 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
                 save(xStructPath, xStruct)
                 save(yStructPath, yStruct)
                 save(blocksCountPath, blockInd)
-                return input
-
+                return ccc1(input)
             result = DiskCache1(input, data, xIsListOrTuple, yIsListOrTuple)
             storage[name] = result
             return result
         finally:
-            __lock__.release()
+            pass
 
     return ccc
 
@@ -307,8 +344,13 @@ def inspect_structure(obj)->([str], [[int]], str):
 
 def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
     def ccc(input):
-        global CACHE_DIR
-        __lock__.acquire()
+        try:
+            __lock__.acquire()
+            return ccc1(input)
+        finally:
+            __lock__.release()
+
+    def ccc1(input):       
         try:
             name = "data"
             id = "dataset"
@@ -316,10 +358,20 @@ def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
 
             if hasattr(input, "name"):
                 id = getattr(input, "name")
-                name = id.replace("{", "").replace("[", "").replace("/", "").replace("\\", "").replace("]", "").replace("}", "").replace(" ", "").replace(",","").replace("\'","").replace(":", "")
-            name=CACHE_DIR+name
+                name = id.replace("{", "").replace("[", "").replace("/", "").replace("\\", "").replace("]", "").replace(
+                    "}", "").replace(" ", "").replace(",", "").replace("\'", "").replace(":", "")
+
+            name=get_cache_dir()+name
             if name in storage:
                 return storage[name]
+
+            if isinstance(input, CompositeDataSet):
+                components = list(map(lambda x:ccc1(x), input.components))
+                compositeDS = CompositeDataSet(components)
+                inherit_dataset_params(input, compositeDS)
+                if hasattr(input, "name"):
+                    compositeDS.origName = input.name
+                return compositeDS
 
             i0 = input[0]
             i0x = i0.x
@@ -329,7 +381,12 @@ def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
                 shapeX = np.concatenate(([l], i0x.shape))
             else:
                 shapeX = list(map(lambda x: np.concatenate(([l], x.shape)), i0x))
-            shapeY = np.concatenate(([l], i0y.shape))
+            
+            yIsList = isinstance(i0y,list)    
+            if not yIsList:
+                shapeY = np.concatenate(([l], i0y.shape))
+            else:
+                shapeY = list(map(lambda x: np.concatenate(([l], x.shape)), i0y))    
             data = None
             ext = "dscache"
             if os.path.exists(name):
@@ -386,16 +443,13 @@ def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
 
             result = DiskCache(input, data)
 
-            if hasattr(input, "folds"):
-                result.folds = input.folds
-            if hasattr(input, "holdoutArr"):
-                result.holdoutArr = input.holdoutArr
+            inherit_dataset_params(input, result)
             if hasattr(input, "name"):
                 result.origName = input.name
             storage[name] = result
             return result
         finally:
-            __lock__.release()
+            pass
     return ccc
 
 

@@ -7,7 +7,9 @@ from musket_core.caches import *
 from musket_core import datasets
 from builtins import isinstance
 layers=configloader.load("layers")
-from  musket_core.preprocessing import SplitPreproccessor
+from  musket_core.preprocessing import SplitPreproccessor,SplitConcatPreprocessor, Augmentation
+import musket_core.builtin_datasets
+import musket_core.builtin_trainables
 import importlib
 
 def take_input(layers,declarations,config,outputs,linputs,pName,withArgs):
@@ -33,6 +35,7 @@ def repeat(num):
 
 def split(layers,declarations,config,outputs,linputs,pName,withArgs):
     m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
+    
     return m
 
 
@@ -41,6 +44,28 @@ def split_preprocessor(layers,declarations,config,outputs,linputs,pName,withArgs
     
     def buildPreprocessor(inputArg):
         return SplitPreproccessor(inputArg,[x.build(inputArg) for x in m])
+
+    return buildPreprocessor
+
+
+def split_concact_preprocessor(layers, declarations, config, outputs, linputs, pName, withArgs):
+    m = [Layers([v], declarations, {}, outputs, linputs, withArgs) for v in config]
+
+    def buildPreprocessor(inputArg):
+        return SplitConcatPreprocessor(inputArg, [x.build(inputArg) for x in m])
+
+    return buildPreprocessor
+
+
+def augmentation(layers, declarations, config, outputs, linputs, pName, withArgs):
+
+    body = config['body']
+    weights = config['weights']
+    seed = config['seed']
+    seq = [Layers([v], declarations, {}, outputs, linputs, withArgs) for v in body]
+
+    def buildPreprocessor(inputArg):
+        return Augmentation(inputArg, [x.build(inputArg) for x in seq], weights, seed)
 
     return buildPreprocessor
 
@@ -139,7 +164,9 @@ builtins={
     "cache": cache,
     "disk-cache": diskcache,
     "split-preprocessor": split_preprocessor,
+    "split-concat-preprocessor": split_concact_preprocessor,
     "seq-preprocessor": seq_preprocessor,
+    "augmentation": augmentation,
     "pass": passPreprocessor,
     "transform-concat": transform_concat,
     "transform-add": transform_add
@@ -172,13 +199,19 @@ class Layers:
 
                 layerImpl =builtins[key](self,declarations,config,outputs,linputs,pName,withArgs)
                 if isinstance(layerImpl,list):
-
+                    isAll=True
+#                     if hasattr(layerImpl,"all"):
+#                         isAll=True
+                    self.output=[]
                     for i in layerImpl:
                         inputs = pName
                         name = i.name
                         self._add(config, inputs, i, name)
                         #pName = name
-                        self.output = name
+                        if isAll:
+                            self.output.append(name)
+                        else: self.output = name
+                        
                         if outputs is not None:
                             self.output = outputs
                     pName = [i.name for i in layerImpl]
@@ -370,8 +403,9 @@ class Declaration:
                 return am
         if parameters is None:
             parameters={}
-        if "args" in parameters:
-            parameters=parameters["args"]
+        if isinstance(parameters,dict):    
+            if "args" in parameters:
+                parameters=parameters["args"]
         if isinstance(parameters,list):
             pMap={}
             for p in range(len(self.parameters)):
@@ -384,7 +418,6 @@ class Declaration:
 
 
 class Declarations:
-
     def __init__(self,declarations_yaml):
         self.declarationMap:{str:Declaration}={ x:Declaration(declarations_yaml[x]) for x in declarations_yaml}
         pass
@@ -420,6 +453,10 @@ class Declarations:
 
     def model(self,name,inputs):
         m=self.instantiate(name,inputs)
+
+        if hasattr(m, "output_meta"):
+            return m.model
+
         return keras.Model(inputs,m)
 
     def preprocess(self,name,inputs):
@@ -462,6 +499,9 @@ DEFAULT_DATASET_DIR=None
 def create_dataset_from_config(n,name="net",imports=[]):
 
     compositeDS = None
+    layers.register_module(musket_core.builtin_datasets)
+    layers.register_module(musket_core.builtin_trainables)
+
     if isinstance(name,dict):
         holdout = extract_datasets(n, imports, name, 'holdout')
         train = extract_datasets(n, imports, name, 'train')
@@ -510,6 +550,7 @@ def create_dataset_from_config(n,name="net",imports=[]):
         os.chdir(str(DEFAULT_DATASET_DIR))
     d=Declarations(n)
     for x in imports: layers.register(x)
+
     out=d.preprocess(name, None)
     out.name=str(name)
     return out

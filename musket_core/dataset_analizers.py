@@ -4,6 +4,7 @@ import  numpy as np
 import operator
 import string
 from tqdm import tqdm
+from sklearn import metrics
 
 @visualization.dataset_analizer
 def dataset_balance(y):
@@ -27,6 +28,10 @@ def class_num_analizer(y):
         return int(y[0])
     return int(y)
 
+@visualization.caption('Simple analyzer for testing purposes, just gving value 1 for all samples')
+@visualization.dataset_analizer
+def constant_analizer(y):
+    return 1
 
 class FixedShape:
     def __init__(self,shape,pos):
@@ -226,12 +231,126 @@ class LengthAnalizer:
             return {"type": "hist", "values": res}
         return None
 
+class MultiClassMetricsAnalizer:
+    def __init__(self):
+        self.shapes={}
+        self.looksLikeBinary=True
+        self.predictions=[]
+        self.ground_truth=[]
+        self.ids=[]
+        self.gt=[]
+    
+    def __call__(self, index, p: datasets.PredictionItem,prediction:datasets.PredictionItem,**args):   
+        x=np.where(prediction.prediction==prediction.prediction.max())
+        #prediction.prediction=np.zeros(prediction.prediction.shape)
+        #prediction.prediction[x[0]]=1
+        self.predictions.append(prediction.prediction)     
+        self.ground_truth.append(prediction.y)
+        self.ids.append(prediction.id)
+        pass
+    
+    def visualizationHints(self):
+        return {"type": "hist", "values": self.scores,"x_axis":"Class","y_axis":"F1 Score"}    
+
+@visualization.prediction_analizer
+class MultiClassF1Analizer(MultiClassMetricsAnalizer):
+    
+
+    def results(self):
+        preds=np.array(self.predictions)
+        gt=np.array(self.ground_truth)
+        scores=[]
+        for i in range(preds.shape[1]):
+            pri=preds[:,i]
+            gti=gt[:,i]
+            f1=metrics.f1_score(gti,pri>0.5)
+            scores.append(float(f1))
+        self.scores=scores;
+        return []
+    
+    
+@visualization.prediction_analizer
+class MultiClassPrecisionAnalizer(MultiClassMetricsAnalizer):
+    
+
+    def results(self):
+        preds=np.array(self.predictions)
+        gt=np.array(self.ground_truth)
+        scores=[]
+        for i in range(preds.shape[1]):
+            pri=preds[:,i]
+            gti=gt[:,i]
+            f1=metrics.precision_score(gti,pri>0.5)
+            scores.append(float(f1))
+        self.scores=scores;
+        return []    
+    
+    def visualizationHints(self):
+        return {"type": "hist", "values": self.scores,"x_axis":"Class","y_axis":"Precision"}    
+
+@visualization.prediction_analizer
+class MultiClassRecallAnalizer(MultiClassMetricsAnalizer):
+    
+
+    def results(self):
+        preds=np.array(self.predictions)
+        gt=np.array(self.ground_truth)
+        scores=[]
+        for i in range(preds.shape[1]):
+            pri=preds[:,i]
+            gti=gt[:,i]
+            f1=metrics.recall_score(gti,pri>0.5)
+            scores.append(float(f1))
+        self.scores=scores;
+        return []    
+    
+    def visualizationHints(self):
+        return {"type": "hist", "values": self.scores,"x_axis":"Class","y_axis":"Recall"}
+    
+@visualization.dataset_analizer
+class MultiClassFrequenceyAnalizer:
+
+    def __init__(self):
+        self.shapes={}
+        self.looksLikeBinary=True
+        self.freq={}
+        self.count=0
+        
+
+    def __call__(self, index, p: datasets.PredictionItem=None,prediction:datasets.PredictionItem=None,**args):
+        self.count=self.count+1
+        for  v in np.where(p.y>0.5)[0]:
+            if v in self.freq:
+                self.freq[v].append(index)
+            else: self.freq[v]=[p.id]      
+        pass
+
+    
+
+    def results(self):
+        m=max(self.freq.keys())
+        scores=np.zeros(m)
+        
+        for v in range(m):
+            if v in self.freq:
+                scores[v]=len(self.freq[v])
+            else:
+                scores[v]=0    
+        self.scores=[float(x)/self.count for x in scores];
+        return self.freq
+
+    def visualizationHints(self):
+        return {"type": "hist", "values": self.scores,"x_axis":"Class","y_axis":"Frequency"}    
+        
+
 @visualization.prediction_analizer
 def ground_truth_vs_prediction(x,y):
     allCorrect=np.equal(x>0.5,y>0.5).sum()==len(x)
     if allCorrect:
         return "Correct"
     return "Incorrect"
+
+
 
 class WordDS(datasets.DataSet):
     

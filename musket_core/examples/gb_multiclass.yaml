@@ -1,0 +1,33 @@
+#%Musket GradientBoosting !
+imports: [data]
+
+declarations:
+  net:
+    - gradientboosting:
+        output_dim: 3 #1 or 2 for single/two classes which are actually same in gradient boosting
+        num_leaves: 50
+        #defaults: boosting_type='gbdt', num_leaves=31, max_depth=-1, learning_rate=0.1, n_estimators=100, subsample_for_bin=200000, class_weight=None, min_split_gain=0., min_child_weight=1e-3, min_child_samples=20, subsample=1., subsample_freq=0, colsample_bytree=1., reg_alpha=0., reg_lambda=0., random_state=None, n_jobs=-1, silent=True, importance_type='split'
+        #see https://lightgbm.readthedocs.io/en/latest/Python-API.html#scikit-learn-api
+
+architecture: net
+
+validationSplit: 0.3
+
+folds_count: 1
+
+metrics:
+  - binary_accuracy
+  - binary_crossentropy
+  - matthews_correlation
+  - macro_f1
+
+primary_metric: val_macro_f1
+primary_metric_mode: max
+aggregation_metric: macro_f1
+
+loss: binary_crossentropy
+
+stages:
+  - epochs: 500
+dataset:
+  data:

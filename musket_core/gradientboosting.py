@@ -1,6 +1,5 @@
 import musket_core.generic_config as generic
 import musket_core.datasets as datasets
-import musket_core.configloader as configloader
 import musket_core.utils as utils
 import numpy as np
 import keras
@@ -8,8 +7,6 @@ import musket_core.net_declaration as net
 import musket_core.quasymodels as qm
 import os
 import tqdm
-
-
 
 def model_function(func):
     func.model=True
@@ -22,7 +19,7 @@ def _shape(x):
         return [i.shape for i in x]
     return x.shape
 
-class GenericPipeline(generic.GenericTaskConfig):
+class GradientBoosting(generic.GenericTaskConfig):
 
     def __init__(self,**atrs):
         super().__init__(**atrs)
@@ -126,6 +123,8 @@ class GenericPipeline(generic.GenericTaskConfig):
         return lastFullValPred,lastFullValLabels
 
     def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False, cacheModel=False):
+        batch_size = len(dataset)
+
         mdl = self.load_model(fold, stage)
         if self.testTimeAugmentation is not None:
             mdl=qm.TestTimeAugModel(mdl,net.create_test_time_aug(self.testTimeAugmentation,self.imports))
@@ -162,6 +161,7 @@ class GenericPipeline(generic.GenericTaskConfig):
 
     def fit(self, dataset=None, subsample=1.0, foldsToExecute=None, start_from_stage=0, drawingFunction=None,parallel = False):
         dataset = self.init_shapes(dataset)
+
         return super().fit(dataset,subsample,foldsToExecute,start_from_stage,drawingFunction,parallel=parallel)
 
     def validate(self):
@@ -182,8 +182,10 @@ class GenericPipeline(generic.GenericTaskConfig):
         utils.save_yaml(self.path + ".shapes", (_shape(predItem.x), _shape(predItem.y)))
         return dataset
 
+    def kfold(self, ds=None, indeces=None, batch=None) -> datasets.DefaultKFoldedDataSet:
 
-def parse(path,extra=None) -> GenericPipeline:
-    cfg = configloader.parse("generic", path,extra)
-    cfg.path = path    
-    return cfg
+        kf = super().kfold(ds, indeces)
+
+        kf.batchSize = len(kf.folds[0][0])
+
+        return kf

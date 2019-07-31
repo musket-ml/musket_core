@@ -82,8 +82,32 @@ bs=[]
 
 
 def createPars(c:str):
-    if "cache" in c: return []
-    if "pass" in c: return []
+    if "cache" in c: return [
+        {
+
+            "name": "split",
+            "type": "bool",
+            "defaultValue": True,
+        }
+
+    ]
+    if "pass" == c: return []
+    if c == "augmentation":
+        return [
+            {
+                "name": "body",
+                "type": "Preprocessor[]"
+            },
+            {
+                "name": "weights",
+                "type": "int[]"
+            },
+            {
+                "name": "seed",
+                "type": "int",
+                "defaultValue": 0
+            }
+        ]
     if "preprocessor" in c:
         return [
             {

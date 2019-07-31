@@ -3,49 +3,57 @@ from musket_core.utils import ensure
 import os
 import numpy as np
 from musket_core.structure_constants import constructPredictionsDirPath
-from musket_core import datasets
+from musket_core.datasets import DataSet, PredictionItem
+from musket_core.preprocessing import PreprocessedDataSet
+from typing import Union
+import keras
+from musket_core import configloader
 
+from musket_core.model import IGenericTaskConfig,FoldsAndStages
 
 class Prediction:
-    def __init__(self,cfg,fold,stage,name:str):
+    def __init__(self,cfg,fold,stage,name:str,srcDataset=None):
         fold, stage = _fix_fold_and_stage(cfg, fold, stage)
         self.cfg = cfg
         self.fold = fold
         self.stage=stage
-        self.name=name
+        self.name=name        
+        self.srcDataset=srcDataset
 
-    def calculate(self):
-        ensure(constructPredictionsDirPath(self.cfg.directory()))
-        nm=self.name
-        if not isinstance(self.name,str):
-            if hasattr(self.name,"name"):
-                nm=getattr(self.name,"name")
-            if hasattr(self.name,"origName"):
-                nm=getattr(self.name,"origName")
-        path = f"{constructPredictionsDirPath(self.cfg.directory())}/{nm}{str(self.stage)}{str(self.fold)}.npy"
-        if os.path.exists(path):
-            rr= np.load(path)
-            return rr
-        if not isinstance(self.name,str):
-            ds=self.name
-        elif self.name=="holdout":
-            ds=self.cfg.holdout()
-        elif self.name=="validation":
-            ds=self.cfg.validation(None,self.fold)
+    def calculate(self)->DataSet:    
+        ds = self.srcDataset
+        nm = self.name
+        if ds is None:
+            if self.name is not None and isinstance(self.name, str):
+                if self.name=="holdout":
+                    ds=self.cfg.holdout()
+                elif self.name=="validation":
+                    ds=self.cfg.validation(None,self.fold)
+                else:
+                    ds = self.cfg.get_dataset(self.name)
         else:
-            ds=self.cfg.get_dataset(self.name)
-        value=self.cfg.predict_all_to_array(ds,self.fold,self.stage)
-        np.save(path,value)
+            nm = ds.name
+
+        if ds is None:
+            raise ValueError("No dataset has been specified for prediction")
+
+        ensure(constructPredictionsDirPath(self.cfg.directory()))
+        path = f"{constructPredictionsDirPath(self.cfg.directory())}/{nm}{str(self.stage)}{str(self.fold)}.npy"
+
+        if os.path.exists(path):
+            return self.cfg.load_writeable_dataset(ds, path)
+
+        value=self.cfg.predict_all_to_dataset(ds,self.fold,self.stage,-1,None,False,path)
         return value
 
 
-def get_validation_prediction(cfg,fold:int,stage=None):
+def get_validation_prediction(cfg,fold:int,stage=None)->DataSet:
     if stage is None:
         stage=list(range(len(cfg.stages)))
     return Prediction(cfg,fold,stage,"validation").calculate()
 
 
-def get_holdout_prediction(cfg,fold=None,stage=None):
+def get_holdout_prediction(cfg,fold=None,stage=None)->DataSet:
     return Prediction(cfg,fold,stage,"holdout").calculate()
 
 
@@ -54,44 +62,83 @@ def _fix_fold_and_stage(cfg, fold, stage):
         stage = list(range(len(cfg.stages)))
     if fold is None:
         fold = list(range(cfg.folds_count))
+    if isinstance(stage, int): 
+        stage=[stage]
+    if isinstance(fold, list):
+        if len(fold)==1: 
+            fold=fold[0]
     return fold, stage
 
 
-def get_predictions(cfg,name,fold=None,stage=None):
-    return Prediction(cfg,fold,stage,name).calculate()
+def get_predictions(cfg,name_or_ds:Union[str,DataSet],fold=None,stage=None)->DataSet:
+    if isinstance(name_or_ds   , str):
+        return Prediction(cfg,fold,stage,name_or_ds,None).calculate()
+    else: return Prediction(cfg,fold,stage,None,name_or_ds).calculate()
 
 def stat(metrics):
     return {"mean":float(np.mean(metrics)),"max":float(np.max(metrics)),"min":float(np.min(metrics)),"std":float(np.std(metrics))}
 
+def isFinal(metric:str)->bool:
+    try:
+        mtr = keras.metrics.get(metric)
+        return False
+    except:
+        return True
 
-def cross_validation_stat(cfg, metric,stage=None,treshold=0.5):
+def cross_validation_stat(cfg:IGenericTaskConfig, metric,stage=None,treshold=0.5):
     metrics=[]
-    cfg.get_dataset()
+    cfg.get_dataset()# this is actually needed
+
+    if isFinal(metric):
+        fnc=configloader.load("layers").catalog[metric]
+        #if isinstance(fnc,configloader.PythonFunction):
+        fnc=fnc.func
+        for i in range(cfg.folds_count):
+            fa=FoldsAndStages(cfg,i,stage)
+            val=cfg.validation(None,i)
+            metrics.append(fnc(fa,val))
+        return stat(metrics)
+
     for i in range(cfg.folds_count):
         if cfg._reporter is not None and cfg._reporter.isCanceled():
             return {"canceled": True}
-        prediction = get_validation_prediction(cfg, i, stage)
-        need_threshold = generic_config.need_threshold(metric)
-        if need_threshold:
-            val = prediction > treshold
-        else:
-            val = prediction
-        vt=datasets.get_targets_as_array(cfg.validation(i))
-        eval_metric = generic_config.eval_metric(vt, val, metric)
+
+        predictionDS = get_validation_prediction(cfg, i, stage)
+        val = considerThreshold(predictionDS, metric, treshold)
+        eval_metric = generic_config.eval_metric(val, metric, cfg.get_eval_batch())
         metrics.append(np.mean(eval_metric))
     return stat(metrics)
 
-def holdout_stat(cfg, metric,stage=None,treshold=0.5):
+
+def holdout_stat(cfg:IGenericTaskConfig, metric,stage=None,treshold=0.5):
     if cfg._reporter is not None and cfg._reporter.isCanceled():
         return {"canceled": True}
-    prediction = get_holdout_prediction(cfg, None, stage)
-    need_threshold = generic_config.need_threshold(metric)
-    if need_threshold:
-        val = prediction > treshold
-    else:
-        val = prediction
-    vt=datasets.get_targets_as_array(cfg.holdout())
-    eval_metric = generic_config.eval_metric(vt, val, metric)
+    if isFinal(metric):
+        fnc=configloader.load("layers").catalog[metric]
+        #if isinstance(fnc,configloader.PythonFunction):
+        fnc=fnc.func
+        for i in range(cfg.folds_count):
+            fa=FoldsAndStages(cfg,i,stage)
+            val=cfg.validation(None,i)
+            return fnc(fa,val)
+    predictionDS = get_holdout_prediction(cfg, None, stage)
+    val = considerThreshold(predictionDS, metric, treshold)
+    eval_metric = generic_config.eval_metric(val, metric, cfg.get_eval_batch())
     if cfg._reporter is not None and cfg._reporter.isCanceled():
         return {"canceled": True}
     return float(np.mean(eval_metric))
+
+
+def considerThreshold(predictionDS, metric, treshold)->DataSet:
+
+    need_threshold = generic_config.need_threshold(metric)
+    if need_threshold:
+        def applyThreshold(dsItem: PredictionItem) -> PredictionItem:
+            thresholded = dsItem.prediction > treshold
+            result = PredictionItem(dsItem.id, dsItem.x, dsItem.y, thresholded)
+            return result
+
+        val = PreprocessedDataSet(predictionDS, applyThreshold, True)
+    else:
+        val = predictionDS
+    return val

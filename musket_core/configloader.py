@@ -179,11 +179,15 @@ class PythonFunction(AbstractType):
         super(PythonFunction,self).__init__()
         # if clazz.__name__.lower()=="flatten":
         #     print("A")
+        self.func=clazz
         if hasattr(clazz,"args"):
-            args=[p for p in clazz.args if "input" not in p]
-        else: args=[p for p in s.parameters if "input" not in p]
+            args=[p for p in clazz.args if "input" not in p and "inp" not in p]
+        else: args=[p for p in s.parameters if "input" not in p and "inp" not in p]
         self.args=args
-
+        inpP="input"
+        if "inp" in s.parameters:
+            inpP="inp"
+           
         def create(*args,**kwargs):
             if len(args) == 1 and args[0] is None:
                 args = []
@@ -195,8 +199,11 @@ class PythonFunction(AbstractType):
                     if len(i)==0:
                         i=None
                 if i is not None:
-                    mm["input"]=i
-                return clazz(**mm)
+                    mm[inpP]=i
+                res=clazz(**mm)
+                if res is None:
+                    print(f"{clazz} returned None")    
+                return res 
             return res
         self.clazz=create
 
@@ -315,8 +322,12 @@ def parse(name:str,p,extra=None):
                         if v in alllowReplace:
                             for q in extrad[v]:
                                 mn=base[v]
-                                if q not in mn:
-                                    mn[q]=extrad[v][q]
+                                if mn is not None:
+                                    if q not in mn:
+                                        mn[q]=extrad[v][q]
+                                else:
+                                    base[v]=extrad[v]
+                                    break        
 
             return m.instantiate(base)
-    return m.instantiate(p);
+    return m.instantiate(p)

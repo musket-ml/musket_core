@@ -21,7 +21,11 @@ class Experiment:
     def cleanup(self):
         if os.path.exists(self.getPredictionsDirPath()):
             for pr in os.listdir(self.getPredictionsDirPath()):
-                os.remove(f"{self.getPredictionsDirPath()}/{pr}")
+                fPath = f"{self.getPredictionsDirPath()}/{pr}"
+                if os.path.isdir(fPath):
+                    for f in os.listdir(fPath):
+                        os.remove(f"{fPath}/{f}")
+                os.remove(fPath)
         if os.path.exists(self.getSummaryYamlPath()):
             os.remove(self.getSummaryYamlPath())
 
@@ -59,10 +63,11 @@ class Experiment:
             cfg = generic.parse(self.getConfigYamlConcretePath(),extra)
         if self.allowResume:
             cfg.setAllowResume(self.allowResume)
-        if self.project is not None:            
-            for m in os.listdir(self.project.modulesPath()):
-                if ".py" in m:
-                    cfg.imports.append(m[0:m.index(".py")])
+        if self.project is not None:
+            if os.path.exists(self.project.modulesPath()):
+                for m in os.listdir(self.project.modulesPath()):
+                    if ".py" in m:
+                        cfg.imports.append(m[0:m.index(".py")])
             if os.path.exists(self.project.dataPath()):
                 cfg.datasets_path=self.project.dataPath()
         return cfg
@@ -85,7 +90,7 @@ class Experiment:
                         save_string(rp,template.replace("${metrics}",m))
 
 
-    def result(self,forseRecalc=False):
+    def result(self,forseRecalc=False, use_primary_metric=False):
         pi = self.apply(True)
         if forseRecalc:
             self.cleanup()
@@ -130,6 +135,17 @@ class Experiment:
                     am=self.config()["aggregation_metric"]
                     if am in m["allStages"]:
                        mv = m["allStages"][am]
+                elif use_primary_metric:
+                    am = self.config()["primary_metric"]
+                    mode = self.config()["primary_metric_mode"]
+                    if am in m["allStages"]:
+                        mv = {
+                            "value": m["allStages"][am],
+                            "name": am,
+                            "mode": mode
+                        }
+
+
 
 
                 return mv

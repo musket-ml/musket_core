@@ -39,6 +39,8 @@ class NegativeDataSet:
         #out = out / np.max(out)
 
         return PredictionItem(self.ids[item] + str(), image, out)
+    
+    
 
 
 class BlendedDataSet:
@@ -452,12 +454,21 @@ class CropAndSplit:
             dm=self.lastImage
         else:
             dm=self.ds[pos]
+            self.lastPos=pos
             self.lastImage=dm
         row=off//self.parts
         col=off%self.parts
         x,y=dm.x,dm.y
         x1,y1= self.crop(row,col,x),self.crop(row,col,y)
-        return PredictionItem(dm.id,x1,y1)
+
+        vs=PredictionItem(dm.id,x1,y1)
+        if hasattr(dm, "prediction" ) and dm.prediction is not None:
+            pred=self.crop(row,col,dm.prediction)
+            vs.prediction=pred
+        vs.imageId=dm.id
+        vs.row=row
+        vs.col=col
+        return vs
 
     def crop(self,y,x,image):
         h=image.shape[0]//self.parts
@@ -466,6 +477,9 @@ class CropAndSplit:
 
     def __len__(self):
         return len(self.ds)*self.parts*self.parts
+    
+    def get_train_item(self,item):
+        return self[item]
 
 class AspectRatioDataSet:
     def __init__(self, child, target_ratio=(1, 1), strategy="center"):

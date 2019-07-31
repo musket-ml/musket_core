@@ -3,7 +3,7 @@ uses:
   meta: meta.raml
   aug: augmenters.raml
   cb: callbacks.raml
-(meta.module):  classification_pipeline.classification
+(meta.module):  musket_core.gradientboosting
 types:
   HasLoss:
     type: object
@@ -23,73 +23,41 @@ types:
       type: object
       properties?:
         name: string
-  ClassificationPipeline:
+  GradientBoosting:
     (meta.entry): true
-    type: HasLoss
+    type: object
     discriminator: architecture
     properties:
-      imports:
-        (meta.custom): true
-        type: string[]
+      testSplit?: number
+      testSplitSeed?: number
+      inference_batch?:
+         type: integer
+         default: 32
 
-      inference_batch:
-         (meta.custom): true
-         type: number
-      stratify:
-         (meta.custom): true
-         type: number
-      testSplit?:
-         (meta.custom): true
-         type: number
-      testSplitSeed?:
-         (meta.custom): true 
-         type: number
-      testTimeAugmentation:
-         (meta.custom): true
-         type: string
-      classifier:
-        type: string
-        (meta.custom): true
-        enum: [ResNet50,DenseNet121,DenseNet169,DenseNet201,NASNetLarge,InceptionV3,NASNetMobile,VGG16,VGG19,Xception,InceptionResNetV2,MobileNet,MobileNetV2]
       folds_count?:
         type: integer
         (meta.custom): true
       copyWeights?:
         type: boolean
         (meta.custom): true
-      random_state?:
-        type: integer
-        (meta.custom): true
+
       extra_train_data?:
         type: string
         (meta.custom): true
-      dropout?:
-        type: number
-        (meta.custom): true
+
       dataset_augmenter?:
         type: AugmenterConfig
         (meta.custom): true
-      manualResize:
-        type: boolean
-        (meta.custom): true
       architecture?:
         (meta.custom): true
-        type: string
-        enum: ['resnet18', 'resnet50', 'resnet101', 'resnet152', 'seresnet18', 'seresnet34', 'seresnet50', 'seresnet101', 'seresnet152', 'seresnext50', 'seresnext101', 'senet154', 'resnet50v2', 'resnet101v2', 'resnet152v2', 'resnext50', 'resnext101', 'vgg16', 'vgg19', 'densenet121', 'densenet169', 'densenet201', 'inceptionresnetv2', 'inceptionv3', 'xception', 'nasnetlarge', 'nasnetmobile', 'mobilenet', 'mobilenetv2']
-      weights?:
-        enum: [imagenet, imagenet11k-places365ch,imagenet11k]
+        type: any
+        #enum: []
       classes:
         type: integer
         minimum: 1
-      crops?:
-        type: integer
-        (meta.custom): true
       activation:
         (meta.custom): true
         enum: [ sigmoid, softmax ]
-      shape:
-        (meta.alias): input_shape
-        type: meta.image_shape
       augmentation:
         type: aug.Augmenter[]
         (meta.custom): true
@@ -149,7 +117,6 @@ types:
     properties:
       initial_weights?: string
       epochs?: number
-      unfreeze_encoder?: boolean
       lr?: number
       callbacks?: cb.Callback[]
       extra_callbacks?: cb.Callback[]

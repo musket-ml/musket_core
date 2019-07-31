@@ -269,3 +269,86 @@ def rescale(input,size):
 
 
 
+## Gradient Boosting
+Example config: musket_core/examples/gb_multiclass.yaml
+
+## Hyperparameters Search
+gradient boosting based examle:
+```
+#%Musket GradientBoosting !
+imports: [data]
+
+declarations:
+  net:
+    - gradientboosting:
+        output_dim: 1
+        num_leaves: x
+
+architecture: net
+
+validationSplit: 0.3
+
+folds_count: 1
+
+metrics:
+  - binary_accuracy
+  - binary_crossentropy
+  - matthews_correlation
+  - macro_f1
+
+primary_metric: macro_f1
+primary_metric_mode: max
+
+loss: regression
+
+max_evals: 3
+
+hyperparameters:
+  x:
+    enum: [5, 6, 7]
+    type: int
+
+stages:
+  - epochs: 10
+dataset:
+  data: []
+```
+
+possible declarations:
+```
+max_evals: 3
+
+hyperparameters:
+  x:
+    enum: [5, 6, 7]
+    type: int
+```
+x param will take value 5, 6, 7 (or 5.0, 6.0, 7.0 if type is 'float'), values will be taken 3 times. Uniform distribution will be used. No values will be chosen twise if size of list is less then 'max_evals'.  if 'max_evals' is equal size of list, then all values from list will be taken.
+
+```
+max_evals: 3
+
+hyperparameters:
+  x:
+    range: [1, 5]
+    type: int
+```
+x param will take random values from (1, 2, 3, 4, 5), values will be taken 3 times. Uniform distribution will be used. No values will be chosen twise if size of list is less then 'max_evals'.  if 'max_evals' is equal size of list, then all values from list will be taken.
+
+```
+max_evals: 3
+
+hyperparameters:
+  x:
+    range: [1, 5]
+    type: float
+```
+
+x param will take 3 random values from 1.0 to 5.0 inclusively. Uniform distribution will be used.
+```
+max_evals: 3
+
+hyperparameters:
+  x: [1, 5]
+```
+this is shortcut for same as above

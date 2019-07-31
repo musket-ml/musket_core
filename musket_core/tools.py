@@ -11,7 +11,8 @@ import numpy as np
 import tempfile
 from tqdm import tqdm
 import inspect
-from musket_core.datasets import DataSet
+from musket_core.datasets import DataSet, SubDataSet
+
 class ProgressMonitor:
 
     def isCanceled(self)->bool:
@@ -182,34 +183,6 @@ def _exactValue(x,y):
         return "Correct"
     return "Incorrect"
 
-
-class WrappedDS(datasets.SubDataSet):
-
-    def __init__(self,orig,indexes,name,visualizer,predictions):
-        super().__init__(orig,indexes)
-        self._visualizer=visualizer
-        self._name=name
-        self.predictions=predictions
-    def len(self):
-        return len(self)
-
-    def config(self):
-        return ""
-
-    def item(self,num):
-        return self._visualizer[num]
-
-    def __getitem__(self, item):
-        it=super().__getitem__(item)
-        if self.predictions is not None:
-            it.prediction=self.predictions[self.indexes[item]]
-        return it
-    def name(self):
-        return self._name
-
-    class Java:
-        implements = ["com.onpositive.musket_core.IDataSet"]
-    pass
 
 class AnalizeResults:
     def __init__(self,ds,visualSpec=None):
@@ -398,7 +371,7 @@ class AnalizePredictions(yaml.YAMLObject):
                 pr=predictions[i]
                 if analizerFunc.usePredictionItem:
                     gr = analizerFunc(i,ds[i],pr, **self.analzierArgs)
-                else: gr=analizerFunc(gt,pr,**self.analzierArgs)
+                else: gr=analizerFunc(gt,pr.prediction,**self.analzierArgs)
                 if gr in res:
                     res[gr].append(i)
                 else:
@@ -483,3 +456,38 @@ class Launch(yaml.YAMLObject):
                         allTasks=[]
             executor.execute(allTasks)
         reporter.done()
+
+
+class WrappedDS(SubDataSet):
+
+    def __init__(self,orig,indexes,name,visualizer,predictions):
+        super().__init__(orig,indexes)
+        self._visualizer=visualizer
+        self.name=name
+        self.predictions=predictions
+    def len(self):
+        return len(self)
+
+    def config(self):
+        return ""
+
+    def get_name(self):
+        return self.name
+
+    def item(self,num):
+        return self._visualizer[num]
+
+    def __getitem__(self, item):
+        it = super().__getitem__(item)
+        if self.predictions is not None:
+            if isinstance(item, slice):
+                preds = [self.predictions[i] for i in self.indexes[item]]
+                for i in range(len(preds)):
+                    it[i].prediction = preds[i]
+            else:
+                it.prediction = self.predictions[self.indexes[item]].prediction
+        return it
+
+    class Java:
+        implements = ["com.onpositive.musket_core.IDataSet"]
+    pass

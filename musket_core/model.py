@@ -1,5 +1,6 @@
-from musket_core import datasets,generic_config
-import numpy as np
+from musket_core import datasets
+from musket_core.datasets import DataSet, MeanDataSet
+import typing
 
 
 def block(func):
@@ -14,15 +15,27 @@ class Model:
 
 class ConnectedModel(Model):
 
-    def predictions(self,name,**kwargs):
+    def predictions(self,name_or_ds:typing.Union[datasets.DataSet,str],**kwargs)->DataSet:
         raise ValueError("Not implemented")
 
 
+class IGenericTaskConfig(ConnectedModel):
 
+    folds_count=None
+    _reporter=None
+
+    def get_eval_batch(self)->int:
+        return -1
+
+    def validation(self,ds:typing.Optional[DataSet],fold:int)->DataSet:
+        raise ValueError("Not implemented")
+
+    def get_dataset(self,name:str=None)->DataSet:
+        raise  ValueError("Not implemented")
 
 class FoldsAndStages(ConnectedModel):
 
-    def __init__(self,core,folds,stages):
+    def __init__(self,core:ConnectedModel,folds,stages):
         self.wrapped=core
         self.folds=folds
         self.stages=stages
@@ -30,12 +43,12 @@ class FoldsAndStages(ConnectedModel):
     def predict_on_dataset(self, d, **kwargs):
         return self.wrapped.predict_on_dataset(d,fold=self.folds,stage=self.stages)
 
-    def predictions(self,name, **kwargs):
+    def predictions(self,name, **kwargs)->DataSet:
         return self.wrapped.predictions(name, fold=self.folds, stage=self.stages)
 
 class AverageBlend(ConnectedModel):
 
-    def __init__(self,models):
+    def __init__(self,models:[ConnectedModel]):
         self.models=models
         pass
     
@@ -43,8 +56,10 @@ class AverageBlend(ConnectedModel):
     def predict_on_dataset(self, d, **kwargs):
         raise ValueError("Not Implemented")
 
-    def predictions(self,name, **kwargs):
+    def predictions(self,name, **kwargs)->DataSet:
         rm=[]
         for v in self.models:
             rm.append(v.predictions(name))
-        return np.array(rm).mean(axis=0)    
+
+        result = rm[0] if len(rm) == 1 else MeanDataSet(rm)
+        return result
