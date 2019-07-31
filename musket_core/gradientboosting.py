@@ -1,6 +1,5 @@
 import musket_core.generic_config as generic
 import musket_core.datasets as datasets
-import musket_core.configloader as configloader
 import musket_core.utils as utils
 import numpy as np
 import keras
