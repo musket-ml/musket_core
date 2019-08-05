@@ -16,6 +16,8 @@ def model_function(func):
     return func
 
 def _shape(x):
+    print("X: " + str(x))
+    
     if isinstance(x,tuple):
         return [i.shape for i in x]
     if isinstance(x,list):
