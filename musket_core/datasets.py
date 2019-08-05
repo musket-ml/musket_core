@@ -244,9 +244,10 @@ class ConstrainedDirectory:
     def __repr__(self):
         return self.path+" (with filter)"
 
-class CompositeDataSet(object):
+class CompositeDataSet(DataSet):
 
     def __init__(self, components):
+        super().__init__()
         self.components = components
         sum = 0;
         shifts = []
@@ -256,13 +257,13 @@ class CompositeDataSet(object):
         self.shifts = shifts
         self.len = sum
 
-    def item(self, item, isTrain):
+    def get_train_item(self, item)->PredictionItem:
         i = item
         for j in range(len(self.shifts)):
             d = self.components[j]
             if item < self.shifts[j]:
-                if hasattr(d, "item"):
-                    return d.item(i, isTrain)
+                if hasattr(d, "get_train_item"):
+                    return d.get_train_item(i)
                 return d[i]
             else:
                 i = item - self.shifts[j]
