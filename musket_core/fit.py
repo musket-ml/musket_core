@@ -13,9 +13,9 @@ def main():
                         help='folder to search for experiments')
     parser.add_argument('--name', type=str, default="",
                         help='name of the experiment')
-    parser.add_argument('--num_gpus', type=int, default=2,
+    parser.add_argument('--num_gpus', type=int, default=1,
                         help='number of gpus')
-    parser.add_argument('--gpus_per_net', type=int, default=2,
+    parser.add_argument('--gpus_per_net', type=int, default=1,
                         help='number of gpus')
     parser.add_argument('--num_workers', type=int, default=1,
                         help='number of workers')
