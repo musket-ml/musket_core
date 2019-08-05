@@ -1000,12 +1000,13 @@ class DirectWriteableDS(WriteableDataSet):
     
 class CompressibleWriteableDS(WriteableDataSet):
 
-    def __init__(self,orig,name,dsPath, count = 0):
+    def __init__(self,orig,name,dsPath, count = 0,asUints=True):
         super().__init__()
         self.parent = orig
         self.name=name
         self.dsPath=dsPath
         self.count = count
+        self.asUints=asUints
 
     def append(self,item):
         ip = self.itemPath(self.count)
@@ -1038,12 +1039,55 @@ class CompressibleWriteableDS(WriteableDataSet):
         return f"{self.dsPath}/{item}.npy.npz"
 
     def saveItem(self, path:str, item):
-        dir = os.path.dirname(path)
-        item=(item*255).astype(np.uint8)
-        if not os.path.exists(dir):
-            os.mkdir(dir)
+        dire = os.path.dirname(path)
+        if self.asUints:
+            item=(item*255).astype(np.uint8)
+        if not os.path.exists(dire):
+            os.mkdir(dire)
         np.savez_compressed(path, item)
 
     def loadItem(self, path:str):
-        x=np.load(path)["arr_0.npy"].astype(np.float32)/255.0  
+        if self.asUints:
+            x=np.load(path)["arr_0.npy"].astype(np.float32)/255.0
+        else:
+            x=np.load(path)["arr_0.npy"]      
         return x; 
+    
+class PredictionBlend(DataSet):
+    
+    def __init__(self,predictions,enableCache=False):
+        self.predictions=predictions        
+        self.cache={}    
+        self.enableCache=enableCache
+    
+    def __len__(self):
+        return len(self.predictions[0])
+    
+    
+    def __getitem__(self, item)->PredictionItem:        
+        if item in self.cache:
+            return self.cache[item]        
+        z=self.predictions[0][item]
+        
+        if z.prediction is None:
+            return z
+        pr=np.mean([v[item].prediction for v in self.predictions if v[item].prediction is not None],axis=0)
+        r= PredictionItem(z.id,z.x,z.y,pr)
+        if self.enableCache:
+            self.cache[item]=r
+        return r 
+
+class TransformPrediction(DataSet):
+    
+    def __init__(self,parent,func):
+        self.parent=parent        
+        self.func=func
+    
+    def __len__(self):
+        return len(self.parent)
+    
+    
+    def __getitem__(self, item)->PredictionItem:        
+        z=self.parent[item]
+        r= PredictionItem(z.id,z.x,z.y,self.func(z.prediction))
+        return r      
