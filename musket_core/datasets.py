@@ -197,6 +197,8 @@ class DataSetLoader:
         id = ""
         if hasattr(self.dataset, "item"):
             item = self.dataset.item(self.indeces[i], self.isTrain)
+        elif hasattr(self.dataset, "get_train_item") and self.isTrain:
+            item = self.dataset.get_train_item(self.indeces[i])    
         else:
             item = self.dataset[self.indeces[i]]
         x, y = item.x, item.y
@@ -242,9 +244,10 @@ class ConstrainedDirectory:
     def __repr__(self):
         return self.path+" (with filter)"
 
-class CompositeDataSet(object):
+class CompositeDataSet(DataSet):
 
     def __init__(self, components):
+        super().__init__()
         self.components = components
         sum = 0;
         shifts = []
@@ -254,13 +257,13 @@ class CompositeDataSet(object):
         self.shifts = shifts
         self.len = sum
 
-    def item(self, item, isTrain):
+    def get_train_item(self, item)->PredictionItem:
         i = item
         for j in range(len(self.shifts)):
             d = self.components[j]
             if item < self.shifts[j]:
-                if hasattr(d, "item"):
-                    return d.item(i, isTrain)
+                if hasattr(d, "get_train_item"):
+                    return d.get_train_item(i)
                 return d[i]
             else:
                 i = item - self.shifts[j]
@@ -566,7 +569,8 @@ class SimplePNGMaskDataSet:
             newImage[:, :, 2] = image[:, :, 2]
 
             image = newImage
-
+        
+        image=image.astype(np.uint8)    
         return PredictionItem(self.ids[item] + str(), image, out)
 
     def isPositive(self, item):
@@ -1017,12 +1021,13 @@ class DirectWriteableDS(WriteableDataSet):
     
 class CompressibleWriteableDS(WriteableDataSet):
 
-    def __init__(self,orig,name,dsPath, count = 0):
+    def __init__(self,orig,name,dsPath, count = 0,asUints=True):
         super().__init__()
         self.parent = orig
         self.name=name
         self.dsPath=dsPath
         self.count = count
+        self.asUints=asUints
 
     def append(self,item):
         ip = self.itemPath(self.count)
@@ -1055,12 +1060,55 @@ class CompressibleWriteableDS(WriteableDataSet):
         return f"{self.dsPath}/{item}.npy.npz"
 
     def saveItem(self, path:str, item):
-        dir = os.path.dirname(path)
-        item=(item*255).astype(np.uint8)
-        if not os.path.exists(dir):
-            os.mkdir(dir)
+        dire = os.path.dirname(path)
+        if self.asUints:
+            item=(item*255).astype(np.uint8)
+        if not os.path.exists(dire):
+            os.mkdir(dire)
         np.savez_compressed(path, item)
 
     def loadItem(self, path:str):
-        x=np.load(path)["arr_0.npy"].astype(np.float32)/255.0  
+        if self.asUints:
+            x=np.load(path)["arr_0.npy"].astype(np.float32)/255.0
+        else:
+            x=np.load(path)["arr_0.npy"]      
         return x; 
+    
+class PredictionBlend(DataSet):
+    
+    def __init__(self,predictions,enableCache=False):
+        self.predictions=predictions        
+        self.cache={}    
+        self.enableCache=enableCache
+    
+    def __len__(self):
+        return len(self.predictions[0])
+    
+    
+    def __getitem__(self, item)->PredictionItem:        
+        if item in self.cache:
+            return self.cache[item]        
+        z=self.predictions[0][item]
+        
+        if z.prediction is None:
+            return z
+        pr=np.mean([v[item].prediction for v in self.predictions if v[item].prediction is not None],axis=0)
+        r= PredictionItem(z.id,z.x,z.y,pr)
+        if self.enableCache:
+            self.cache[item]=r
+        return r 
+
+class TransformPrediction(DataSet):
+    
+    def __init__(self,parent,func):
+        self.parent=parent        
+        self.func=func
+    
+    def __len__(self):
+        return len(self.parent)
+    
+    
+    def __getitem__(self, item)->PredictionItem:        
+        z=self.parent[item]
+        r= PredictionItem(z.id,z.x,z.y,self.func(z.prediction))
+        return r      

@@ -4,11 +4,27 @@ import yaml
 import inspect
 import keras
 from musket_core import utils
+
+builtIns = {
+    "any": True,
+    "object": True,
+    "array": True,
+    "string": True,
+    "number": True,
+    "integer": True,
+    "date": True,
+    "boolean": True
+}
+
+def isBuiltIn(typeName:str)->bool:
+    return typeName in builtIns
+
 class Module:
 
     def __init__(self,dict):
         self.catalog={};
         self.orig={}
+        self.dependencies={}
         self.entry=None
         for v in dict["types"]:
             t=Type(v,self,dict["types"][v]);
@@ -17,7 +33,9 @@ class Module:
             self.catalog[v.lower()]=t
             self.catalog[v] = t
             self.orig[v.lower()]=v
-        self.pythonModule=importlib.import_module(dict["(meta.module)"])
+        self.pythonModule = None
+        if "(meta.module)" in dict:
+            self.pythonModule=importlib.import_module(dict["(meta.module)"])
         self.register_module(self.pythonModule,False)
         pass
 
@@ -80,7 +98,7 @@ class Module:
                     else: clazz=getattr(self.pythonModule, self.orig[v])
 
                 args=typeDefinition.constructArgs(dct[v], clear_custom)
-                allProps=typeDefinition.all()
+                allProps=typeDefinition.allProperties()
                 for v in with_args:
                     if v in allProps:
                         args[v]=with_args[v]
@@ -93,6 +111,28 @@ class Module:
 
         return dct
 
+    def addDependency(self, key:str, m):
+        self.dependencies[key] = m
+
+    def getType(self, name:str):
+        if isBuiltIn(name):
+            return None
+        module = self
+        shortName = name
+        if "." in name:
+            ind = name.index(".")
+            namespace = name[:ind]
+            if not namespace in self.dependencies:
+                raise ValueError(f"Unknown namespace '{namespace}'")
+            module = module.dependencies[namespace]
+            shortName = name[ind+1:]
+
+        if not shortName in module.catalog:
+            raise ValueError(f"Can not resolve type '{name}'")
+
+        result = module.catalog[shortName]
+        return result
+
 class AbstractType:
 
     def __init__(self):
@@ -103,10 +143,10 @@ class AbstractType:
     def positional(self):
         return []
 
-    def all(self):
+    def allProperties(self):
         return []
 
-    def custom(self):
+    def customProperties(self):
         return []
 
     def property(self, propName): None
@@ -138,7 +178,7 @@ class AbstractType:
                 pass
             if isinstance(dct, dict):
                 r=dct.copy()
-                ct=self.custom()
+                ct=self.customProperties()
                 for v in dct:
                     if v in ct:
                         del r[v]
@@ -152,10 +192,22 @@ class AbstractType:
             return False
         elif self.type == typeName:
             return True
-        elif self.type.lower() in self.module.catalog:
-            return self.module.catalog[self.type.lower()].isAssignableFrom(typeName)
         else:
+            for t in self.superTypes():
+                if t.isAssignableFrom(typeName):
+                    return True
             return False
+
+    def superTypes(self):
+        names = self.type if isinstance(self.type, list) else [ self.type ]
+        result = []
+        for n in names:
+            if isinstance(n, str):
+                st = self.module.getType(n)
+                if st is not None:
+                    result.append(st)
+        return result
+
 
 
 class PythonType(AbstractType):
@@ -170,7 +222,7 @@ class PythonType(AbstractType):
     def positional(self):
         return self.args
 
-    def all(self):
+    def allProperties(self):
         return self.args
 
 class PythonFunction(AbstractType):
@@ -210,7 +262,7 @@ class PythonFunction(AbstractType):
     def positional(self):
         return self.args
 
-    def all(self):
+    def allProperties(self):
         return self.args
 
 class Type(AbstractType):
@@ -237,15 +289,17 @@ class Type(AbstractType):
     def alias(self,name:str):
         if name in self.properties:
             p:Property=self.properties[name]
-            if p.alias!=None:
-                return p.alias
+            if p.hasAnnotation("alias"):
+                return p.annotation("alias")
+        for st in self.superTypes():
+            als = st.alias(name)
+            if als != name:
+                return als
         return name
 
-    def custom(self):
-        c= {v for v in self.properties if self.properties[v].custom}
-        if self.type.lower() in self.module.catalog:
-            c = c.union(self.module.catalog[self.type.lower()].custom())
-        return c
+    def customProperties(self):
+        result = self.gatherBooleanAnnotatedProperties("custom")
+        return result
 
     def property(self, propName):
         if propName == None:
@@ -258,27 +312,49 @@ class Type(AbstractType):
             return None
 
     def positional(self):
-        c= [self.properties[v] for v in self.properties if self.properties[v].positional]
-        if self.type.lower() in self.module.catalog:
-            c = c+self.module.catalog[self.type.lower()].positional()
+        result = self.gatherBooleanAnnotatedProperties("positional")
+        return result
+
+    def allProperties(self):
+        c= [v for v in self.properties]
+        for st in self.superTypes():
+            c += st.allProperties()
         return c
 
-    def all(self):
-        c= [v for v in self.properties]
-        if self.type.lower() in self.module.catalog:
-            c = c+self.module.catalog[self.type.lower()].all()
-        return c
+    def gatherAnnotatedProperties(self, aName:str):
+        result = {}
+        for st in self.superTypes():
+            stProps = st.gatherAnnotatedProperties(aName)
+            for pName in stProps:
+                result[pName] = stProps[pName]
+        c = {self.properties[v] for v in self.properties if (self.properties[v].hasAnnotation(aName))}
+        for prop in c:
+            result[prop.name] = prop
+        return result
+
+    def gatherBooleanAnnotatedProperties(self, aName:str):
+        result = self.gatherAnnotatedProperties(aName)
+        keys = [x for x in result]
+        for pName in keys:
+            aValue = result[pName].annotation(aName)
+            if isinstance(aValue,bool) and aValue:
+                pass
+            else:
+                result.pop(pName,None)
+        return {x for x in result}
 
 
 class Property:
     def __init__(self,name:str,t:Type,dict):
         self.name=name
         self.type=t;
-        self.alias=None
-        self.positional="(meta.positional)" in dict
-        self.custom = "(meta.custom)" in dict
-        if "(meta.alias)" in dict:
-            self.alias=dict["(meta.alias)"]
+
+        self.annotations = {}
+        for annotationName in ["positional", "custom", "alias"]:
+            key = f"(meta.{annotationName})"
+            if key in dict:
+                self.annotations[annotationName]= dict[key]
+
         if isinstance(dict, str):
             self.propRange = dict
         elif "type" in dict:
@@ -287,16 +363,34 @@ class Property:
             self.propRange = "string"
         pass
 
+    def hasAnnotation(self, aName: str):
+        return aName in self.annotations
+
+    def annotation(self,aName:str):
+        if aName in self.annotations:
+            return self.annotations[aName]
+        return None
+
+
 loaded={}
 
 def load(name: str)  -> Module:
     if name in loaded:
         return loaded[name]
     pth = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(pth,"schemas", name+".raml"), "r") as f:
+    fName = name if name.endswith('.raml') else name + ".raml"
+    with open(os.path.join(pth,"schemas", fName), "r") as f:
         cfg = yaml.load(f);
-    loaded[name]=Module(cfg);
-    return loaded[name]
+    result = Module(cfg)
+    loaded[name]= result;
+    if 'uses' in cfg:
+        uses = cfg['uses']
+        for key in uses:
+            mPath = uses[key]
+            m = load(mPath)
+            result.addDependency(key,m)
+
+    return result
 
 alllowReplace=["declarations","callbacks","datasets","tasks"]
 def parse(name:str,p,extra=None):

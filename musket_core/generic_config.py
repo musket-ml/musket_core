@@ -322,10 +322,13 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         self._reporter=None
         self.testTimeAugmentation=None
         self.stratified=False
+        self.needsSessionForPrediction=False
+        self.compressPredictionsAsInts=True
         self.preprocessing=None
         self.verbose = 1
         self._projectDir=None
         self.manualResize=None
+        self.separatePredictions=True
         self.dataset=None
         self.noTrain = False
         self.inference_batch=32
@@ -421,6 +424,20 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             return test
             pass
         raise ValueError("This configuration does not have holdout")
+    
+    def train_without_holdout(self, ds=None):
+        if ds is None:
+            ds=self.get_dataset()
+        if os.path.exists(self.path + ".holdout_split"):
+            trI,hI = utils.load_yaml(self.path + ".holdout_split")
+            train=datasets.SubDataSet(ds,trI)
+            test = datasets.SubDataSet(ds,hI)
+            return train
+        if self.testSplit>0 or self.holdoutArr is not None:
+            train,test=self.doGetHoldout(ds)
+            return train
+            pass
+        raise ValueError("This configuration does not have holdout")
 
     def kfold(self, ds=None, indeces=None,batch=None)-> datasets.DefaultKFoldedDataSet:
         if ds is None:
@@ -514,7 +531,9 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             stage=list(range(len(self.stages)))
         if isinstance(dataset,str):
             dataset=self.get_dataset(dataset)
-
+        
+            
+            
         with tqdm.tqdm(total=len(dataset), unit="files", desc="prediction from  " + str(dataset)) as pbar:
             for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips, cacheModel=cacheModel):
                 b=v
@@ -527,6 +546,10 @@ class GenericTaskConfig(model.IGenericTaskConfig):
 
 
     def predictions(self,name,fold=None,stage=None)->DataSet:
+        if fold is None:
+            fold=list(range(self.folds_count))
+        if stage is None:
+            stage=list(range(len(self.stages)))    
         return musket_core.predictions.get_predictions(self,name,fold,stage)
 
     def find_treshold(self,ds,fold,func,stage=0):
@@ -1073,6 +1096,7 @@ class GenericImageTaskConfig(GenericTaskConfig):
                     z.predictions = resList;
                     pbar.update(batch_size)
                     yield z
+                    
 
     def transformAugmentor(self):
         transforms = [] + self.transforms

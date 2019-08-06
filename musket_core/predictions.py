@@ -3,14 +3,14 @@ from musket_core.utils import ensure
 import os
 import numpy as np
 from musket_core.structure_constants import constructPredictionsDirPath
-from musket_core.datasets import DataSet, PredictionItem
+from musket_core.datasets import DataSet, PredictionItem,PredictionBlend
 from musket_core.preprocessing import PreprocessedDataSet
 from typing import Union
 import keras
 from musket_core import configloader
-
 from musket_core.model import IGenericTaskConfig,FoldsAndStages
-
+from tqdm import tqdm
+import keras.backend as K
 class Prediction:
     def __init__(self,cfg,fold,stage,name:str,srcDataset=None):
         fold, stage = _fix_fold_and_stage(cfg, fold, stage)
@@ -42,8 +42,32 @@ class Prediction:
 
         if os.path.exists(path):
             return self.cfg.load_writeable_dataset(ds, path)
-
-        value=self.cfg.predict_all_to_dataset(ds,self.fold,self.stage,-1,None,False,path)
+        
+        if self.cfg.separatePredictions:
+            if isinstance(self.fold, list) and len(self.fold)>1:
+                prs=[Prediction(self.cfg,v,self.stage,self.name,self.srcDataset).calculate() for v in self.fold]
+                vls=PredictionBlend(prs)    
+                wd=self.cfg.create_writeable_dataset(vls,path)
+                for i in tqdm(vls,"Blending"):
+                    wd.append(i.prediction)
+                wd.commit()    
+                return self.cfg.load_writeable_dataset(ds, path)
+            if isinstance(self.stage, list) and len(self.stage)>1:
+                prs=[Prediction(self.cfg,self.fold,v,self.name,self.srcDataset).calculate() for v in self.stage]
+                vls=PredictionBlend(prs)
+                wd=self.cfg.create_writeable_dataset(vls,path)
+                for i in tqdm(vls,"Blending"):
+                    wd.append(i.prediction)
+                wd.commit()    
+                return self.cfg.load_writeable_dataset(ds, path)                
+            
+            pass
+        if self.cfg.needsSessionForPrediction:            
+            K.clear_session()
+            value=self.cfg.predict_all_to_dataset(ds,self.fold,self.stage,-1,None,False,path)
+                    
+        else:    
+            value=self.cfg.predict_all_to_dataset(ds,self.fold,self.stage,-1,None,False,path)
         return value
 
 

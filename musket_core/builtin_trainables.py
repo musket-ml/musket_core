@@ -10,6 +10,7 @@ import lightgbm
 
 import os
 
+
 class OutputMeta:
     def __init__(self, shape, owner):
         self.output_meta = True
@@ -54,7 +55,7 @@ class RGetter:
         return iter(self.__dict__)
 
     def __unicode__(self):
-        return unicode(repr(self.__dict__))
+        return repr(self.__dict__)
 
 class GradientBoosting:
     def __init__(self, output_dim, boosting_type='gbdt', num_leaves=31, max_depth=-1, learning_rate=0.1, n_estimators=100, subsample_for_bin=200000, class_weight=None, min_split_gain=0., min_child_weight=1e-3, min_child_samples=20, subsample=1., subsample_freq=0, colsample_bytree=1., reg_alpha=0., reg_lambda=0., random_state=None, n_jobs=-1, silent=True, importance_type='split'):
