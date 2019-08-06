@@ -267,6 +267,26 @@ class CompositeDataSet(object):
 
         print("none")
         return None
+    
+    def get_target(self, item):
+        if isinstance(item, slice):
+            ifnone = lambda a, b: b if a is None else a
+            rng = range(ifnone(item.start, 0), ifnone(item.stop, self.__len__()), ifnone(item.step, 1))
+            result = [self.get_target(i) for i in rng]
+            return result
+        i = item
+        for j in range(len(self.shifts)):
+            provider = self.components[j]
+            if item < self.shifts[j]:
+                if hasattr(provider, "get_target"):
+                    return provider.get_target(i)
+                else:
+                    return provider[i]
+            else:
+                i = item - self.shifts[j]
+
+        return None
+
 
     def __getitem__(self, item):
         if isinstance(item, slice):
