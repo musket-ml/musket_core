@@ -345,20 +345,22 @@ class Type(AbstractType):
 
 
 class Property:
-    def __init__(self,name:str,t:Type,dict):
+    def __init__(self,name:str,t:Type,dict1):
         self.name=name
         self.type=t;
 
         self.annotations = {}
-        for annotationName in ["positional", "custom", "alias"]:
-            key = f"(meta.{annotationName})"
-            if key in dict:
-                self.annotations[annotationName]= dict[key]
+        if isinstance(dict1,dict):
+            for annotationName in ["positional", "custom", "alias"]:
+              key = f"(meta.{annotationName})"
+              if key in dict1:
+                  self.annotations[annotationName]= dict1[key]
 
-        if isinstance(dict, str):
-            self.propRange = dict
-        elif "type" in dict:
-            self.propRange = dict["type"]
+            if "type" in dict1:
+                self.propRange = dict1["type"]
+
+        elif isinstance(dict1, str):
+            self.propRange = dict1
         else:
             self.propRange = "string"
         pass
