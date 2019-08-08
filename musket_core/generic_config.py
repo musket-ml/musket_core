@@ -466,9 +466,9 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         if inputFolds is not None:
             ds.folds = inputFolds
         elif os.path.exists(self.path+".folds_split"):
-             folds=utils.load_yaml(self.path+".folds_split")
-             split_loaded=True
-             ds.folds=folds
+            folds=utils.load_yaml(self.path+".folds_split")
+            split_loaded=True
+            ds.folds=folds
         kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count,stratified=self.stratified,groupFunc=self.groupFunc,validationSplit=self.validationSplit,maxEpochSize=self.maxEpochSize)
         if not split_loaded:
             kf.save(self.path+".folds_split")
@@ -606,6 +606,8 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             ds=self.get_dataset()
         if isinstance(foldNum, list):
             foldNum=foldNum[0]
+        if self.testSplit>0:
+            ds=self.train_without_holdout()    
         ids=self.kfold(ds).indexes(foldNum,False)
         r=datasets.SubDataSet(ds, ids)
         r.name="validation"+str(foldNum)
@@ -613,6 +615,8 @@ class GenericTaskConfig(model.IGenericTaskConfig):
 
     def train(self,ds,foldNum):
         ids=self.kfold(ds).indexes(foldNum,True)
+        if self.testSplit>0:
+            ds=self.train_without_holdout()  
         r=datasets.SubDataSet(ds,ids)
         r.name="train"+str(foldNum)
         return r
