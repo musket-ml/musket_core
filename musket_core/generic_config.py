@@ -326,6 +326,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         self.compressPredictionsAsInts=True
         self.preprocessing=None
         self.verbose = 1
+        self.compressScale=None
         self._projectDir=None
         self.manualResize=None
         self.separatePredictions=True
