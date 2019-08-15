@@ -31,18 +31,38 @@ types:
       imports:
         (meta.custom): true
         type: string[]
-      testSplit?: number
+      testSplit?:
+         (meta.custom): true 
+         type: number
+      verbose:
+        (meta.custom): true
+        type: boolean
       testSplitSeed?: number
+      add_to_train:
+        (meta.custom): true
+        type: string
+      groupFunc?:
+         type: string
+         (meta.custom): true
+         description: function that will be used during stratification
       inference_batch?:
          type: integer
          default: 32
-      stratified?: boolean
+      needsSessionForPrediction:
+         (meta.custom): true 
+         type: boolean   
+      stratified?:
+         (meta.custom): true 
+         type: boolean
       testTimeAugmentation:
          (meta.custom): true
          type: string
       folds_count?:
         type: integer
         (meta.custom): true
+      final_metrics?:
+        type: string[]
+        (meta.custom): true  
       copyWeights?:
         type: boolean
         (meta.custom): true

@@ -9,12 +9,18 @@ types:
     type: generic.GenericPipeline
     discriminator: architecture
     properties:
+      compressPredictionsAsInts:
+         (meta.custom): true
+         type: boolean
       inference_batch:
          (meta.custom): true
       testSplit?: 
          (meta.custom): true
       testSplitSeed?:
          (meta.custom): true
+      manualResize?:
+      	(meta.custom): true
+      	type: boolean   
       classifier:
         type: string
         (meta.custom): true

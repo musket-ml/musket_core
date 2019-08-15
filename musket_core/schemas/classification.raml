@@ -17,11 +17,10 @@ types:
         (meta.custom): true
       freeze_encoder:
         type: boolean
-        (meta.custom): true  
-      classifier:
-        type: string
         (meta.custom): true
-        enum: [ResNet50,DenseNet121,DenseNet169,DenseNet201,NASNetLarge,InceptionV3,NASNetMobile,VGG16,VGG19,Xception,InceptionResNetV2,MobileNet,MobileNetV2]
+      manualResize?:
+      	(meta.custom): true
+      	type: boolean          
       manualResize:
         type: boolean
         (meta.custom): true
