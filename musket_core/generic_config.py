@@ -1202,7 +1202,13 @@ class Stage:
 
         cb = [] + self.cfg.callbacks
         if self.initial_weights is not None:
-            model.load_weights(self.initial_weights)
+            try:
+                model.load_weights(self.initial_weights)
+            except:
+                z=model.layers[-1].name
+                model.layers[-1].name="tmp"
+                model.load_weights(self.initial_weights,by_name=True)
+                model.layers[-1].name="z"
         ll=LRFinder(model)
         num_batches=kf.numBatches(ec.fold,self.negatives,ec.subsample)*epochs
         ll.lr_mult = (float(end_lr) / float(start_lr)) ** (float(1) / float(num_batches))
@@ -1257,10 +1263,14 @@ class Stage:
 
         if self.loss or self.lr:
             self.cfg.compile(model, self.cfg.createOptimizer(self.lr), self.loss)
-
         if self.initial_weights is not None:
-            #model.layers[-1].name="SomeNewName"
-            model.load_weights(self.initial_weights)
+            try:
+                    model.load_weights(self.initial_weights)
+            except:
+                    z=model.layers[-1].name
+                    model.layers[-1].name="tmpName12312"
+                    model.load_weights(self.initial_weights,by_name=True)
+                    model.layers[-1].name=z
         if 'callbacks' in self.dict:
             cb = configloader.parse("callbacks", self.dict['callbacks'])
         if 'extra_callbacks' in self.dict:

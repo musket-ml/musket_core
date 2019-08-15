@@ -17,6 +17,7 @@ class Experiment:
         self.gpus=1
         self.onlyReports = False
         self.launchTasks = True
+        self.folds=None
 
     def cleanup(self):
         if os.path.exists(self.getPredictionsDirPath()):
@@ -221,7 +222,10 @@ class Experiment:
             if self.onlyReports:
                 units_of_work.append(Task(lambda :cfg.generateReports()))
             else:
-                units_of_work=units_of_work+cfg.fit(parallel=True)
+                if hasattr(self, "folds"):
+                    units_of_work=units_of_work+cfg.fit(parallel=True)
+                else:
+                    units_of_work=units_of_work+cfg.fit(parallel=True)
 
             r=Task(lambda: self.result())
             r.deps=units_of_work.copy()
