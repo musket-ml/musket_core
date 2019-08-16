@@ -137,33 +137,6 @@
                 <div class="col-md-9" role="main">
 
 <h1 id="segmentation-training-pipeline">Segmentation Training Pipeline</h1>
-<ul>
-<li><a href="#motivation">Motivation</a></li>
-<li><a href="#installation">Installation</a></li>
-<li><a href="#usage-guide">Usage guide</a><ul>
-<li><a href="#training-a-model">Training a model</a></li>
-<li><a href="#image-and-mask-augmentations">Image/Mask Augmentations</a></li>
-<li><a href="#freezing-and-unfreezing-encoder">Freezing/Unfreezing encoder</a></li>
-<li><a href="#custom-datasets">Custom datasets</a>      </li>
-<li><a href="#balancing-your-data">Balancing your data</a></li>
-<li><a href="#multistage-training">Multistage training</a></li>
-<li><a href="#composite-losses">Composite losses</a></li>
-<li><a href="#cyclical-learning-rates">Cyclical learning rates</a></li>
-<li><a href="#lr-finder">LR Finder</a>      </li>
-<li><a href="#background-augmenter">Background Augmenter</a></li>
-<li><a href="#training-on-crops">Training on crops</a></li>
-<li><a href="#using-trained-model">Using trained model</a></li>
-<li><a href="#ensembling-predictions">Ensembling predictions and test time augmentation</a></li>
-<li><a href="#custom-evaluation-code">Custom evaluation code</a></li>
-<li><a href="#accessing-model">Accessing model</a></li>
-</ul>
-</li>
-<li><a href="#analyzing-experiments-results">Analyzing Experiments Results</a></li>
-<li><a href="#what-is-supported-">What is supported?</a>    </li>
-<li><a href="#custom-architectures--callbacks--metrics">Custom architectures, callbacks, metrics</a></li>
-<li><a href="#examples">Examples</a></li>
-<li><a href="#faq">Faq</a></li>
-</ul>
 <h2 id="motivation">Motivation</h2>
 <p>Idea for this project came from my first attempts to participate in Kaggle competitions. My programmers heart was painfully damaged by looking on my own code as well as on other people kernels. Code was highly repetitive, suffering from numerous reimplementations of same or almost same things through the kernels, model/experiment configuration was often mixed with models code, in other words - from programmer perspective it all looked horrible. </p>
 <p>So I decided to extract repetitive things into framework that will work at least for me and will follow these statements: 

@@ -1,30 +1,5 @@
 # Segmentation Training Pipeline
 
-  * [Motivation](#motivation)
-  * [Installation](#installation)
-  * [Usage guide](#usage-guide)
-    + [Training a model](#training-a-model)
-      - [Image/Mask Augmentations](#image-and-mask-augmentations)
-      - [Freezing/Unfreezing encoder](#freezing-and-unfreezing-encoder)
-      - [Custom datasets](#custom-datasets)      
-      - [Balancing your data](#balancing-your-data)
-      - [Multistage training](#multistage-training)
-      - [Composite losses](#composite-losses)
-      - [Cyclical learning rates](#cyclical-learning-rates)
-      - [LR Finder](#lr-finder)      
-      - [Background Augmenter](#background-augmenter)
-      - [Training on crops](#training-on-crops)
-    + [Using trained model](#using-trained-model)
-      - [Ensembling predictions and test time augmentation](#ensembling-predictions)
-    + [Custom evaluation code](#custom-evaluation-code)
-    + [Accessing model](#accessing-model)
-  * [Analyzing Experiments Results](#analyzing-experiments-results)
-  * [What is supported?](#what-is-supported-)    
-  * [Custom architectures, callbacks, metrics](#custom-architectures--callbacks--metrics)
-  * [Examples](#examples)
-  * [Faq](#faq)
-
-
 ## Motivation
 
 Idea for this project came from my first attempts to participate in Kaggle competitions. My programmers heart was painfully damaged by looking on my own code as well as on other people kernels. Code was highly repetitive, suffering from numerous reimplementations of same or almost same things through the kernels, model/experiment configuration was often mixed with models code, in other words - from programmer perspective it all looked horrible. 
