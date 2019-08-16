@@ -1,0 +1,12 @@
+site_name: Musket ML
+nav:
+- Home: 'index.md'
+- Generic:
+    - 'User guide': 'generic/index.md'
+    - 'Reference': 'generic/reference.md'
+- Segmentation:
+    - 'User guide': 'segmentation/index.md'
+    - 'Reference': 'segmentation/reference.md'
+- Classification:
+    - 'User guide': 'classification/index.md'
+    - 'Reference': 'classification/reference.md'

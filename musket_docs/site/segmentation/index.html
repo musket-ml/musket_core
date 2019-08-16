@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>User guide - Musket ML</title>
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap-3.0.3.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+
+                <!-- Collapsed navigation -->
+                <div class="navbar-header">
+                    <!-- Expander button -->
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="..">Musket ML</a>
+                </div>
+
+                <!-- Expanded navigation -->
+                <div class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li >
+                                <a href="..">Home</a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Generic <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../generic/">User guide</a>
+</li>
+                                    
+<li >
+    <a href="../generic/reference/">Reference</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Segmentation <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li class="active">
+    <a href="./">User guide</a>
+</li>
+                                    
+<li >
+    <a href="reference/">Reference</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Classification <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../classification/">User guide</a>
+</li>
+                                    
+<li >
+    <a href="../classification/reference/">Reference</a>
+</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li >
+                                <a rel="next" href="../generic/reference/">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li >
+                                <a rel="prev" href="reference/">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#segmentation-training-pipeline">Segmentation Training Pipeline</a></li>
+            <li><a href="#motivation">Motivation</a></li>
+            <li><a href="#installation">Installation</a></li>
+            <li><a href="#usage-guide">Usage guide</a></li>
+            <li><a href="#analyzing-experiments-results">Analyzing experiments results</a></li>
+            <li><a href="#what-is-supported">What is supported?</a></li>
+            <li><a href="#custom-architectures-callbacks-metrics">Custom architectures, callbacks, metrics</a></li>
+            <li><a href="#examples">Examples</a></li>
+        <li class="main "><a href="#faq">FAQ</a></li>
+            <li><a href="#how-to-continue-training-after-crash">How to continue training after crash?</a></li>
+            <li><a href="#my-notebooks-constantly-run-out-of-memory-what-can-i-do-to-reduce-memory-usage">My notebooks constantly run out of memory, what can I do to reduce memory usage?</a></li>
+            <li><a href="#how-can-i-run-sepate-set-of-augmenters-on-initial-imagemask-when-replacing-backgrounds-with-background-augmenter">How can I run sepate set of augmenters on initial image/mask when replacing backgrounds with Background Augmenter?</a></li>
+            <li><a href="#how-can-i-visualize-images-that-are-used-for-training-after-augmentations">How can I visualize images that are used for training (after augmentations)?</a></li>
+            <li><a href="#what-i-can-do-if-i-have-some-extra-training-data-that-should-not-be-included-into-validation-but-should-be-used-during-the-training">What I can do if i have some extra training data, that should not be included into validation, but should be used during the training?</a></li>
+            <li><a href="#how-to-get-basic-statistics-across-my-foldsstages">How to get basic statistics across my folds/stages</a></li>
+            <li><a href="#i-have-some-callbacks-that-are-configured-globally-but-i-need-some-extra-callbacks-for-my-last-training-stage">I have some callbacks that are configured globally, but I need some extra callbacks for my last training stage?</a></li>
+            <li><a href="#what-if-i-would-like-to-build-a-really-large-ansemble-of-models">What if I would like to build a really large ansemble of models?</a></li>
+            <li><a href="#how-to-train-on-multiple-gpus">How to train on multiple gpus?</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="segmentation-training-pipeline">Segmentation Training Pipeline</h1>
+<ul>
+<li><a href="#motivation">Motivation</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#usage-guide">Usage guide</a><ul>
+<li><a href="#training-a-model">Training a model</a></li>
+<li><a href="#image-and-mask-augmentations">Image/Mask Augmentations</a></li>
+<li><a href="#freezing-and-unfreezing-encoder">Freezing/Unfreezing encoder</a></li>
+<li><a href="#custom-datasets">Custom datasets</a>      </li>
+<li><a href="#balancing-your-data">Balancing your data</a></li>
+<li><a href="#multistage-training">Multistage training</a></li>
+<li><a href="#composite-losses">Composite losses</a></li>
+<li><a href="#cyclical-learning-rates">Cyclical learning rates</a></li>
+<li><a href="#lr-finder">LR Finder</a>      </li>
+<li><a href="#background-augmenter">Background Augmenter</a></li>
+<li><a href="#training-on-crops">Training on crops</a></li>
+<li><a href="#using-trained-model">Using trained model</a></li>
+<li><a href="#ensembling-predictions">Ensembling predictions and test time augmentation</a></li>
+<li><a href="#custom-evaluation-code">Custom evaluation code</a></li>
+<li><a href="#accessing-model">Accessing model</a></li>
+</ul>
+</li>
+<li><a href="#analyzing-experiments-results">Analyzing Experiments Results</a></li>
+<li><a href="#what-is-supported-">What is supported?</a>    </li>
+<li><a href="#custom-architectures--callbacks--metrics">Custom architectures, callbacks, metrics</a></li>
+<li><a href="#examples">Examples</a></li>
+<li><a href="#faq">Faq</a></li>
+</ul>
+<h2 id="motivation">Motivation</h2>
+<p>Idea for this project came from my first attempts to participate in Kaggle competitions. My programmers heart was painfully damaged by looking on my own code as well as on other people kernels. Code was highly repetitive, suffering from numerous reimplementations of same or almost same things through the kernels, model/experiment configuration was often mixed with models code, in other words - from programmer perspective it all looked horrible. </p>
+<p>So I decided to extract repetitive things into framework that will work at least for me and will follow these statements: 
+ - experiment configurations should be cleanly separated from model definitions;
+ - experiment configuration files should be easy to compare and should fully describe experiment that is being performed except for the dataset;
+- common blocks like an architecture, callbacks, storing model metrics, visualizing network predictions, should be written once and be a part of common library</p>
+<h2 id="installation">Installation</h2>
+<p>At this moment library requires the latest version of imgaug which has not been published yet to pip, so installation requires
+execution of following two commands </p>
+<pre><code>pip install git+https://github.com/aleju/imgaug
+pip install segmentation_pipeline
+</code></pre>
+
+<p><em>Note: this package requires python 3.6</em></p>
+<h2 id="usage-guide">Usage guide</h2>
+<h3 id="training-a-model">Training a model</h3>
+<p>Let's start from the absolutely minimalistic example. Let's say that you have two folders, one of them contains
+jpeg images, and another one - png files with segmentation masks for these images. And you need to train a neural network
+that will do segmentation for you. In this extremely simple setup all that you need is to type following 5
+lines of python code:</p>
+<pre><code class="python">from segmentation_pipeline.impl.datasets import SimplePNGMaskDataSet
+from segmentation_pipeline import  segmentation
+ds=SimplePNGMaskDataSet(&quot;./pics/train&quot;,&quot;./pics/train_mask&quot;)
+cfg = segmentation.parse(&quot;config.yaml&quot;)
+cfg.fit(ds)
+</code></pre>
+
+<p>Looks simple, but there is a <code>config.yaml</code> file in the code, and probably it is the place where everything actually happens.</p>
+<pre><code class="yaml">backbone: mobilenetv2 #let's select classifier backbone for our network 
+architecture: DeepLabV3 #let's select segmentation architecture that we would like to use
+augmentation:
+ Fliplr: 0.5 #let's define some minimal augmentations on images
+ Flipud: 0.5 
+classes: 1 #we have just one class (mask or no mask)
+activation: sigmoid #one class means that our last layer should use sigmoid activation
+encoder_weights: pascal_voc #we would like to start from network pretrained on pascal_voc dataset
+shape: [320, 320, 3] #This is our desired input image and mask size, everything will be resized to fit.
+optimizer: Adam #Adam optimizer is a good default choice
+batch: 16 #Our batch size will be 16
+metrics: #We would like to track some metrics
+  - binary_accuracy 
+  - iou
+primary_metric: val_binary_accuracy #and the most interesting metric is val_binary_accuracy
+callbacks: #Let's configure some minimal callbacks
+  EarlyStopping:
+    patience: 15
+    monitor: val_binary_accuracy
+    verbose: 1
+  ReduceLROnPlateau:
+    patience: 4
+    factor: 0.5
+    monitor: val_binary_accuracy
+    mode: auto
+    cooldown: 5
+    verbose: 1
+loss: binary_crossentropy #We use simple binary_crossentropy loss
+stages:
+  - epochs: 100 #Let's go for 100 epochs
+</code></pre>
+
+<p>So as you see, we have decomposed our task in two parts, <em>code that actually trains the model</em> and <em>experiment configuration</em>,
+which determines the model and how it should be trained from the set of predefined building blocks.</p>
+<p>What does this code actually do behind the scenes?</p>
+<ul>
+<li>it splits your data into 5 folds, and trains one model per fold;</li>
+<li>it takes care of model checkpointing, generates example image/mask/segmentation triples, collects training metrics. All this data will
+   be stored in the folders just near your <code>config.yaml</code>;</li>
+<li>All your folds are initialized from fixed default seed, so different experiments will use exactly the same train/validation splits</li>
+</ul>
+<p>Also, datasets can be specified directly in your config file in more generic way, see examples ds_1, ds_2, ds_3 in "segmentation_training_pipeline/examples/people" folder. In this case you can just call cfg.fit() without providing dataset programmatically.</p>
+<h4 id="image-and-mask-augmentations">Image and Mask Augmentations</h4>
+<p>Framework uses awesome <a href="https://github.com/aleju/imgaug">imgaug</a> library for augmentation, so you only need to configure your augmentation process in declarative way like in the following example:</p>
+<pre><code class="yaml">augmentation:  
+  Fliplr: 0.5
+  Flipud: 0.5
+  Affine:
+    scale: [0.8, 1.5] #random scalings
+    translate_percent:
+      x: [-0.2,0.2] #random shifts
+      y: [-0.2,0.2]
+    rotate: [-16, 16] #random rotations on -16,16 degrees
+    shear: [-16, 16] #random shears on -16,16 degrees
+</code></pre>
+
+<h4 id="freezing-and-unfreezing-encoder">Freezing and Unfreezing encoder</h4>
+<p>Freezing encoder is often used with transfer learning. If you want to start with frozen encoder just add</p>
+<pre><code class="yaml">freeze_encoder: true
+stages:
+  - epochs: 10 #Let's go for 10 epochs with frozen encoder
+
+  - epochs: 100 #Now let's go for 100 epochs with trainable encoder
+    unfreeze_encoder: true  
+</code></pre>
+
+<p>in your experiments configuration, then on some stage configuration just add</p>
+<pre><code class="yaml">unfreeze_encoder: true
+</code></pre>
+
+<p>to stage settings.</p>
+<p><em>Note: This option is not supported for DeeplabV3 architecture.</em></p>
+<h4 id="custom-datasets">Custom datasets</h4>
+<p>Training data and masks are not necessarily stored in files, so sometimes you need to declare your own dataset class,
+for example, the following code was used in my experiments with <a href="https://www.kaggle.com/c/airbus-ship-detection/overview">Airbus ship detection challenge</a>
+to decode segmentation masks from rle encoded strings stored in csv file </p>
+<pre><code class="python">from segmentation_pipeline.impl.datasets import PredictionItem
+import os
+from segmentation_pipeline.impl import rle
+import imageio
+import pandas as pd
+
+class SegmentationRLE:
+
+    def __init__(self,path,imgPath):
+        self.data=pd.read_csv(path);
+        self.values=self.data.values;
+        self.imgPath=imgPath;
+        self.ship_groups=self.data.groupby('ImageId');
+        self.masks=self.ship_groups['ImageId'];
+        self.ids=list(self.ship_groups.groups.keys())
+        pass
+
+    def __len__(self):
+        return len(self.masks)
+
+
+    def __getitem__(self, item):
+        pixels=self.ship_groups.get_group(self.ids[item])[&quot;EncodedPixels&quot;]
+        return PredictionItem(self.ids[item] + str(), imageio.imread(os.path.join(self.imgPath,self.ids[item])),
+                              rle.masks_as_image(pixels) &gt; 0.5)
+
+
+
+</code></pre>
+
+<h4 id="balancing-your-data">Balancing your data</h4>
+<p>One common case is the situation when part of your images does not contain any objects of interest, like in 
+<a href="https://www.kaggle.com/c/airbus-ship-detection/overview">Airbus ship detection challenge</a>. More over your data may
+be to heavily inbalanced, so you may want to rebalance it. Alternatively you may want to inject some additional
+images that do not contain objects of interest to decrease amount of false positives that will be produced by the framework.</p>
+<p>These scenarios are supported by <code>negatives</code> and <code>validation_negatives</code> settings of training stage configuration,
+these settings accept following values:</p>
+<ul>
+<li>none - exclude negative examples from the data</li>
+<li>real - include all negative examples </li>
+<li>integer number(1 or 2 or anything), how many negative examples should be included per one positive example   </li>
+</ul>
+<p>if you are using this setting your dataset class must support <code>isPositive</code> method which returns true for indexes
+which contain positive examples: </p>
+<pre><code class="python">    def isPositive(self, item):
+        pixels=self.ddd.get_group(self.ids[item])[&quot;EncodedPixels&quot;]
+        for mask in pixels:
+            if isinstance(mask, str):
+                return True;
+        return False
+</code></pre>
+
+<h4 id="multistage-training">Multistage training</h4>
+<p>Sometimes you need to split your training into several stages. You can easily do it by adding several stage entries
+in your experiment configuration file like in the following example:</p>
+<pre><code class="yaml">stages:
+  - epochs: 6 #Train for 6 epochs
+    negatives: none #do not include negative examples in your training set 
+    validation_negatives: real #validation should contain all negative examples    
+
+  - lr: 0.0001 #let's use different starting learning rate
+    epochs: 6
+    negatives: real
+    validation_negatives: real
+
+  - loss: lovasz_loss #let's override loss function
+    lr: 0.00001
+    epochs: 6
+    initial_weights: ./fpn-resnext2/weights/best-0.1.weights #let's load weights from this file    
+</code></pre>
+
+<p>Stage entries allow you to configure custom learning rate, balance of negative examples, callbacks, loss function
+and even initial weights which should be used on a particular stage.</p>
+<h4 id="composite-losses">Composite losses</h4>
+<p>Framework supports composing loss as a weighted sum of predefined loss functions. For example, following construction</p>
+<pre><code class="yaml">loss: binary_crossentropy+0.1*dice_loss
+</code></pre>
+
+<p>will result in loss function which is composed from <code>binary_crossentropy</code> and  <code>dice_loss</code> functions.</p>
+<h4 id="cyclical-learning-rates">Cyclical learning rates</h4>
+<p><img alt="Example" src="https://github.com/bckenstler/CLR/blob/master/images/triangularDiag.png?raw=true" /></p>
+<p>As told in <a href="https://arxiv.org/abs/1506.01186">Cyclical learning rates for training neural networks</a> CLR policies can provide quicker converge for some neural network tasks and architectures. </p>
+<p><img alt="Example2" src="https://github.com/bckenstler/CLR/raw/master/images/cifar.png" /></p>
+<p>We support them by adopting Brad Kenstler <a href="https://github.com/bckenstler/CLR">CLR callback</a> for Keras.</p>
+<p>If you want to use them, just add <code>CyclicLR</code> in your experiment configuration file as shown below: </p>
+<pre><code class="yaml">callbacks:
+  EarlyStopping:
+    patience: 40
+    monitor: val_binary_accuracy
+    verbose: 1
+  CyclicLR:
+     base_lr: 0.0001
+     max_lr: 0.01
+     mode: triangular2
+     step_size: 300
+</code></pre>
+
+<h4 id="lr-finder">LR Finder</h4>
+<p><a href="https://arxiv.org/abs/1506.01186">Estimating optimal learning rate for your model</a> is an important thing, we support this by using slightly changed 
+version of <a href="https://github.com/surmenok/keras_lr_finder">Pavel Surmenok - Keras LR Finder</a></p>
+<pre><code class="python">cfg= segmentation.parse(people-1.yaml)
+ds=SimplePNGMaskDataSet(&quot;./train&quot;,&quot;./train_mask&quot;)
+finder=cfg.lr_find(ds,start_lr=0.00001,end_lr=1,epochs=5)
+finder.plot_loss(n_skip_beginning=20, n_skip_end=5)
+plt.show()
+finder.plot_loss_change(sma=20, n_skip_beginning=20, n_skip_end=5, y_lim=(-0.01, 0.01))
+plt.show()
+</code></pre>
+
+<p>will result in this couple of helpful images: </p>
+<p><img alt="image" src="https://camo.githubusercontent.com/b41aeaff00fb7b214b5eb2e5c151e7e353a7263e/68747470733a2f2f63646e2d696d616765732d312e6d656469756d2e636f6d2f6d61782f313630302f312a48566a5f344c57656d6a764f57762d63514f397939672e706e67" /></p>
+<p><img alt="image" src="https://camo.githubusercontent.com/834996d32bbd2edf7435c5e105b53a6b447ef083/68747470733a2f2f63646e2d696d616765732d312e6d656469756d2e636f6d2f6d61782f313630302f312a38376d4b715f586f6d59794a4532396c39314b3064772e706e67" /></p>
+<h4 id="background-augmenter">Background Augmenter</h4>
+<p>One interesting augentation option when doing background removal task is replacing backgrounds with random 
+images. We support this with <code>BackgroundReplacer</code> augmenter:</p>
+<pre><code class="yaml">augmentation:
+  BackgroundReplacer:
+    path: ./bg #path to folder with backgrounds
+    rate: 0.5 #fraction of original backgrounds to preserve
+
+</code></pre>
+
+<h4 id="training-on-crops">Training on crops</h4>
+<p>Your images can be too large to train model on them. In this case you probably want to train model on crops. All
+that you need to do is to specify number of splits per axis. For example, following lines in config </p>
+<pre><code class="yaml">shape: [768, 768, 3]
+crops: 3
+</code></pre>
+
+<p>will lead to splitting each image/mask into 9 cells (3 horizontal splits and 3 vertical splits) and training model on these splits.
+Augmentations will be run separately on each cell.</p>
+<p>During prediction time, your images will be split into these cells, prediction will be executed on each cell, and then results
+will be assembled in single final mask. Thus the whole process of cropping will be invisible from a consumer perspective.   </p>
+<h3 id="using-trained-model">Using trained model</h3>
+<p>Okey, our model is trained, now we need to actually do image segmentation. Let's say, we need to run image segmentation on
+images in the directory and store results in csv file:</p>
+<pre><code class="python">from segmentation_pipeline import  segmentation
+from segmentation_pipeline.impl.rle import rle_encode
+from skimage.morphology import remove_small_objects, remove_small_holes
+import pandas as pd
+
+#this is our callback which is called for every image
+def onPredict(file_name, img, data):
+    threshold = 0.25
+    predictions = data[&quot;pred&quot;]
+    imgs = data[&quot;images&quot;]
+    post_img = remove_small_holes(remove_small_objects(img.arr &gt; threshold))
+    rle = rle_encode(post_img)
+    predictions.append(rle)
+    imgs.append(file_name[:file_name.index(&quot;.&quot;)])
+    pass
+
+cfg= segmentation.parse(&quot;config.yaml&quot;)
+
+predictions = []
+images = []
+#Now let's use best model from fold 0 to do image segmentation on images from images_to_segment
+cfg.predict_in_directory(&quot;./images_to_segment&quot;, 0, 0, onPredict, {&quot;pred&quot;: predictions, &quot;images&quot;: images})
+
+#Let's store results in csv
+df = pd.DataFrame.from_dict({'image': images, 'rle_mask': predictions})
+df.to_csv('baseline_submission.csv', index=False)
+</code></pre>
+
+<h4 id="ensembling-predictions">Ensembling predictions</h4>
+<p>And what if you want to ensemble models from several folds? Just pass a list of fold numbers to
+<code>predict_in_directory</code> like in the following example:</p>
+<pre><code class="python">cfg.predict_in_directory(&quot;./images_to_segment&quot;, [0,1,2,3,4], onPredict, {&quot;pred&quot;: predictions, &quot;images&quot;: images})
+</code></pre>
+
+<p>Another supported option is to ensemble results from extra test time augmentation (flips) by adding keyword arg <code>ttflips=True</code>.</p>
+<h3 id="custom-evaluation-code">Custom evaluation code</h3>
+<p>Sometimes you need to run custom evaluation code. In such case you may use: <code>evaluateAll</code> method, which provides an iterator
+on the batches containing original images, training masks and predicted masks</p>
+<pre><code class="python">for batch in cfg.evaluateAll(ds,2):
+    for i in range(len(batch.predicted_maps_aug)):
+        masks = ds.get_masks(batch.data[i])
+        for d in range(1,20):
+            cur_seg = binary_opening(batch.predicted_maps_aug[i].arr &gt; d/20, np.expand_dims(disk(2), -1))
+            cm = rle.masks_as_images(rle.multi_rle_encode(cur_seg))
+            pr = f2(masks, cm);
+            total[d]=total[d]+pr
+</code></pre>
+
+<h3 id="accessing-model">Accessing model</h3>
+<p>You may get trained keras model by calling: <code>cfg.load_model(fold, stage)</code>.</p>
+<h2 id="analyzing-experiments-results">Analyzing experiments results</h2>
+<p>Okey, we have done a lot of experiments and now we need to compare the results and understand what works better. This repository
+contains <a href="segmentation_pipeline/analize.py">script</a> which may be used to analyze folder containing sub folders
+with experiment configurations and results. This script gathers all configurations, diffs them by doing structural diff, then 
+for each configuration it averages metrics for all folds and  generates csv file containing metrics and parameters that
+was actually changed in your experiment like in the following <a href="report.csv">example</a></p>
+<p>This script accepts following arguments:</p>
+<ul>
+<li>inputFolder - root folder to search for experiments configurations and results</li>
+<li>output - file to store aggregated metrics</li>
+<li>onlyMetric - if you specify this option all other metrics will not be written in the report file</li>
+<li>sortBy - metric that should be used to sort results </li>
+</ul>
+<p>Example: </p>
+<pre><code class="commandline">python analize.py --inputFolder ./experiments --output ./result.py
+</code></pre>
+
+<h2 id="what-is-supported">What is supported?</h2>
+<p>At this moment segmentation pipeline supports following architectures:</p>
+<ul>
+<li><a href="https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/">Unet</a></li>
+<li><a href="https://codeac29.github.io/projects/linknet/">Linknet</a></li>
+<li><a href="https://arxiv.org/abs/1612.01105">PSP</a></li>
+<li><a href="https://arxiv.org/abs/1612.03144">FPN</a></li>
+<li><a href="https://arxiv.org/abs/1706.05587">DeeplabV3</a></li>
+</ul>
+<p><code>FPN</code>, <code>PSP</code>, <code>Linkenet</code>, <code>UNet</code> architectures support following backbones: </p>
+<ul>
+<li><a href="https://arxiv.org/abs/1409.1556">VGGNet</a><ul>
+<li>vgg16</li>
+<li>vgg19</li>
+</ul>
+</li>
+<li><a href="https://arxiv.org/abs/1512.03385">ResNet</a><ul>
+<li>resnet18</li>
+<li>resnet34</li>
+<li>resnet50 </li>
+<li>resnet101</li>
+<li>resnet152</li>
+</ul>
+</li>
+<li><a href="https://arxiv.org/abs/1611.05431">ResNext</a><ul>
+<li>resnext50</li>
+<li>resnext101</li>
+</ul>
+</li>
+<li><a href="https://arxiv.org/abs/1608.06993">DenseNet</a><ul>
+<li>densenet121</li>
+<li>densenet169</li>
+<li>densenet201</li>
+</ul>
+</li>
+<li><a href="https://arxiv.org/abs/1512.00567">Inception-v3</a></li>
+<li><a href="https://arxiv.org/abs/1602.07261">Inception-ResNet-v2</a></li>
+</ul>
+<p>All them support the weights pretrained on <a href="http://www.image-net.org/">ImageNet</a>:</p>
+<pre><code class="yaml">encoder_weights: imagenet
+</code></pre>
+
+<p>At this moment <code>DeeplabV3</code> architecture supports following backbones:
+ - <a href="https://arxiv.org/abs/1801.04381">MobileNetV2</a>
+ - <a href="https://arxiv.org/abs/1610.02357">Xception</a></p>
+<p>Deeplab supports weights pretrained on <a href="http://host.robots.ox.ac.uk/pascal/VOC/">PASCAL VOC</a>:</p>
+<pre><code class="yaml">encoder_weights: pascal_voc
+</code></pre>
+
+<p>Each architecture also supports some specific options, list of options is documented in <a href="segmentation_pipeline/schemas/segmentation.raml#L166">segmentation RAML library</a>.</p>
+<p>Supported augmentations are documented in <a href="segmentation_pipeline/schemas/augmenters.raml">augmentation RAML library</a>.</p>
+<p>Callbacks are documented in <a href="segmentation_pipeline/schemas/callbacks.raml">callbacks RAML library</a>.  </p>
+<h2 id="custom-architectures-callbacks-metrics">Custom architectures, callbacks, metrics</h2>
+<p>Segmentation pipeline uses keras custom objects registry to find entities, so if you need to use
+custom loss function, activation or metric all that you need to do is to register it in Keras as: </p>
+<pre><code class="python">keras.utils.get_custom_objects()[&quot;my_loss&quot;]= my_loss
+</code></pre>
+
+<p>If you want to inject new architecture, you should register it in <code>segmentation.custom_models</code> dictionary.</p>
+<p>For example:</p>
+<pre><code class="python">segmentation.custom.models['MyUnet']=MyUnet 
+</code></pre>
+
+<p>where <code>MyUnet</code> is a function that accepts architecture parameters as arguments and returns an instance
+of keras model.</p>
+<h2 id="examples">Examples</h2>
+<p><a href="https://colab.research.google.com/drive/1HtJLwoI_93m8pnRkK4u8JiFwv33L9Pil">Training background removal task(Pics Art Hackaton) in google collab</a></p>
+<h1 id="faq">FAQ</h1>
+<h4 id="how-to-continue-training-after-crash">How to continue training after crash?</h4>
+<p>If you would like to continue training after crash, call <code>setAllowResume</code> method before calling <code>fit</code></p>
+<pre><code class="python">cfg= segmentation.parse(&quot;./people-1.yaml&quot;)
+cfg.setAllowResume(True)
+ds=SimplePNGMaskDataSet(&quot;./pics/train&quot;,&quot;./pics/train_mask&quot;)
+cfg.fit(ds)
+</code></pre>
+
+<h4 id="my-notebooks-constantly-run-out-of-memory-what-can-i-do-to-reduce-memory-usage">My notebooks constantly run out of memory, what can I do to reduce memory usage?</h4>
+<p>One way to reduce memory usage is to limit augmentation queue limit which is 50 by default, 
+like in the following example: </p>
+<pre><code class="python">segmentation_pipeline.impl.datasets.AUGMENTER_QUEUE_LIMIT = 3
+</code></pre>
+
+<h4 id="how-can-i-run-sepate-set-of-augmenters-on-initial-imagemask-when-replacing-backgrounds-with-background-augmenter">How can I run sepate set of augmenters on initial image/mask when replacing backgrounds with Background Augmenter?</h4>
+<pre><code class="yaml">  BackgroundReplacer:
+    rate: 0.5
+    path: ./bg
+    augmenters: #this augmenters will run on original image before replacing background
+      Affine:
+        scale: [0.8, 1.5]
+        translate_percent:
+              x: [-0.2,0.2]
+              y: [-0.2,0.2]
+        rotate: [-16, 16]
+        shear: [-16, 16]
+    erosion: [0,5]   
+</code></pre>
+
+<h4 id="how-can-i-visualize-images-that-are-used-for-training-after-augmentations">How can I visualize images that are used for training (after augmentations)?</h4>
+<p>You should set <code>showDataExamples</code> to True like in the following sample</p>
+<pre><code class="python">cfg= segmentation.parse(&quot;./no_erosion_aug_on_masks/people-1.yaml&quot;)
+cfg.showDataExamples=True
+</code></pre>
+
+<p>if will lead to generation of training images samples and storing them in examples folder at the end of each epoch</p>
+<h4 id="what-i-can-do-if-i-have-some-extra-training-data-that-should-not-be-included-into-validation-but-should-be-used-during-the-training">What I can do if i have some extra training data, that should not be included into validation, but should be used during the training?</h4>
+<pre><code class="python">extra_data=NotzeroSimplePNGMaskDataSet(&quot;./phaces/all&quot;,&quot;./phaces/masks&quot;) #My dataset that should be added to training
+segmentation.extra_train[&quot;people&quot;] = extra_data
+</code></pre>
+
+<p>and in the config file:</p>
+<pre><code class="yaml">extra_train_data: people
+</code></pre>
+
+<h4 id="how-to-get-basic-statistics-across-my-foldsstages">How to get basic statistics across my folds/stages</h4>
+<p>This code sample will return primary metric stats over folds/stages</p>
+<pre><code>cfg= segmentation.parse(&quot;./no_erosion_aug_on_masks/people-1.yaml&quot;)
+metrics = cfg.info()
+</code></pre>
+
+<h4 id="i-have-some-callbacks-that-are-configured-globally-but-i-need-some-extra-callbacks-for-my-last-training-stage">I have some callbacks that are configured globally, but I need some extra callbacks for my last training stage?</h4>
+<p>There are two possible ways how you may configure callbacks on stage level:</p>
+<ul>
+<li>override all global callbacks with <code>callbacks</code> setting.</li>
+<li>add your own custom callbacks with <code>extra_callbacks</code> setting.</li>
+</ul>
+<p>In the following sample CyclingRL callback is only appended to the sexond stage of training:</p>
+<pre><code class="yaml">loss: binary_crossentropy
+stages:
+  - epochs: 20
+    negatives: real
+  - epochs: 200
+    extra_callbacks:
+      CyclicLR:
+        base_lr: 0.000001
+        max_lr: 0.0001
+        mode: triangular
+        step_size: 800
+    negatives: real
+</code></pre>
+
+<h4 id="what-if-i-would-like-to-build-a-really-large-ansemble-of-models">What if I would like to build a really large ansemble of models?</h4>
+<p>One option to do this, is to store predictions for each file and model in numpy array, and then sum these predictions
+like in the following sample:</p>
+<pre><code class="python">cfg.predict_to_directory(&quot;./pics/test&quot;,&quot;./pics/arr1&quot;, [0, 1, 4, 2], 1, ttflips=True,binaryArray=True)
+cfg.predict_to_directory(&quot;./pics/test&quot;, &quot;./pics/arr&quot;, [0, 1, 4, 2], 2, ttflips=True, binaryArray=True)
+segmentation.ansemblePredictions(&quot;./pics/test&quot;,[&quot;./pics/arr/&quot;,&quot;./pics/arr1/&quot;],onPredict,d)
+</code></pre>
+
+<h4 id="how-to-train-on-multiple-gpus">How to train on multiple gpus?</h4>
+<pre><code class="python">cfg.gpus=4 #or another number matching to the count of gpus that you have
+</code></pre></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+        <script src="../search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
