@@ -127,10 +127,10 @@ primary_metric: val_binary_accuracy #and the most interesting metric is val_bina
 loss: binary_crossentropy #We use simple binary_crossentropy loss
 ```
 
-[imports](reference.md#imports) imports python files from `modules` folder of the project and make their properly annotated contents to be available to be referred from YAML.
+[imports](reference.md#imports) imports python files that are not located in  `modules` folder of the project and make their properly annotated contents to be available to be referred from YAML. Files from the modules folder are imported automatically
 
 [testSplit](reference.md#testsplit) Splits the train set into two parts, using one part for train and leaving the other untouched for a later testing.
-The split is shuffled.
+The split is shuffled. 
 
 [optimizer](reference.md#optimizer) sets the optimizer.
 
@@ -141,7 +141,7 @@ The split is shuffled.
 [primary_metric](reference.md#primary_metric) Metric to track during the training process. Metric calculation results will be printed in the console and to `metrics` folder of the experiment.
 Besides tracking, this metric will be also used by default for metric-related activity, in example, for decision regarding which epoch results are better.
 
-[loss](reference.md#loss) sets the loss function.
+[loss](reference.md#loss) sets the loss function. if your network has multiple outputs, you also may pass a list of loss functions (one per output) 
 
 There are many more properties to check in [Reference of root properties](reference.md#pipeline-root-properties)
 
@@ -192,7 +192,7 @@ Also, `net` block uses `collapseConv` block by stating `collapseConv: [ 20, 7, 1
 
 ## Built-in NN layers
 
-There are a lot of built-in NN layers, basically, all of those supported by Keras.
+There are a lot of built-in NN layers, basically, we support all layers that are supported by Keras.
 
 Here are just a few:
 
