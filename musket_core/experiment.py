@@ -222,8 +222,8 @@ class Experiment:
             if self.onlyReports:
                 units_of_work.append(Task(lambda :cfg.generateReports()))
             else:
-                if hasattr(self, "folds"):
-                    units_of_work=units_of_work+cfg.fit(parallel=True)
+                if hasattr(self, "folds") and self.folds:
+                    units_of_work=units_of_work+cfg.fit(parallel=True, foldsToExecute=self.folds)
                 else:
                     units_of_work=units_of_work+cfg.fit(parallel=True)
 

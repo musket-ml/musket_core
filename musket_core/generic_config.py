@@ -799,7 +799,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             #tr=self.find_optimal_treshold_by_validation2(metric, [stage])
             #tr0 = self.find_optimal_treshold_by_validation(metric, [stage])
             for m in all_metrics:
-               ms[m]=predictions.cross_validation_stat(self,m,[stage])
+               ms[m]=predictions.cross_validation_stat(self,m,[stage], folds=foldsToExecute)
 
                if self.testSplit > 0:
                    ms[m + "_holdout"] = predictions.holdout_stat(self, m, [stage])
@@ -814,7 +814,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         for m in all_metrics:
             if self._reporter is not None and self._reporter.isCanceled():
                 return {"canceled": True }
-            all[m] = predictions.cross_validation_stat(self, m)
+            all[m] = predictions.cross_validation_stat(self, m, folds=foldsToExecute)
             if self.testSplit > 0 or self.holdoutArr is not None:
                 all[m + "_holdout"] = predictions.holdout_stat(self, m)
                 #all[m + "_holdout_with_optimal_treshold"] = predictions.holdout_stat(self, m, None, tr)
