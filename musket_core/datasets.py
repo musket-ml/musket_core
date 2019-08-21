@@ -65,6 +65,9 @@ class DataSet:
             return self.parent.root()
         return self.parent
 
+    def meta(self, item):
+        raise ValueError("Not implemented")
+
 class WriteableDataSet(DataSet):
 
     def append(self,item):

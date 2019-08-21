@@ -7,6 +7,11 @@ from musket_core import caches
 from musket_core.tools import Launch,ProgressMonitor
 import tensorflow as tf
 
+try:
+    #do not remove
+    import torch
+except:
+    pass
 
 def main():
     parser = argparse.ArgumentParser(description='Analize experiment metrics.')
