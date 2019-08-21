@@ -327,7 +327,7 @@ class Type(AbstractType):
             stProps = st.gatherAnnotatedProperties(aName)
             for pName in stProps:
                 result[pName] = stProps[pName]
-        c = {self.properties[v] for v in self.properties if (self.properties[v].hasAnnotation(aName))}
+        c = [self.properties[v] for v in self.properties if (self.properties[v].hasAnnotation(aName))]
         for prop in c:
             result[prop.name] = prop
         return result
@@ -341,7 +341,7 @@ class Type(AbstractType):
                 pass
             else:
                 result.pop(pName,None)
-        return {x for x in result}
+        return [x for x in result]
 
 
 class Property:

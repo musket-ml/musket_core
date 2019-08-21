@@ -326,6 +326,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         self.compressPredictionsAsInts=True
         self.preprocessing=None
         self.verbose = 1
+        self.compressScale=None
         self._projectDir=None
         self.manualResize=None
         self.separatePredictions=True
@@ -466,9 +467,9 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         if inputFolds is not None:
             ds.folds = inputFolds
         elif os.path.exists(self.path+".folds_split"):
-             folds=utils.load_yaml(self.path+".folds_split")
-             split_loaded=True
-             ds.folds=folds
+            folds=utils.load_yaml(self.path+".folds_split")
+            split_loaded=True
+            ds.folds=folds
         kf= self.dataset_clazz(ds, indeces, self.augmentation, transforms, batchSize=batch,rs=self.random_state,folds=self.folds_count,stratified=self.stratified,groupFunc=self.groupFunc,validationSplit=self.validationSplit,maxEpochSize=self.maxEpochSize)
         if not split_loaded:
             kf.save(self.path+".folds_split")
@@ -606,6 +607,8 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             ds=self.get_dataset()
         if isinstance(foldNum, list):
             foldNum=foldNum[0]
+        if self.testSplit>0:
+            ds=self.train_without_holdout()    
         ids=self.kfold(ds).indexes(foldNum,False)
         r=datasets.SubDataSet(ds, ids)
         r.name="validation"+str(foldNum)
@@ -613,6 +616,8 @@ class GenericTaskConfig(model.IGenericTaskConfig):
 
     def train(self,ds,foldNum):
         ids=self.kfold(ds).indexes(foldNum,True)
+        if self.testSplit>0:
+            ds=self.train_without_holdout()  
         r=datasets.SubDataSet(ds,ids)
         r.name="train"+str(foldNum)
         return r
@@ -794,7 +799,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             #tr=self.find_optimal_treshold_by_validation2(metric, [stage])
             #tr0 = self.find_optimal_treshold_by_validation(metric, [stage])
             for m in all_metrics:
-               ms[m]=predictions.cross_validation_stat(self,m,[stage])
+               ms[m]=predictions.cross_validation_stat(self,m,[stage], folds=foldsToExecute)
 
                if self.testSplit > 0:
                    ms[m + "_holdout"] = predictions.holdout_stat(self, m, [stage])
@@ -809,7 +814,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         for m in all_metrics:
             if self._reporter is not None and self._reporter.isCanceled():
                 return {"canceled": True }
-            all[m] = predictions.cross_validation_stat(self, m)
+            all[m] = predictions.cross_validation_stat(self, m, folds=foldsToExecute)
             if self.testSplit > 0 or self.holdoutArr is not None:
                 all[m + "_holdout"] = predictions.holdout_stat(self, m)
                 #all[m + "_holdout_with_optimal_treshold"] = predictions.holdout_stat(self, m, None, tr)
@@ -1198,7 +1203,13 @@ class Stage:
 
         cb = [] + self.cfg.callbacks
         if self.initial_weights is not None:
-            model.load_weights(self.initial_weights)
+            try:
+                model.load_weights(self.initial_weights)
+            except:
+                z=model.layers[-1].name
+                model.layers[-1].name="tmp"
+                model.load_weights(self.initial_weights,by_name=True)
+                model.layers[-1].name="z"
         ll=LRFinder(model)
         num_batches=kf.numBatches(ec.fold,self.negatives,ec.subsample)*epochs
         ll.lr_mult = (float(end_lr) / float(start_lr)) ** (float(1) / float(num_batches))
@@ -1253,10 +1264,14 @@ class Stage:
 
         if self.loss or self.lr:
             self.cfg.compile(model, self.cfg.createOptimizer(self.lr), self.loss)
-
         if self.initial_weights is not None:
-            #model.layers[-1].name="SomeNewName"
-            model.load_weights(self.initial_weights)
+            try:
+                    model.load_weights(self.initial_weights)
+            except:
+                    z=model.layers[-1].name
+                    model.layers[-1].name="tmpName12312"
+                    model.load_weights(self.initial_weights,by_name=True)
+                    model.layers[-1].name=z
         if 'callbacks' in self.dict:
             cb = configloader.parse("callbacks", self.dict['callbacks'])
         if 'extra_callbacks' in self.dict:
