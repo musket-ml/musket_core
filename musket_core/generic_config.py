@@ -373,6 +373,9 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         self.maxEpochSize = None
         self.dropout = 0
         self.dataset_clazz = datasets.DefaultKFoldedDataSet
+
+        self.canceled_by_timer = False
+
         for v in atrs:
             val = atrs[v]
             val = self._update_from_config(v, val)
@@ -771,6 +774,8 @@ class GenericTaskConfig(model.IGenericTaskConfig):
 
 
     def generateReports(self, foldsToExecute=None, subsample=1.0):
+        if self.canceled_by_timer:
+            return
 
         dn = self.directory()
         with open(constructSummaryYamlPath(dn), "w") as f:

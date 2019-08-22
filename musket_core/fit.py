@@ -36,7 +36,10 @@ def main():
     parser.add_argument('--cache', type=str, default="",
                         help='cache directory')
     parser.add_argument('--folds', type=str, default=None,
-                        help='cache directory')
+                        help='folds to execute')
+
+    parser.add_argument('--time', type=int, default=-1,
+                        help='time to work')
 
     args = parser.parse_args()
     if len(args.cache)>0:
@@ -66,7 +69,7 @@ def main():
     if folds:
         folds = [int(item) for item in folds.split(',')]
 
-    l=Launch(args.gpus_per_net,args.num_gpus,args.num_workers,[x.path for x in experiments],args.allow_resume,args.only_report,args.launch_tasks, folds)
+    l=Launch(args.gpus_per_net,args.num_gpus,args.num_workers,[x.path for x in experiments],args.allow_resume,args.only_report,args.launch_tasks, folds, args.time)
     l.perform(w,ProgressMonitor())
     exit(0)
     pass
