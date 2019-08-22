@@ -125,7 +125,10 @@ def dice_numpy(true, pred):
 
     intersection =np.sum (true * pred,axis=(1,2,3))
     im_sum = np.sum(true) + np.sum(pred)
-
+    
+    if im_sum == 0: #it means both true and pred sets are empty, which gives us 1 
+        return 1
+    
     return 2.0 * np.mean(intersection / (im_sum + EPS),axis=0)    
 
 def dice(true, pred):
@@ -134,7 +137,10 @@ def dice(true, pred):
 
     intersection =K.sum (true * pred)
     im_sum = K.sum(true) + K.sum(pred)
-
+    
+    if im_sum == 0: #it means both true and pred sets are empty, which gives us 1
+        return 1
+    
     return 2.0 * intersection / (im_sum + EPS)
 
 def iou_coef_loss(y_true, y_pred):
