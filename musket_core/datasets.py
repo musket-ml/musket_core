@@ -65,6 +65,9 @@ class DataSet:
             return self.parent.root()
         return self.parent
 
+    def meta(self, item):
+        raise ValueError("Not implemented")
+
 class WriteableDataSet(DataSet):
 
     def append(self,item):
@@ -1021,13 +1024,14 @@ class DirectWriteableDS(WriteableDataSet):
     
 class CompressibleWriteableDS(WriteableDataSet):
 
-    def __init__(self,orig,name,dsPath, count = 0,asUints=True):
+    def __init__(self,orig,name,dsPath, count = 0,asUints=True,scale=255):
         super().__init__()
         self.parent = orig
         self.name=name
         self.dsPath=dsPath
         self.count = count
         self.asUints=asUints
+        self.scale=scale
 
     def append(self,item):
         ip = self.itemPath(self.count)
@@ -1062,14 +1066,17 @@ class CompressibleWriteableDS(WriteableDataSet):
     def saveItem(self, path:str, item):
         dire = os.path.dirname(path)
         if self.asUints:
-            item=(item*255).astype(np.uint8)
+            if self.scale<=255:
+                item=(item*self.scale).astype(np.uint8)
+            else:
+                item=(item*self.scale).astype(np.uint16)    
         if not os.path.exists(dire):
             os.mkdir(dire)
         np.savez_compressed(path, item)
 
     def loadItem(self, path:str):
         if self.asUints:
-            x=np.load(path)["arr_0.npy"].astype(np.float32)/255.0
+            x=np.load(path)["arr_0.npy"].astype(np.float32)/self.scale
         else:
             x=np.load(path)["arr_0.npy"]      
         return x; 
@@ -1096,7 +1103,53 @@ class PredictionBlend(DataSet):
         r= PredictionItem(z.id,z.x,z.y,pr)
         if self.enableCache:
             self.cache[item]=r
-        return r 
+        return r
+
+class WeightedBlend(DataSet):
+    
+    def __init__(self,path,nm,weights=None):
+        self.path=path
+        self.nm=nm
+        if weights is None:
+            weights=[]
+        if isinstance(path,list):
+            v=path
+            self.predictions=[]
+            for path in v:
+                
+                
+                self.predictions.append(path)
+                if len(weights)<len(self.predictions):
+                    weights.append(1)
+        sw=sum(weights)
+        self.weights=[x/sw for x in weights]
+        self.cache={}    
+    
+    def __len__(self):
+        return len(self.predictions[0])
+    
+    
+    def __getitem__(self, item)->PredictionItem:
+        
+        if item in self.cache:
+            return self.cache[item]
+        
+        z=self.predictions[0][item]
+        
+        if z.prediction is None:
+            return z
+        
+        prs=[]
+        for i in range(len(self.predictions)):
+            v=self.predictions[i]
+            w=self.weights[i]
+            if v[item].prediction is not None:
+                prs.append(v[item].prediction*w)  
+        pr=np.sum(prs,axis=0)
+        #np.savez(self.nm+"/"+str(item),pr)
+        r= PredictionItem(z.id,z.x,z.y,pr)
+        #self.cache[item]=r
+        return r     
 
 class TransformPrediction(DataSet):
     

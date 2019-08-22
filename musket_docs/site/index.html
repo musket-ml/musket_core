@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="None">
+        
+        
+        <link rel="shortcut icon" href="img/favicon.ico">
+        <title>Musket ML</title>
+        <link href="css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="css/font-awesome.min.css" rel="stylesheet">
+        <link href="css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <script src="js/jquery-1.10.2.min.js" defer></script>
+        <script src="js/bootstrap-3.0.3.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body class="homepage">
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+
+                <!-- Collapsed navigation -->
+                <div class="navbar-header">
+                    <!-- Expander button -->
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href=".">Musket ML</a>
+                </div>
+
+                <!-- Expanded navigation -->
+                <div class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="active">
+                                <a href=".">Home</a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Generic <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="generic/">User guide</a>
+</li>
+                                    
+<li >
+    <a href="generic/reference/">Reference</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Segmentation <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="segmentation/">User guide</a>
+</li>
+                                    
+<li >
+    <a href="segmentation/reference/">Reference</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Classification <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="classification/">User guide</a>
+</li>
+                                    
+<li >
+    <a href="classification/reference/">Reference</a>
+</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="disabled">
+                                <a rel="next" >
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li >
+                                <a rel="prev" href="generic/">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#you-have-just-found-musket">You have just found Musket</a></li>
+        <li class="main "><a href="#goals-and-principles">Goals and principles</a></li>
+            <li><a href="#compactness-and-declarative-description">Compactness and declarative description</a></li>
+            <li><a href="#reproducibility-and-ease-of-sharing">Reproducibility and ease of sharing</a></li>
+            <li><a href="#established-way-to-store-and-compare-results">Established way to store and compare results</a></li>
+            <li><a href="#flexibility-and-extensibility">Flexibility and extensibility</a></li>
+        <li class="main "><a href="#pipelines-and-ide">Pipelines and IDE</a></li>
+            <li><a href="#generic-pipeline">Generic pipeline</a></li>
+            <li><a href="#segmentation-pipeline">Segmentation Pipeline</a></li>
+            <li><a href="#classification-pipeline">Classification Pipeline</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="you-have-just-found-musket">You have just found Musket</h1>
+<p>Musket is a family of high-level frameworks written in Python and capable of running on top of <a href="https://keras.io/">Keras</a>.</p>
+<p>It was developed with a focus of enabling to make fast and simply-declared experiments, which can be easily stored, reproduced and compared to each other.</p>
+<p>Use Musket if you need a deep learning framework that:</p>
+<ul>
+<li>Allows to describe experiments in a compact and expressive way</li>
+<li>Provides a way to store and compare experiments in order to methodically find the best deap learning solution</li>
+<li>Easy to share experiments and their results to work in a team</li>
+<li>Provides IDE and visual tooling to make experimentation faster</li>
+</ul>
+<h1 id="goals-and-principles">Goals and principles</h1>
+<h3 id="compactness-and-declarative-description">Compactness and declarative description</h3>
+<p>Declarative description is always more compact and human-readable
+than imperative description.</p>
+<p>All experiments are declared in YAML dialect with lots of defaults, allowing to describe an initial experiment in several lines and then set more details if needed.</p>
+<p>This is a simple classification experiment, and half of these instructions can be actually omitted:</p>
+<pre><code class="yaml">#%Musket Classification 1.0
+architecture: Xception
+classes: 101
+activation: softmax
+weights: imagenet
+shape: [512, 512, 4]
+optimizer: Adam
+batch: 8
+lr: 0.001
+primary_metric: val_macro_f1
+primary_metric_mode: max
+dataset:
+  combinations_train: []
+</code></pre>
+
+<h3 id="reproducibility-and-ease-of-sharing">Reproducibility and ease of sharing</h3>
+<p>As each experiment is simply a folder with YAML file inside, it is easy to store and run experiment.</p>
+<p>Putting YAML files into git or sharing them in other way provides other team members with an easy way to reproduce the same experiments locally.
+Anyone can check your experiments, and add their own to the storage as the storage is simply a folder.</p>
+<h3 id="established-way-to-store-and-compare-results">Established way to store and compare results</h3>
+<p>Musket is lazy by its nature. Each experiment starts with a simple YAML description. There may be many stages in training and prediction, starting with calculating datasets, preprocessing and finishing with inferring and calculating statistics, but for each stage Musket saves results in the sub-folders of experiment folder.</p>
+<p>When the experiment is launched, Musket checks, which result files are already in place and only runs what is needed. It is up to team members, what to share: pure YAML desciptions, YAML and final metrics (to compare experiment effectiveness), or also, potentially more heavy intermediate results so other team members can run experiments faster locally.</p>
+<p>It is easy to compare two experiments with each other by running any text compare tooling, experiments are just YAML text:</p>
+<p><img alt="YAML comparison" src="images/compare.png" /></p>
+<p>As all experiment statistics is also saved as files, it is easy to compare experiment results and find the best ones by the same text files comparison tooling.</p>
+<p>IDE helps here, too, by adding results visualisation tooling.</p>
+<h3 id="flexibility-and-extensibility">Flexibility and extensibility</h3>
+<p>Declarative approach is good and compact, but sometimes we want to define some custom functionality.</p>
+<p>Musket supports lots of custom substances: dataset definitions, preprocessors, custom network layers, visualizers etc etc.</p>
+<p>Most of the time to define a custom thing, it is enough to put a python file into a top-level folder and define a function with an appropriate annotation, like this:</p>
+<pre><code class="yaml">@preprocessing.dataset_preprocessor
+def splitInput(input, parts:int):
+    result = np.array_split(input,parts,axis=0)
+    return result
+</code></pre>
+
+<p>or this:</p>
+<pre><code class="yaml">@dataset_visualizer
+def visualize(val:PredictionItem):
+    cache_path=context().path
+    path = cache_path + &quot;/&quot; + str(val.id) + &quot;.png&quot;
+    if os.path.exists(path):
+        return path
+    ma = val.x/128 - preprocessors.moving_average(val.x/128, 8000)
+    std = np.std(ma)
+
+    ma[np.where(np.abs(ma) - 2 * std &lt; 0)] = 0
+    v = ma
+    fig, axs = plt.subplots(1, 1, constrained_layout=True, figsize=(15, 10))
+
+    v[:, 0] += 1
+    v[:, 2] -= 1
+
+    plt.ylim(-2, 2)
+    axs.plot(v[:, 0], label='Phase 0')
+    axs.plot(v[:, 1], label='Phase 1')
+    axs.plot(v[:, 2], label='Phase 2')
+    axs.legend()
+    if sum(val.y) &gt; 0:
+        axs.set_title('bad wire:' + str(val.id))
+
+        plt.savefig(path)
+    else:
+        axs.set_title('normal wire:' + str(val.id))
+        plt.savefig(path)
+    try:    
+        plt.close()
+    except:
+        pass    
+    return path
+
+</code></pre>
+
+<h1 id="pipelines-and-ide">Pipelines and IDE</h1>
+<p>Musket is family of frameworks, not a single framework for a reason.</p>
+<p>There is a core part, a pipeline called <a href="generic/">Generic Pipeline</a>, which is quite universal and can handle any type of tasks.</p>
+<p>Besides it, there are also specialized pipelines with YAML domain syntax better suited for a particular task like
+<a href="segmentation/">Segmentation Pipeline</a> or <a href="classification/">Classification Pipeline</a>. Such specialized frameworks has reduced flexibility, but more rapid prototyping and a whole set of useful built-ins.</p>
+<p>All of those pipelines are supported by musket IDE, which simplifies experiment running and result analysis.</p>
+<p><img alt="YAML comparison" src="images/architecture.png" /></p>
+<h2 id="generic-pipeline"><a href="generic/">Generic pipeline</a></h2>
+<p><a href="generic/">Generic pipeline</a> has the most universal YAML-based domain-specific syntax of all pipelines.
+Its main feature is an ability to define custom neural networks in a declarative manner by declaring blocks basing on built-in blocks, and then referring custom blocks from other custom blocks.</p>
+<p>There is also a rich set of declarative instructions that control dataflow inside the network.
+Most elements like datasets, preprocessors, network blocks, loss functions, metrics etc can be customly defined in python code and later reused from YAML.</p>
+<pre><code class="yaml">imports: [ layers, preprocessors ]
+declarations:
+  collapseConv:
+    parameters: [ filters,size, pool]
+    body:
+      - conv1d: [filters,size,relu ]
+      - conv1d: [filters,size,relu ]
+      - batchNormalization: {}
+      - collapse: pool
+  net:
+    #- gaussianNoise: 0.0001
+    - repeat(2):
+      - collapseConv: [ 20, 7, 10 ]
+
+    - cudnnlstm: [40, true ]
+    - cudnnlstm: [40, true ]
+    - attention: 718
+    - dense: [3, sigmoid]
+  preprocess:
+     - rescale: 10
+     - get_delta_from_average
+     - cache
+preprocessing: preprocess
+testSplit: 0.4
+architecture: net
+optimizer: Adam #Adam optimizer is a good default choice
+batch: 12 #Our batch size will be 16
+metrics: #We would like to track some metrics
+  - binary_accuracy
+  - matthews_correlation
+primary_metric: val_binary_accuracy #and the most interesting metric is val_binary_accuracy
+callbacks: #Let's configure some minimal callbacks
+  EarlyStopping:
+    patience: 100
+    monitor: val_binary_accuracy
+    verbose: 1
+  ReduceLROnPlateau:
+    patience: 8
+    factor: 0.5
+    monitor: val_binary_accuracy
+    mode: auto
+    cooldown: 5
+    verbose: 1
+loss: binary_crossentropy #We use simple binary_crossentropy loss
+stages:
+  - epochs: 100 #Let's go for 100 epochs
+  - epochs: 100 #Let's go for 100 epochs
+  - epochs: 100 #Let's go for 100 epochs
+</code></pre>
+
+<h2 id="segmentation-pipeline"><a href="segmentation/">Segmentation Pipeline</a></h2>
+<p><a href="segmentation/">Segmentation Pipeline</a> has a lot of common parts with <a href="generic/">Generic pipeline</a>, but it is much easier to define an architecture of the network, just name it:</p>
+<pre><code class="yaml">backbone: mobilenetv2 #let's select classifier backbone for our network 
+architecture: DeepLabV3 #let's select segmentation architecture that we would like to use
+augmentation:
+ Fliplr: 0.5 #let's define some minimal augmentations on images
+ Flipud: 0.5 
+classes: 1 #we have just one class (mask or no mask)
+activation: sigmoid #one class means that our last layer should use sigmoid activation
+encoder_weights: pascal_voc #we would like to start from network pretrained on pascal_voc dataset
+shape: [320, 320, 3] #This is our desired input image and mask size, everything will be resized to fit.
+optimizer: Adam #Adam optimizer is a good default choice
+batch: 16 #Our batch size will be 16
+metrics: #We would like to track some metrics
+  - binary_accuracy 
+  - iou
+primary_metric: val_binary_accuracy #and the most interesting metric is val_binary_accuracy
+callbacks: #Let's configure some minimal callbacks
+  EarlyStopping:
+    patience: 15
+    monitor: val_binary_accuracy
+    verbose: 1
+  ReduceLROnPlateau:
+    patience: 4
+    factor: 0.5
+    monitor: val_binary_accuracy
+    mode: auto
+    cooldown: 5
+    verbose: 1
+loss: binary_crossentropy #We use simple binary_crossentropy loss
+stages:
+  - epochs: 100 #Let's go for 100 epochs
+</code></pre>
+
+<h2 id="classification-pipeline"><a href="classification/">Classification Pipeline</a></h2>
+<p><a href="classification/">Classification Pipeline</a> has a lot of common parts with <a href="generic/">Generic pipeline</a> too, and as in <a href="segmentation/">Segmentation Pipeline</a> it is easy to define an architecture of the network, just name it and set the number of output classes:</p>
+<pre><code class="yaml">architecture: DenseNet201 #pre-trained model we are going to use
+pooling: avg
+augmentation: #define some minimal augmentations on images
+ Fliplr: 0.5
+ Flipud: 0.5
+classes: 28 #define the number of classes
+activation: sigmoid #as we have multilabel classification, the activation for last layer is sigmoid
+weights: imagenet #we would like to start from network pretrained on imagenet dataset
+shape: [224, 224, 3] #our desired input image size, everything will be resized to fit
+optimizer: Adam #Adam optimizer is a good default choice
+batch: 16 #our batch size will be 16
+lr: 0.005
+copyWeights: true
+metrics: #we would like to track some metrics
+  - binary_accuracy
+  - macro_f1
+primary_metric: val_binary_accuracy #the most interesting metric is val_binary_accuracy
+primary_metric_mode: max
+callbacks: #configure some minimal callbacks
+  EarlyStopping:
+    patience: 3
+    monitor: val_macro_f1
+    mode: max
+    verbose: 1
+  ReduceLROnPlateau:
+    patience: 2
+    factor: 0.3
+    monitor: val_binary_accuracy
+    mode: max
+    cooldown: 1
+    verbose: 1
+loss: binary_crossentropy #we use binary_crossentropy loss
+stages:
+  - epochs: 10 #let's go for 100 epochs
+</code></pre></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = ".",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="js/base.js" defer></script>
+        <script src="search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
+
+<!--
+MkDocs version : 1.0.4
+Build Date UTC : 2019-08-16 07:44:00
+-->

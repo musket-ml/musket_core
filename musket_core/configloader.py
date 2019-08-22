@@ -327,7 +327,7 @@ class Type(AbstractType):
             stProps = st.gatherAnnotatedProperties(aName)
             for pName in stProps:
                 result[pName] = stProps[pName]
-        c = {self.properties[v] for v in self.properties if (self.properties[v].hasAnnotation(aName))}
+        c = [self.properties[v] for v in self.properties if (self.properties[v].hasAnnotation(aName))]
         for prop in c:
             result[prop.name] = prop
         return result
@@ -341,24 +341,26 @@ class Type(AbstractType):
                 pass
             else:
                 result.pop(pName,None)
-        return {x for x in result}
+        return [x for x in result]
 
 
 class Property:
-    def __init__(self,name:str,t:Type,dict):
+    def __init__(self,name:str,t:Type,dict1):
         self.name=name
         self.type=t;
 
         self.annotations = {}
-        for annotationName in ["positional", "custom", "alias"]:
-            key = f"(meta.{annotationName})"
-            if key in dict:
-                self.annotations[annotationName]= dict[key]
+        if isinstance(dict1,dict):
+            for annotationName in ["positional", "custom", "alias"]:
+              key = f"(meta.{annotationName})"
+              if key in dict1:
+                  self.annotations[annotationName]= dict1[key]
 
-        if isinstance(dict, str):
-            self.propRange = dict
-        elif "type" in dict:
-            self.propRange = dict["type"]
+            if "type" in dict1:
+                self.propRange = dict1["type"]
+
+        elif isinstance(dict1, str):
+            self.propRange = dict1
         else:
             self.propRange = "string"
         pass

@@ -109,21 +109,24 @@ def isFinal(metric:str)->bool:
     except:
         return True
 
-def cross_validation_stat(cfg:IGenericTaskConfig, metric,stage=None,treshold=0.5):
+def cross_validation_stat(cfg:IGenericTaskConfig, metric, stage=None, treshold=0.5, folds=None):
     metrics=[]
     cfg.get_dataset()# this is actually needed
+
+    if not folds:
+        folds = list(range(cfg.folds_count))
 
     if isFinal(metric):
         fnc=configloader.load("layers").catalog[metric]
         #if isinstance(fnc,configloader.PythonFunction):
         fnc=fnc.func
-        for i in range(cfg.folds_count):
+        for i in folds:
             fa=FoldsAndStages(cfg,i,stage)
             val=cfg.validation(None,i)
             metrics.append(fnc(fa,val))
         return stat(metrics)
 
-    for i in range(cfg.folds_count):
+    for i in folds:
         if cfg._reporter is not None and cfg._reporter.isCanceled():
             return {"canceled": True}
 

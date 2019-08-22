@@ -51,7 +51,7 @@ class TaskLaunch(yaml.YAMLObject):
         self.experiments = experiments
         self.allowResume = allowResume
         self.onlyReports = onlyReports
-        self.tasks = tasks
+        self.tasks = tasks        
         self.taskArgs=tasksArgs
         if isinstance(self.tasks,str):
             self.tasks=self.tasks.split(",")
@@ -408,7 +408,7 @@ class Validate(yaml.YAMLObject):
 class Launch(yaml.YAMLObject):
     yaml_tag = u'!com.onpositive.dside.ui.LaunchConfiguration'
 
-    def __init__(self,gpusPerNet,numGpus,numWorkers,experiments,allowResume=False,onlyReports:bool=False,launchTasks:bool=False):
+    def __init__(self,gpusPerNet,numGpus,numWorkers,experiments,allowResume=False,onlyReports:bool=False,launchTasks:bool=False,folds=None):
         self.gpusPerNet=gpusPerNet
         self.numGpus=numGpus
         self.numWorkers=numWorkers
@@ -416,6 +416,7 @@ class Launch(yaml.YAMLObject):
         self.allowResume=allowResume
         self.onlyReports=onlyReports
         self.launchTasks=launchTasks
+        self.folds=folds
         pass
 
 
@@ -443,6 +444,8 @@ class Launch(yaml.YAMLObject):
                 exp.gpus=self.gpusPerNet
                 exp.onlyReports=self.onlyReports
                 exp.launchTasks=self.launchTasks
+                if hasattr(self, "folds"):
+                    exp.folds=self.folds
                 if exp.hyperparameters() is not None:
                     hyper.optimize(exp,executor,reporter)
 

@@ -7,6 +7,11 @@ from musket_core import caches
 from musket_core.tools import Launch,ProgressMonitor
 import tensorflow as tf
 
+try:
+    #do not remove
+    import torch
+except:
+    pass
 
 def main():
     parser = argparse.ArgumentParser(description='Analize experiment metrics.')
@@ -30,6 +35,9 @@ def main():
                         help='only generate reports')
     parser.add_argument('--cache', type=str, default="",
                         help='cache directory')
+    parser.add_argument('--folds', type=str, default=None,
+                        help='cache directory')
+
     args = parser.parse_args()
     if len(args.cache)>0:
         caches.CACHE_DIR = args.cache
@@ -52,7 +60,13 @@ def main():
         print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
     else:
         print("Please install GPU version of TF")
-    l=Launch(args.gpus_per_net,args.num_gpus,args.num_workers,[x.path for x in experiments],args.allow_resume,args.only_report,args.launch_tasks)
+
+    folds = args.folds
+
+    if folds:
+        folds = [int(item) for item in folds.split(',')]
+
+    l=Launch(args.gpus_per_net,args.num_gpus,args.num_workers,[x.path for x in experiments],args.allow_resume,args.only_report,args.launch_tasks, folds)
     l.perform(w,ProgressMonitor())
     exit(0)
     pass
