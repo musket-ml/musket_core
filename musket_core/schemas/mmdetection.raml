@@ -2,10 +2,11 @@
 uses:
   meta: meta.raml
   generic: generic.raml
-(meta.module):  musket_core.mmdetection
+(meta.module):  segmentation_pipeline.mmdetection
 types:
-  MMDetection:
+  PipelineConfig:
     (meta.entry): true
     type: generic.GenericPipeline
     properties:
       configPath:
+      weightsPath?:

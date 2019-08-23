@@ -7,6 +7,32 @@ from  musket_core.parralel import Task,Error
 from musket_core import generic
 from musket_core.structure_constants import constructPredictionsDirPath, constructSummaryYamlPath, constructInProgressYamlPath, constructConfigYamlPath, constructErrorYamlPath, constructConfigYamlConcretePath
 
+import keras
+
+import time
+
+class TimeoutCallback(keras.callbacks.Callback):
+    def __init__(self):
+        pass
+
+    def __init__(self, experiment, config):
+        self.expiration = time.time() + experiment.time
+
+        def get_attrs():
+            return config, experiment
+
+        self.get_attrs = get_attrs
+
+    def on_epoch_end(self, epoch, logs=None):
+        config, experiment = self.get_attrs()
+
+        if time.time() > self.expiration:
+            experiment.canceled_by_timer = True
+
+            config.canceled_by_timer = True
+
+            self.model.stop_training = True
+
 class Experiment:
 
     def __init__(self,path,allowResume = False,project=None):
@@ -18,6 +44,8 @@ class Experiment:
         self.onlyReports = False
         self.launchTasks = True
         self.folds=None
+        self.time = -1
+        self.canceled_by_timer = False
 
     def cleanup(self):
         if os.path.exists(self.getPredictionsDirPath()):
@@ -48,6 +76,9 @@ class Experiment:
         return ps
 
     def generateMetrics(self):
+        if self.canceled_by_timer:
+            return
+
         cfg = self.parse_config()
         cfg.generateReports()
 
@@ -92,6 +123,9 @@ class Experiment:
 
 
     def result(self,forseRecalc=False, use_primary_metric=False):
+        if self.canceled_by_timer:
+            return
+
         pi = self.apply(True)
         if forseRecalc:
             self.cleanup()
@@ -219,6 +253,10 @@ class Experiment:
             cfg.gpus=self.gpus
             cfg._reporter=reporter
             units_of_work=[]
+
+            if self.time > 0:
+                cfg.callbacks = cfg.callbacks + [TimeoutCallback(self, cfg)]
+
             if self.onlyReports:
                 units_of_work.append(Task(lambda :cfg.generateReports()))
             else:
@@ -245,6 +283,11 @@ class Experiment:
         save_yaml(self.getSummaryYamlPath(), "Error")
 
     def onExperimentFinished(self,tasksState:Task=None):
+        if self.canceled_by_timer:
+            print("timeout expiration")
+
+            return
+
         if tasksState is not None:
             errors=tasksState.all_errors()
             if len(errors)>0:
