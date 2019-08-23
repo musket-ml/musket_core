@@ -2,6 +2,7 @@ import musket_core.generic_config as generic
 import musket_core.datasets as datasets
 import musket_core.configloader as configloader
 import musket_core.utils as utils
+import musket_core.context as context
 import numpy as np
 import keras
 import musket_core.net_declaration as net
@@ -184,6 +185,13 @@ class GenericPipeline(generic.GenericTaskConfig):
 
 
 def parse(path,extra=None) -> GenericPipeline:
+    if isinstance(path, str):
+        if not os.path.exists(path):
+            pth=context.get_current_project_path()
+            if os.path.exists(pth+"/experiments/"+path+"/config.yaml"):
+                path=pth+"/experiments/"+path+"/config.yaml"
+            if os.path.exists(pth+"/common.yaml") and extra is None:
+                extra=pth+"/common.yaml"
     cfg = configloader.parse("generic", path,extra)
     cfg.path = path    
     return cfg
