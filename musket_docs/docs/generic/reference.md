@@ -40,13 +40,27 @@ architecture: mainNetwork
 
 **type**: ```` 
 
-TODO: does it have any use in the root of the file?
+TODO: isnt that a property from segmentation/classification, not generic pipeline?
 
+**type**: ``complex`` 
+
+[IMGAUG](https://imgaug.readthedocs.io) transformations sequence.
+Each object is mapped on [IMGAUG](https://imgaug.readthedocs.io) transformer by name, parameters are mapped too.
 
 Example:
 ```yaml
-
+transforms:
+ Fliplr: 0.5
+ Affine:
+   translate_px:
+     x:
+       - -50
+       - +50
+     y:
+       - -50
+       - +50
 ```
+
 ## batch
 
 **type**: ``integer`` 
@@ -101,7 +115,7 @@ copyWeights: true
 ```
 ## clipnorm
 
-**type**: ```` 
+**type**: ``float`` 
 
 Maximum clip norm of a gradient for an optimizer.
 
@@ -111,7 +125,7 @@ clipnorm: 1.0
 ```
 ## clipvalue
 
-**type**: ```` 
+**type**: ``float`` 
 
 Clip value of a gradient for an optimizer.
 
@@ -163,7 +177,7 @@ dataset_augmenter:
 ```
 ## dropout
 
-**type**: ```` 
+**type**: ``float`` 
 
 TODO: does it have any use in generic pipeline root?
 
@@ -173,7 +187,7 @@ Example:
 ```
 ## declarations
 
-**type**: ```` 
+**type**: ``complex`` 
 
 Sets up network layer building blocks. 
 
@@ -208,9 +222,10 @@ declarations:
 ```
 ## extra_train_data
 
-**type**: ```` 
+**type**: ``string`` 
 
-D
+Name of the additional dataset that will be added (per element) to the training dataset before train launching.
+TODO is that correct?
 
 Example:
 ```yaml
@@ -218,9 +233,9 @@ Example:
 ```
 ## folds_count
 
-**type**: ```` 
+**type**: ``integer`` 
 
-D
+Number of folds to train. Default is 5.
 
 Example:
 ```yaml
@@ -228,9 +243,10 @@ Example:
 ```
 ## freeze_encoder
 
-**type**: ```` 
+**type**: ``boolean`` 
 
-D
+Whether to freeze encoder during the training process.
+TODO isnt it non-generic property?
 
 Example:
 ```yaml
@@ -255,7 +271,7 @@ final_metrics: [measure]
 
 **type**: ```` 
 
-D
+TODO what is this?
 
 Example:
 ```yaml
@@ -275,9 +291,9 @@ imports: [ layers, preprocessors ]
 this will import `layers.py` and `preprocessors.py`
 ## inference_batch
 
-**type**: ```` 
+**type**: ``integer`` 
 
-D
+Size of batch during inferring process.
 
 Example:
 ```yaml
@@ -325,9 +341,10 @@ metrics: #We would like to track some metrics
 ```
 ## num_seeds
 
-**type**: ```` 
+**type**: ``integer`` 
 
-D
+If set, training process (for all folds) will be executed `num_seeds` times, each time resetting the random seeds.
+Respective folders (like `metrics`) will obtain subfolders `0`, `1` etc... for each seed.
 
 Example:
 ```yaml
@@ -395,9 +412,9 @@ preprocessing:
 ```
 ## random_state
 
-**type**: ```` 
+**type**: ``integer`` 
 
-D
+The seed of randomness.
 
 Example:
 ```yaml
@@ -405,19 +422,24 @@ Example:
 ```
 ## stages
 
-**type**: ```` 
+**type**: ``complex`` 
 
-D
+Sets up training process stages. 
+Contains YAML array of stages, where each stage is a complex type that may contain properties described in the [Stage properties](#stage-properties) section.  
 
 Example:
 ```yaml
-
+stages:
+  - epochs: 6
+  - epochs: 6
+    lr: 0.01
+    
 ```
 ## stratified
 
-**type**: ```` 
+**type**: ``boolean`` 
 
-D
+Whether to use stratified strategy when splitting training set.
 
 Example:
 ```yaml
@@ -438,7 +460,7 @@ testSplit: 0.4
 
 **type**: ```` 
 
-D
+Seed of randomness for the split of the training set.
 
 Example:
 ```yaml
@@ -446,9 +468,10 @@ Example:
 ```
 ## testTimeAugmentation
 
-**type**: ```` 
+**type**: ``string`` 
 
-D
+Test-time augumentation function name.
+Function must be reachable on project scope, accept and return numpy array.
 
 Example:
 ```yaml
@@ -456,19 +479,33 @@ Example:
 ```
 ## transforms
 
-**type**: ```` 
+**type**: ``complex`` 
 
-D
+TODO is that true? 
+If yes, why are we having pure IMGAUG in generic called just "transforms", maybe we should call it "imageTransforms" or simply "imgaug". 
+Btw, isnt it crossing with preprocessing, maybe we should just create "imgaug" preprocessor with all these goodies inside? 
+
+[IMGAUG](https://imgaug.readthedocs.io) transformations sequence.
+Each object is mapped on [IMGAUG](https://imgaug.readthedocs.io) transformer by name, parameters are mapped too.
 
 Example:
 ```yaml
-
+transforms:
+ Fliplr: 0.5
+ Affine:
+   translate_px:
+     x:
+       - -50
+       - +50
+     y:
+       - -50
+       - +50
 ```
 ## validationSplit
 
-**type**: ```` 
+**type**: ``float`` 
 
-D
+Float 0-1 setting up how much of the training set (after holdout is already cut off) to allocate for validation.
 
 Example:
 ```yaml
@@ -1619,10 +1656,6 @@ preprocessing:
 
 An analogue of [split](#split) for preprocessor operations.
 
-Properties:
-
-* **name** - string; optionally sets up layer name to refer it from other layers.
-* **inputs** - array of strings; lists layer inputs.
 
 Example:
 ```yaml
@@ -1632,10 +1665,6 @@ Example:
 
 An analogue of [split-concat](#split-concat) for preprocessor operations.
 
-Properties:
-
-* **name** - string; optionally sets up layer name to refer it from other layers.
-* **inputs** - array of strings; lists layer inputs.
 
 Example:
 ```yaml
@@ -1645,10 +1674,6 @@ Example:
 
 An analogue of [seq](#seq-concat) for preprocessor operations.
 
-Properties:
-
-* **name** - string; optionally sets up layer name to refer it from other layers.
-* **inputs** - array of strings; lists layer inputs.
 
 Example:
 ```yaml
@@ -1659,10 +1684,6 @@ Example:
 
 Preprocessor instruction, which body only runs during the training and is skipped when the inferring.
 
-Properties:
-
-* **name** - string; optionally sets up layer name to refer it from other layers.
-* **inputs** - array of strings; lists layer inputs.
 
 Example:
 ```yaml
