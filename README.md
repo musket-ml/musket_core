@@ -55,7 +55,7 @@ When the experiment is launched, Musket checks, which result files are already i
  
 It is easy to compare two experiments with each other by running any text compare tooling, experiments are just YAML text:
 
-![YAML comparison](images/compare.png)
+![YAML comparison](https://musket-ml.github.io/webdocs/images/compare.png)
 
 As all experiment statistics is also saved as files, it is easy to compare experiment results and find the best ones by the same text files comparison tooling.
 
@@ -119,18 +119,18 @@ def visualize(val:PredictionItem):
 
 Musket is family of frameworks, not a single framework for a reason.
 
-There is a core part, a pipeline called [Generic Pipeline](generic/index.md), which is quite universal and can handle any type of tasks.
+There is a core part, a pipeline called [Generic Pipeline](https://musket-ml.github.io/webdocs/generic/), which is quite universal and can handle any type of tasks.
 
 Besides it, there are also specialized pipelines with YAML domain syntax better suited for a particular task like
-[Segmentation Pipeline](segmentation/index.md) or [Classification Pipeline](classification/index.md). Such specialized frameworks has reduced flexibility, but more rapid prototyping and a whole set of useful built-ins.
+[Segmentation Pipeline](https://musket-ml.github.io/webdocs/segmentation/) or [Classification Pipeline](https://musket-ml.github.io/webdocs/classification/). Such specialized frameworks has reduced flexibility, but more rapid prototyping and a whole set of useful built-ins.
 
 All of those pipelines are supported by musket IDE, which simplifies experiment running and result analysis.
 
-![YAML comparison](images/architecture.png)
+![Architecture](https://musket-ml.github.io/webdocs/images/architecture.png)
 
-## [Generic pipeline](generic/index.md)
+## [Generic pipeline](https://musket-ml.github.io/webdocs/generic/)
 
-[Generic pipeline](generic/index.md) has the most universal YAML-based domain-specific syntax of all pipelines.
+[Generic pipeline](https://musket-ml.github.io/webdocs/generic/) has the most universal YAML-based domain-specific syntax of all pipelines.
 Its main feature is an ability to define custom neural networks in a declarative manner by declaring blocks basing on built-in blocks, and then referring custom blocks from other custom blocks.
 
 There is also a rich set of declarative instructions that control dataflow inside the network.
@@ -187,9 +187,9 @@ stages:
   - epochs: 100 #Let's go for 100 epochs
   - epochs: 100 #Let's go for 100 epochs
 ```
-## [Segmentation Pipeline](segmentation/index.md) 
+## [Segmentation Pipeline](https://musket-ml.github.io/webdocs/segmentation/) 
 
-[Segmentation Pipeline](segmentation/index.md) has a lot of common parts with [Generic pipeline](generic/index.md), but it is much easier to define an architecture of the network, just name it:
+[Segmentation Pipeline](https://musket-ml.github.io/webdocs/segmentation/) has a lot of common parts with [Generic pipeline](https://musket-ml.github.io/webdocs/generic/), but it is much easier to define an architecture of the network, just name it:
   
 ```yaml
 backbone: mobilenetv2 #let's select classifier backbone for our network 
@@ -224,9 +224,9 @@ stages:
   - epochs: 100 #Let's go for 100 epochs
 ```
 
-## [Classification Pipeline](classification/index.md)
+## [Classification Pipeline](https://musket-ml.github.io/webdocs/classification/)
 
-[Classification Pipeline](classification/index.md) has a lot of common parts with [Generic pipeline](generic/index.md) too, and as in [Segmentation Pipeline](segmentation/index.md) it is easy to define an architecture of the network, just name it and set the number of output classes:
+[Classification Pipeline](https://musket-ml.github.io/webdocs/classification/) has a lot of common parts with [Generic pipeline](https://musket-ml.github.io/webdocs/generic/) too, and as in [Segmentation Pipeline](https://musket-ml.github.io/webdocs/segmentation/) it is easy to define an architecture of the network, just name it and set the number of output classes:
 
 ```yaml
 architecture: DenseNet201 #pre-trained model we are going to use
