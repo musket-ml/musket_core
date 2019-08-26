@@ -1,5 +1,9 @@
 site_name: Musket ML
-theme: readthedocs
+theme:
+  name: null
+  custom_dir: readthedocs_mod
+  navigation_depth: 4
+#theme: readthedocs
 #theme:
 #  name: null
 #  custom_dir: theme

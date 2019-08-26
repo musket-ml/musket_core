@@ -14,19 +14,19 @@
   {%- endblock %}
 
   {%- block htmltitle %}
-  <title>{% if page and page.title and not page.is_hompage %}{{ page.title }} - {% endif %}{{ config.site_name }}</title>
+  <title>{% if page and page.title and not page.is_homepage %}{{ page.title }} - {% endif %}{{ config.site_name }}</title>
   {%- endblock %}
 
   {%- block styles %}
-  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Source+Sans+Pro:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
-  <link rel="stylesheet" href="{{ 'css/theme.css'|url }}" type="text/css" />
-  <link rel="stylesheet" href="{{ 'css/theme_extra.css'|url }}" type="text/css" />
+  <link rel="stylesheet" href="{{ 'css/theme.css'|url }}" />
+  <link rel="stylesheet" href="{{ 'css/theme_extra.css'|url }}" />
   {%- if config.theme.highlightjs %}
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
   {%- endif %}
   {%- for path in config['extra_css'] %}
-  <link href="{{ path|url }}" rel="stylesheet">
+  <link href="{{ path|url }}" rel="stylesheet" />
   {%- endfor %}
   {%- endblock %}
 
@@ -74,15 +74,10 @@
     {# SIDE NAV, TOGGLES ON MOBILE #}
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
-      <a href="{{ homepage_url }}">
-        <div class="keras-logo">
-          <img src="/img/keras-logo-small.jpg" class="keras-logo-img">
-          Keras Documentation
-        </div>
-      </a>
-
       <div class="wy-side-nav-search">
-
+    {%- block site_name %}
+        <a href="{{ nav.homepage.url|url }}" class="icon icon-home"> {{ config.site_name }}</a>
+	  {%- endblock %}
 	  {%- block search_button %}
         {% if 'search' in config['plugins'] %}{% include "searchbox.html" %}{% endif %}
 	  {%- endblock %}

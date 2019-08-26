@@ -1,8 +1,8 @@
 # Generic pipeline reference
-# Pipeline root properties
-## activation
+## Pipeline root properties
+### activation
 TODO: does it have any use in the root of the file?
-## aggregation_metric
+### aggregation_metric
 
 **type**: ``string`` 
 
@@ -17,7 +17,7 @@ Example:
 aggregation_metric: matthews_correlation_holdout
 
 ```
-## architecture
+### architecture
 
 **type**: ``string`` 
 
@@ -36,7 +36,7 @@ architecture: mainNetwork
 
 ```
 
-## augmentation
+### augmentation
 
 **type**: ```` 
 
@@ -61,7 +61,7 @@ transforms:
        - +50
 ```
 
-## batch
+### batch
 
 **type**: ``integer`` 
 
@@ -71,7 +71,7 @@ Example:
 ```yaml
 batch: 512
 ```
-## classes
+### classes
 
 **type**: ```` 
 
@@ -82,7 +82,7 @@ Example:
 ```yaml
 
 ```
-## callbacks
+### callbacks
 
 **type**: ``array of callback instances`` 
 
@@ -103,7 +103,7 @@ callbacks:
     cooldown: 5
     verbose: 1
 ```
-## copyWeights
+### copyWeights
 
 **type**: ``boolean`` 
 
@@ -113,7 +113,7 @@ Example:
 ```yaml
 copyWeights: true
 ```
-## clipnorm
+### clipnorm
 
 **type**: ``float`` 
 
@@ -123,7 +123,7 @@ Example:
 ```yaml
 clipnorm: 1.0
 ```
-## clipvalue
+### clipvalue
 
 **type**: ``float`` 
 
@@ -133,7 +133,7 @@ Example:
 ```yaml
 clipvalue: 0.5
 ```
-## dataset
+### dataset
 
 **type**: ``complex object`` 
 
@@ -145,7 +145,7 @@ Example:
 dataset:
   getTrain: [false,false]
 ```
-## datasets
+### datasets
 
 **type**: ``map containing complex objects`` 
 
@@ -160,7 +160,7 @@ datasets:
   test:
     getTest: [false,false]
 ```
-## dataset_augmenter
+### dataset_augmenter
 
 **type**: ``complex object`` 
 
@@ -175,7 +175,7 @@ dataset_augmenter:
     name: TheAugmenter
     parameter: test
 ```
-## dropout
+### dropout
 
 **type**: ``float`` 
 
@@ -185,7 +185,7 @@ Example:
 ```yaml
 
 ```
-## declarations
+### declarations
 
 **type**: ``complex`` 
 
@@ -220,7 +220,7 @@ declarations:
        #- dropout: 0.5
        - dense: [1,"sigmoid"]
 ```
-## extra_train_data
+### extra_train_data
 
 **type**: ``string`` 
 
@@ -231,7 +231,7 @@ Example:
 ```yaml
 
 ```
-## folds_count
+### folds_count
 
 **type**: ``integer`` 
 
@@ -241,7 +241,7 @@ Example:
 ```yaml
 
 ```
-## freeze_encoder
+### freeze_encoder
 
 **type**: ``boolean`` 
 
@@ -252,7 +252,7 @@ Example:
 ```yaml
 
 ```
-## final_metrics
+### final_metrics
 
 **type**: ``array of strings`` 
 
@@ -267,7 +267,7 @@ Example:
 final_metrics: [measure]
 
 ```
-## holdout
+### holdout
 
 **type**: ```` 
 
@@ -277,7 +277,7 @@ Example:
 ```yaml
 
 ```
-## imports
+### imports
 
 **type**: ``array of strings`` 
 
@@ -289,7 +289,7 @@ imports: [ layers, preprocessors ]
 
 ```
 this will import `layers.py` and `preprocessors.py`
-## inference_batch
+### inference_batch
 
 **type**: ``integer`` 
 
@@ -299,7 +299,7 @@ Example:
 ```yaml
 
 ```
-## loss
+### loss
 
 **type**: ``string`` 
 
@@ -311,7 +311,7 @@ Example:
 ```yaml
 loss: binary_crossentropy
 ```
-## lr
+### lr
 
 **type**: ``float`` 
 
@@ -321,7 +321,7 @@ Example:
 ```yaml
 
 ```
-## metrics
+### metrics
 
 **type**: ``array of strings`` 
 
@@ -339,7 +339,7 @@ metrics: #We would like to track some metrics
   - matthews_correlation
 
 ```
-## num_seeds
+### num_seeds
 
 **type**: ``integer`` 
 
@@ -350,7 +350,7 @@ Example:
 ```yaml
 
 ```
-## optimizer
+### optimizer
 
 **type**: ``string`` 
 
@@ -360,7 +360,7 @@ Example:
 ```yaml
 optimizer: Adam
 ```
-## primary_metric
+### primary_metric
 
 **type**: `string` 
 
@@ -376,7 +376,7 @@ Example:
 ```yaml
 primary_metric: val_macro_f1
 ```
-## primary_metric_mode
+### primary_metric_mode
 
 **type**: ``enum: auto,min,max`` 
 
@@ -388,7 +388,7 @@ Example:
 ```yaml
 primary_metric_mode: max
 ```
-## preprocessing
+### preprocessing
 
 **type**: ``complex`` 
 
@@ -410,7 +410,7 @@ preprocessing:
        maxLen: 160
   - disk-cache: 
 ```
-## random_state
+### random_state
 
 **type**: ``integer`` 
 
@@ -420,7 +420,7 @@ Example:
 ```yaml
 
 ```
-## stages
+### stages
 
 **type**: ``complex`` 
 
@@ -435,7 +435,7 @@ stages:
     lr: 0.01
     
 ```
-## stratified
+### stratified
 
 **type**: ``boolean`` 
 
@@ -445,7 +445,7 @@ Example:
 ```yaml
 
 ```
-## testSplit
+### testSplit
 
 **type**: `float 0-1` 
 
@@ -456,7 +456,7 @@ Example:
 ```yaml
 testSplit: 0.4
 ```
-## testSplitSeed
+### testSplitSeed
 
 **type**: ```` 
 
@@ -466,7 +466,7 @@ Example:
 ```yaml
 
 ```
-## testTimeAugmentation
+### testTimeAugmentation
 
 **type**: ``string`` 
 
@@ -477,7 +477,7 @@ Example:
 ```yaml
 
 ```
-## transforms
+### transforms
 
 **type**: ``complex`` 
 
@@ -501,7 +501,7 @@ transforms:
        - -50
        - +50
 ```
-## validationSplit
+### validationSplit
 
 **type**: ``float`` 
 
@@ -512,9 +512,9 @@ Example:
 
 ```
 
-# Callback types
+## Callback types
 
-## EarlyStopping
+### EarlyStopping
 
 Stop training when a monitored metric has stopped improving.
 
@@ -534,7 +534,7 @@ callbacks:
     verbose: 1
 ```
 
-## ReduceLROnPlateau
+### ReduceLROnPlateau
 
 Reduce learning rate when a metric has stopped improving.
 
@@ -559,7 +559,7 @@ callbacks:
     verbose: 1
 ```
 
-## CyclicLR
+### CyclicLR
 
 Cycles learning rate across epochs.
 
@@ -587,7 +587,7 @@ callbacks:
     mode: triangular
 ```
 
-## LRVariator
+### LRVariator
 
 Changes learning rate between two values
 
@@ -612,7 +612,7 @@ Example
 ```yaml
 ```
 
-## TensorBoard
+### TensorBoard
 
 This callback writes a log for TensorBoard, which allows you to visualize dynamic graphs of your training and test metrics, as well as activation histograms for the different layers in your model.
 
@@ -640,9 +640,9 @@ callbacks:
     update_freq: batch
 ```
 
-# Layer types
+## Layer types
 
-## Input
+### Input
 
 TODO: description
 
@@ -656,7 +656,7 @@ Example:
 ```yaml
 
 ```
-## GaussianNoise
+### GaussianNoise
 
 Apply additive zero-centered Gaussian noise.
 
@@ -671,7 +671,7 @@ Example:
 
 ```
 
-## Dropout
+### Dropout
 
 Applies Dropout to the input.
 
@@ -688,7 +688,7 @@ declarations:
   net:
     - dropout: 0.5
 ```
-## SpatialDropout1D
+### SpatialDropout1D
 
 Spatial 1D version of Dropout.
 
@@ -704,7 +704,7 @@ Example:
 ```yaml
 
 ```
-## LSTM
+### LSTM
 
 Long Short-Term Memory layer
 
@@ -792,7 +792,7 @@ Example:
 ```yaml
 
 ```
-## GlobalMaxPool1D
+### GlobalMaxPool1D
 
 Global max pooling operation for temporal data.
 
@@ -806,7 +806,7 @@ Example:
 ```yaml
 
 ```
-## GlobalAveragePooling1D
+### GlobalAveragePooling1D
 
 Global average pooling operation for temporal data.
 
@@ -820,7 +820,7 @@ Example:
 ```yaml
 
 ```
-## BatchNormalization
+### BatchNormalization
 
 Batch normalization layer.
 
@@ -859,7 +859,7 @@ Example:
 ```yaml
 
 ```
-## Concatenate
+### Concatenate
 
 Layer that concatenates a list of inputs.
 
@@ -867,7 +867,7 @@ Example:
 ```yaml
 - concatenate: [lstmBranch,textFeatureBranch]
 ```
-## Add
+### Add
 
 Layer that adds a list of inputs.
 
@@ -877,7 +877,7 @@ Example:
 ```yaml
 - add: [first,second]
 ```
-## Substract
+### Substract
 
 ayer that subtracts two inputs.
 
@@ -888,7 +888,7 @@ Example:
 - substract: [first,second]
 ```
 
-## Mult
+### Mult
 
 Layer that multiplies (element-wise) a list of inputs.
 
@@ -898,7 +898,7 @@ Example:
 ```yaml
 - mult: [first,second]
 ```
-## Max
+### Max
 
 Layer that computes the maximum (element-wise) a list of inputs.
 
@@ -908,7 +908,7 @@ Example:
 ```yaml
 - max: [first,second]
 ```
-## Min
+### Min
 
 Layer that computes the minimum (element-wise) a list of inputs.
 
@@ -918,7 +918,7 @@ Example:
 ```yaml
 - min: [first,second]
 ```
-## Conv1D
+### Conv1D
 
 1D convolution layer (e.g. temporal convolution).
 
@@ -988,7 +988,7 @@ Example:
 ```yaml
 
 ```
-## Conv2D
+### Conv2D
 
 2D convolution layer (e.g. spatial convolution over images).
 
@@ -1059,7 +1059,7 @@ Example:
 ```yaml
 
 ```
-## MaxPool1D
+### MaxPool1D
 
 Max pooling operation for temporal data.
 
@@ -1084,7 +1084,7 @@ Example:
 ```yaml
 
 ```
-## MaxPool2D
+### MaxPool2D
 
 Max pooling operation for spatial data.
 
@@ -1116,7 +1116,7 @@ Example:
 ```yaml
 
 ```
-## AveragePooling1D
+### AveragePooling1D
 
 Average pooling for temporal data.
 
@@ -1141,7 +1141,7 @@ Example:
 ```yaml
 
 ```
-## CuDNNLSTM
+### CuDNNLSTM
 
 Fast LSTM implementation with [CuDNN](https://developer.nvidia.com/cudnn).
 
@@ -1197,7 +1197,7 @@ Example:
 ```yaml
 
 ```
-## Dense
+### Dense
 
 Regular densely-connected NN layer.
 
@@ -1243,7 +1243,7 @@ Example:
 ```yaml
 
 ```
-## Flatten
+### Flatten
 
 Flattens the input. Does not affect the batch size.
 
@@ -1268,7 +1268,7 @@ Example:
 ```yaml
 
 ```
-## Bidirectional
+### Bidirectional
 
 Bidirectional wrapper for RNNs.
 
@@ -1289,9 +1289,9 @@ Example:
 
 ```
 
-# Utility layers
+## Utility layers
 
-## split
+### split
 
 Splits current flow into several ones.
 Each child is a separate flow with an input equal to the input of the split operation.
@@ -1307,7 +1307,7 @@ Example:
 ```yaml
 
 ```
-## split-concat
+### split-concat
 
 Splits current flow into several ones.
 Each child is a separate flow with an input equal to the input of the split operation.
@@ -1327,7 +1327,7 @@ Example:
          - word_indexes_embedding:  [ embeddings/wiki-news-300d-1M.vec]
 - lstm2: [128]
 ```
-## split-concatenate
+### split-concatenate
 
 Splits current flow into several ones.
 Each child is a separate flow with an input equal to the input of the split operation.
@@ -1347,7 +1347,7 @@ Example:
          - word_indexes_embedding:  [ embeddings/wiki-news-300d-1M.vec]
 - lstm2: [128]
 ```
-## split-add
+### split-add
 
 Splits current flow into several ones.
 Each child is a separate flow with an input equal to the input of the split operation.
@@ -1363,7 +1363,7 @@ Example:
 ```yaml
 
 ```
-## split-substract
+### split-substract
 
 Splits current flow into several ones.
 Each child is a separate flow with an input equal to the input of the split operation.
@@ -1379,7 +1379,7 @@ Example:
 ```yaml
 
 ```
-## split-mult
+### split-mult
 
 Splits current flow into several ones.
 Each child is a separate flow with an input equal to the input of the split operation.
@@ -1395,7 +1395,7 @@ Example:
 ```yaml
 
 ```
-## split-min
+### split-min
 
 Splits current flow into several ones.
 Each child is a separate flow with an input equal to the input of the split operation.
@@ -1412,7 +1412,7 @@ Example:
 ```yaml
 
 ```
-## split-max
+### split-max
 
 Splits current flow into several ones.
 Each child is a separate flow with an input equal to the input of the split operation.
@@ -1430,7 +1430,7 @@ Example:
 ```yaml
 
 ```
-## split-dot
+### split-dot
 
 Splits current flow into several ones.
 Each child is a separate flow with an input equal to the input of the split operation.
@@ -1447,7 +1447,7 @@ Example:
 ```yaml
 
 ```
-## split-dot-normalize
+### split-dot-normalize
 
 Splits current flow into several ones.
 Each child is a separate flow with an input equal to the input of the split operation.
@@ -1463,7 +1463,7 @@ Example:
 ```yaml
 
 ```
-## seq
+### seq
 
 Executes child elements as a sequence of operations, one by one.
 
@@ -1476,7 +1476,7 @@ Example:
 ```yaml
 
 ```
-## input
+### input
 
 Overrides current input with what is listed.
 
@@ -1490,7 +1490,7 @@ Example:
 input: [firstRef, secondRef]
 ```
 
-## pass
+### pass
 
 Stops execution of this branch and drops its output.
 TODO check that description is correct.
@@ -1504,7 +1504,7 @@ Example:
 ```yaml
 
 ```
-## transform-concat
+### transform-concat
 
 TODO
 
@@ -1518,7 +1518,7 @@ Example:
 ```yaml
 
 ```
-## transform-add
+### transform-add
 
 TODO
 
@@ -1533,9 +1533,9 @@ Example:
 
 ``` 
 
-# Stage properties
+## Stage properties
 
-## loss
+### loss
 
 **type**: ``string`` 
 
@@ -1547,7 +1547,7 @@ Example:
 ```yaml
 loss: binary_crossentropy
 ```
-## lr
+### lr
 
 **type**: ``float`` 
 
@@ -1557,7 +1557,7 @@ Example:
 ```yaml
 
 ```
-## initial_weights
+### initial_weights
 **type**: ``string`` 
 
 Fil path to load stage NN initial weights from.
@@ -1566,7 +1566,7 @@ Example:
 ```yaml
 initial_weights: /initial.weights
 ```
-## epochs
+### epochs
 **type**: ``integer`` 
 
 Number of epochs to train for this stage.
@@ -1575,9 +1575,9 @@ Example:
 ```yaml
 
 ```
-## unfreeze_encoder
+### unfreeze_encoder
 TODO is this for generic?
-## callbacks
+### callbacks
 **type**: ``array of callback instances`` 
 
 Sets up training-time callbacks. See individual [callback descriptions](#callback-types).
@@ -1597,10 +1597,10 @@ callbacks:
     cooldown: 5
     verbose: 1
 ```
-## extra_callbacks
+### extra_callbacks
 TODO
 
-# Preprocessors
+## Preprocessors
 **type**: ``complex`` 
 
 Preprocessors are the custom python functions that transform dataset. 
@@ -1619,7 +1619,7 @@ preprocessing:
        maxLen: 160
   - disk-cache: 
 ```
-## cache
+### cache
 
 Caches its input.
 TODO what for?
@@ -1633,7 +1633,7 @@ Example:
 ```yaml
 
 ```
-## disk-cache
+### disk-cache
 
 Caches its input on disk, including the full flow. 
 On subsequent launches if nothing was changed in the flow, takes its output from disk instead of re-launching previous operations. 
@@ -1652,7 +1652,7 @@ preprocessing:
        maxLen: 160
   - disk-cache: 
 ```
-## split-preprocessor
+### split-preprocessor
 
 An analogue of [split](#split) for preprocessor operations.
 
@@ -1661,7 +1661,7 @@ Example:
 ```yaml
 
 ```
-## split-concat-preprocessor
+### split-concat-preprocessor
 
 An analogue of [split-concat](#split-concat) for preprocessor operations.
 
@@ -1670,7 +1670,7 @@ Example:
 ```yaml
 
 ```
-## seq-preprocessor
+### seq-preprocessor
 
 An analogue of [seq](#seq-concat) for preprocessor operations.
 
@@ -1680,7 +1680,7 @@ Example:
 
 ```
 
-## augmentation
+### augmentation
 
 Preprocessor instruction, which body only runs during the training and is skipped when the inferring.
 

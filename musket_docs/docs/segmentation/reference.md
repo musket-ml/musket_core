@@ -1,8 +1,8 @@
 # Segmentation pipeline reference
 
-# Pipeline root properties
+## Pipeline root properties
 
-## activation
+### activation
 **type**: `string`
 
 Activation function that should be used in last layer. In the case of binary segmentation it usually should be `sigmoid` if you have
@@ -14,7 +14,7 @@ Example:
 activation: sigmoid
 ```
 
-## aggregation_metric
+### aggregation_metric
 
 **type**: ``string`` 
 
@@ -29,7 +29,7 @@ Example:
 aggregation_metric: matthews_correlation_holdout
 
 ```
-## architecture
+### architecture
 
 **type**: ``string`` 
 
@@ -47,7 +47,7 @@ Example:
 ```yaml
 architecture: FPN
 ```
-## augmentation
+### augmentation
 
 **type**: ``complex`` 
 
@@ -67,7 +67,7 @@ transforms:
        - -50
        - +50
 ```
-## backbone
+### backbone
 **type**: ``string``
 
 This property configures encoder that should be used:
@@ -105,7 +105,7 @@ At this moment `DeeplabV3` architecture supports following backbones:
 
 Deeplab supports weights pretrained on [PASCAL VOC](http://host.robots.ox.ac.uk/pascal/VOC/):
 
-## batch
+### batch
 
 **type**: ``integer`` 
 
@@ -116,7 +116,7 @@ Example:
 batch: 512
 ```
 
-## classifier
+### classifier
 **type**: `string` 
 
 
@@ -134,7 +134,7 @@ Example:
 ```yaml
 
 ```
-## classifier_lr
+### classifier_lr
 **type**: `float` 
 
 TODO description
@@ -143,7 +143,7 @@ Example:
 ```yaml
 
 ```
-## classes
+### classes
 **type**: `integer` 
 
 Number of classes that should be segmented.
@@ -152,7 +152,7 @@ Example:
 ```yaml
 
 ```
-## callbacks
+### callbacks
 
 **type**: ``array of callback instances`` 
 
@@ -174,7 +174,7 @@ callbacks:
     verbose: 1
 ```
 
-## compressPredictionsAsInts
+### compressPredictionsAsInts
 **type**: `boolean` 
 
 Whether to represent predictions as integers (up to 4 channels)
@@ -185,7 +185,7 @@ Example:
 compressPredictionsAsInts: true
 ```
 
-## copyWeights
+### copyWeights
 
 **type**: ``boolean`` 
 
@@ -195,7 +195,7 @@ Example:
 ```yaml
 copyWeights: true
 ```
-## clipnorm
+### clipnorm
 
 **type**: ``float`` 
 
@@ -205,7 +205,7 @@ Example:
 ```yaml
 clipnorm: 1.0
 ```
-## clipvalue
+### clipvalue
 
 **type**: ``float`` 
 
@@ -216,7 +216,7 @@ Example:
 clipvalue: 0.5
 ```
 
-## crops
+### crops
 **type**: `integer` 
 
 Number of crops to make from original image.
@@ -226,7 +226,7 @@ Example:
 
 ```
 
-## dataset
+### dataset
 
 **type**: ``complex object`` 
 
@@ -238,7 +238,7 @@ Example:
 dataset:
   getTrain: [false,false]
 ```
-## datasets
+### datasets
 
 **type**: ``map containing complex objects`` 
 
@@ -253,7 +253,7 @@ datasets:
   test:
     getTest: [false,false]
 ```
-## dataset_augmenter
+### dataset_augmenter
 
 **type**: ``complex object`` 
 
@@ -267,7 +267,7 @@ dataset_augmenter:
     name: TheAugmenter
     parameter: test
 ```
-## dropout
+### dropout
 
 **type**: ``float`` 
 
@@ -276,7 +276,7 @@ Example:
 ```yaml
 
 ```
-## encoder_weights
+### encoder_weights
 **type**: ``string`` 
 
 This property configures initial weights of the encoder, supported values:
@@ -288,7 +288,7 @@ Example:
 encoder_weights: imagenet
 ```
 
-## extra_train_data
+### extra_train_data
 
 **type**: ``string`` 
 
@@ -298,7 +298,7 @@ Example:
 ```yaml
 
 ```
-## folds_count
+### folds_count
 
 **type**: ``integer`` 
 
@@ -308,7 +308,7 @@ Example:
 ```yaml
 
 ```
-## freeze_encoder
+### freeze_encoder
 
 **type**: ``boolean`` 
 
@@ -318,7 +318,7 @@ Example:
 ```yaml
 
 ```
-## final_metrics
+### final_metrics
 
 **type**: ``array of strings`` 
 
@@ -333,7 +333,7 @@ Example:
 final_metrics: [measure]
 
 ```
-## holdout
+### holdout
 
 **type**: ```` 
 
@@ -342,7 +342,7 @@ Example:
 ```yaml
 
 ```
-## imports
+### imports
 
 **type**: ``array of strings`` 
 
@@ -354,7 +354,7 @@ imports: [ layers, preprocessors ]
 
 ```
 this will import `layers.py` and `preprocessors.py`
-## inference_batch
+### inference_batch
 
 **type**: ``integer`` 
 
@@ -364,7 +364,7 @@ Example:
 ```yaml
 
 ```
-## loss
+### loss
 
 **type**: ``string`` 
 
@@ -376,7 +376,7 @@ Example:
 ```yaml
 loss: binary_crossentropy
 ```
-## lr
+### lr
 
 **type**: ``float`` 
 
@@ -387,7 +387,7 @@ Example:
 
 ```
 
-## manualResize
+### manualResize
 **type**: `boolean` 
 
 TODO
@@ -397,7 +397,7 @@ Example:
 
 ```
 
-## metrics
+### metrics
 
 **type**: ``array of strings`` 
 
@@ -415,7 +415,7 @@ metrics: #We would like to track some metrics
   - matthews_correlation
 
 ```
-## num_seeds
+### num_seeds
 
 **type**: ``integer`` 
 
@@ -426,7 +426,7 @@ Example:
 ```yaml
 
 ```
-## optimizer
+### optimizer
 
 **type**: ``string`` 
 
@@ -436,7 +436,7 @@ Example:
 ```yaml
 optimizer: Adam
 ```
-## primary_metric
+### primary_metric
 
 **type**: `string` 
 
@@ -452,7 +452,7 @@ Example:
 ```yaml
 primary_metric: val_macro_f1
 ```
-## primary_metric_mode
+### primary_metric_mode
 
 **type**: ``enum: auto,min,max`` 
 
@@ -464,7 +464,7 @@ Example:
 ```yaml
 primary_metric_mode: max
 ```
-## preprocessing
+### preprocessing
 
 **type**: ``complex`` 
 
@@ -486,7 +486,7 @@ preprocessing:
        maxLen: 160
   - disk-cache: 
 ```
-## random_state
+### random_state
 
 **type**: ``integer`` 
 
@@ -497,7 +497,7 @@ Example:
 
 ```
 
-## shape
+### shape
 
 **type**: `array of integers` 
 
@@ -509,7 +509,7 @@ Example:
 shape: [440,440,3]
 ```
 
-## stages
+### stages
 
 **type**: ``complex`` 
 
@@ -524,7 +524,7 @@ stages:
     lr: 0.01
     
 ```
-## stratified
+### stratified
 
 **type**: ``boolean`` 
 
@@ -534,7 +534,7 @@ Example:
 ```yaml
 
 ```
-## testSplit
+### testSplit
 
 **type**: `float 0-1` 
 
@@ -545,7 +545,7 @@ Example:
 ```yaml
 testSplit: 0.4
 ```
-## testSplitSeed
+### testSplitSeed
 
 **type**: ```` 
 
@@ -555,7 +555,7 @@ Example:
 ```yaml
 
 ```
-## testTimeAugmentation
+### testTimeAugmentation
 
 **type**: ``string`` 
 
@@ -566,7 +566,7 @@ Example:
 ```yaml
 
 ```
-## transforms
+### transforms
 
 **type**: ``complex`` 
 
@@ -589,7 +589,7 @@ transforms:
        - -50
        - +50
 ```
-## validationSplit
+### validationSplit
 
 **type**: ``float`` 
 
@@ -600,9 +600,9 @@ Example:
 
 ```
 
-# Callback types
+## Callback types
 
-## EarlyStopping
+### EarlyStopping
 
 Stop training when a monitored metric has stopped improving.
 
@@ -622,7 +622,7 @@ callbacks:
     verbose: 1
 ```
 
-## ReduceLROnPlateau
+### ReduceLROnPlateau
 
 Reduce learning rate when a metric has stopped improving.
 
@@ -647,7 +647,7 @@ callbacks:
     verbose: 1
 ```
 
-## CyclicLR
+### CyclicLR
 
 Cycles learning rate across epochs.
 
@@ -675,7 +675,7 @@ callbacks:
     mode: triangular
 ```
 
-## LRVariator
+### LRVariator
 
 Changes learning rate between two values
 
@@ -699,7 +699,7 @@ Example
 ```yaml
 ```
 
-## TensorBoard
+### TensorBoard
 
 This callback writes a log for TensorBoard, which allows you to visualize dynamic graphs of your training and test metrics, as well as activation histograms for the different layers in your model.
 
@@ -727,9 +727,9 @@ callbacks:
     update_freq: batch
 ```
 
-# Stage properties
+## Stage properties
 
-## loss
+### loss
 
 **type**: ``string`` 
 
@@ -741,7 +741,7 @@ Example:
 ```yaml
 loss: binary_crossentropy
 ```
-## lr
+### lr
 
 **type**: ``float`` 
 
@@ -751,7 +751,7 @@ Example:
 ```yaml
 
 ```
-## initial_weights
+### initial_weights
 **type**: ``string`` 
 
 Fil path to load stage NN initial weights from.
@@ -760,7 +760,7 @@ Example:
 ```yaml
 initial_weights: /initial.weights
 ```
-## epochs
+### epochs
 **type**: ``integer`` 
 
 Number of epochs to train for this stage.
@@ -769,9 +769,9 @@ Example:
 ```yaml
 
 ```
-## unfreeze_encoder
+### unfreeze_encoder
 
-## callbacks
+### callbacks
 **type**: ``array of callback instances`` 
 
 Sets up training-time callbacks. See individual [callback descriptions](#callback-types).
@@ -791,9 +791,9 @@ callbacks:
     cooldown: 5
     verbose: 1
 ```
-## extra_callbacks
+### extra_callbacks
 
-# Preprocessors
+## Preprocessors
 **type**: ``complex`` 
 
 Preprocessors are the custom python functions that transform dataset. 
@@ -812,7 +812,7 @@ preprocessing:
        maxLen: 160
   - disk-cache: 
 ```
-## cache
+### cache
 
 Caches its input.
 
@@ -825,7 +825,7 @@ Example:
 ```yaml
 
 ```
-## disk-cache
+### disk-cache
 
 Caches its input on disk, including the full flow. 
 On subsequent launches if nothing was changed in the flow, takes its output from disk instead of re-launching previous operations. 
@@ -844,7 +844,7 @@ preprocessing:
        maxLen: 160
   - disk-cache: 
 ```
-## split-preprocessor
+### split-preprocessor
 
 An analogue of [split](#split) for preprocessor operations.
 
@@ -853,7 +853,7 @@ Example:
 ```yaml
 
 ```
-## split-concat-preprocessor
+### split-concat-preprocessor
 
 An analogue of [split-concat](#split-concat) for preprocessor operations.
 
@@ -862,7 +862,7 @@ Example:
 ```yaml
 
 ```
-## seq-preprocessor
+### seq-preprocessor
 
 An analogue of [seq](#seq-concat) for preprocessor operations.
 
@@ -872,7 +872,7 @@ Example:
 
 ```
 
-## augmentation
+### augmentation
 
 Preprocessor instruction, which body only runs during the training and is skipped when the inferring.
 
