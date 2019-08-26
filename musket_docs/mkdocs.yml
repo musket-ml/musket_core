@@ -3,6 +3,10 @@ theme:
   name: null
   custom_dir: readthedocs_mod
   navigation_depth: 4
+  highlightjs: true
+  hljs_languages:
+    - yaml
+    - Python
 #theme: readthedocs
 #theme:
 #  name: null

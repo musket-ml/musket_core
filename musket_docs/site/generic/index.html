@@ -14,6 +14,7 @@
 
   <link rel="stylesheet" href="../css/theme.css" />
   <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
   
   <script>
     // Current page data
@@ -23,7 +24,11 @@
   </script>
   
   <script src="../js/jquery-2.1.1.min.js" defer></script>
-  <script src="../js/modernizr-2.8.3.min.js" defer></script> 
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/Python.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
   
 </head>
 
@@ -892,7 +897,7 @@ declarations:
 <h2 id="datasets">Datasets</h2>
 <p>Datasets allow to define the ways to load data for this particular project.
 As this pipeline is designed to support an arbitrary data, the only way to add dataset is to put in some custom python code and then refer it from YAML:</p>
-<pre><code class="yaml">class DischargeData(datasets.DataSet):
+<pre><code class="python">class DischargeData(datasets.DataSet):
 
     def __init__(self,ids,normalize=True, flatten=False):
         self.normalize=normalize

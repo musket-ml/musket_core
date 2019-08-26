@@ -66,7 +66,7 @@ Musket supports lots of custom substances: dataset definitions, preprocessors, c
  
 Most of the time to define a custom thing, it is enough to put a python file into a top-level folder and define a function with an appropriate annotation, like this:
 
-```yaml
+```python
 @preprocessing.dataset_preprocessor
 def splitInput(input, parts:int):
     result = np.array_split(input,parts,axis=0)
@@ -75,7 +75,7 @@ def splitInput(input, parts:int):
 
 or this:
 
-```yaml
+```python
 @dataset_visualizer
 def visualize(val:PredictionItem):
     cache_path=context().path

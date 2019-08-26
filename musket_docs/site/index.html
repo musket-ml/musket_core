@@ -14,6 +14,7 @@
 
   <link rel="stylesheet" href="css/theme.css" />
   <link rel="stylesheet" href="css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
   
   <script>
     // Current page data
@@ -23,7 +24,11 @@
   </script>
   
   <script src="js/jquery-2.1.1.min.js" defer></script>
-  <script src="js/modernizr-2.8.3.min.js" defer></script> 
+  <script src="js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/Python.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
   
 </head>
 
@@ -645,14 +650,14 @@ Anyone can check your experiments, and add their own to the storage as the stora
 <p>Declarative approach is good and compact, but sometimes we want to define some custom functionality.</p>
 <p>Musket supports lots of custom substances: dataset definitions, preprocessors, custom network layers, visualizers etc etc.</p>
 <p>Most of the time to define a custom thing, it is enough to put a python file into a top-level folder and define a function with an appropriate annotation, like this:</p>
-<pre><code class="yaml">@preprocessing.dataset_preprocessor
+<pre><code class="python">@preprocessing.dataset_preprocessor
 def splitInput(input, parts:int):
     result = np.array_split(input,parts,axis=0)
     return result
 </code></pre>
 
 <p>or this:</p>
-<pre><code class="yaml">@dataset_visualizer
+<pre><code class="python">@dataset_visualizer
 def visualize(val:PredictionItem):
     cache_path=context().path
     path = cache_path + &quot;/&quot; + str(val.id) + &quot;.png&quot;
@@ -867,5 +872,5 @@ stages:
 
 <!--
 MkDocs version : 1.0.4
-Build Date UTC : 2019-08-26 15:59:37
+Build Date UTC : 2019-08-26 16:19:28
 -->

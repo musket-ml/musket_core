@@ -333,7 +333,7 @@ Full list can be found [here](reference.md#utility-layers)
 Datasets allow to define the ways to load data for this particular project.
 As this pipeline is designed to support an arbitrary data, the only way to add dataset is to put in some custom python code and then refer it from YAML:
 
-```yaml
+```python
 class DischargeData(datasets.DataSet):
 
     def __init__(self,ids,normalize=True, flatten=False):
