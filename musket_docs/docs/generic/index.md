@@ -69,8 +69,10 @@ stages:
 
 ## Installation
 
-TODO: make sure this actually works.
-```pip install generic_pipeline```
+```
+pip install musket_core 
+```
+
 
 ## Project structure
 
@@ -102,7 +104,7 @@ Each experiment starts with its configuration, other files are being added by th
 `common.yaml` file may be added to set instructions, which will be applied to all project experiments.
 
 `modules` folder may be added to set python files in project scope, so custom yaml declarations can be mapped 
-onto python classes and functions defined inside such files. `main.py` will be always executed, other files require [imports](reference.md#imports) instruction. 
+onto python classes and functions defined inside such files. all modules in this folder will be always executed, other modules require [imports](reference.md#imports) instruction. 
 
 `summary.yaml` and `metrics` folders inside each experiment appear after the experiment training is executed.
 

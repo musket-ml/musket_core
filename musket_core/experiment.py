@@ -12,8 +12,7 @@ import keras
 import time
 
 class TimeoutCallback(keras.callbacks.Callback):
-    def __init__(self):
-        pass
+    
 
     def __init__(self, experiment, config):
         self.expiration = time.time() + experiment.time

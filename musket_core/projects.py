@@ -478,7 +478,3 @@ class Project:
         visualization=os.path.join(self.path, "visualizations", visualizer.name, dataset.name)
         utils.ensure(visualization)
         return visualizer.create(dataset,visualization)
-
-
-
-
