@@ -31,6 +31,9 @@ types:
       rate:
         type: float
         (meta.positional): true
+      seed?:
+        type: integer
+        (meta.positional): true
   SpatialDropout1D:
     type: Dropout
   LSTM:
@@ -39,13 +42,26 @@ types:
       units:
         type: integer
         (meta.positional): true
+      recurrent_activation?:
+        (meta.positional): true
+        type: string
       return_sequences?:
         (meta.positional): true
         type: boolean
+      activation?:
+        type: string
       return_state?:
         type: boolean
       stateful?:
         type: boolean
+      use_bias?:
+        type: string
+      kernel_initializer?:
+        type: string
+      recurrent_initializer?:
+        type: string
+      bias_initializer?:
+        type: string
   GlobalMaxPool1D:
     type: Layer
   GlobalAveragePooling1D:

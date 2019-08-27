@@ -1,4 +1,5 @@
-# Reasons to use Generic Pipeline
+# Generic pipeline
+## Reasons to use Generic Pipeline
 
 TODO: add more text from a general promo here
 
@@ -66,12 +67,12 @@ stages:
   - epochs: 100 #Let's go for 100 epochs
 ```
 
-# Installation
+## Installation
 
 TODO: make sure this actually works.
 ```pip install generic_pipeline```
 
-# Project structure
+## Project structure
 
 Each experiment is simply a folder with YAML file inside, it is easy to store and run experiment.
 
@@ -107,11 +108,11 @@ onto python classes and functions defined inside such files. `main.py` will be a
 
 There are more potential files, like intermediate results cache files etc.
 
-# Launching
+## Launching
 
 TODO
 
-# General train properties
+## General train properties
 
 Lets take our standard example and check the following set of instructions:
 
@@ -145,7 +146,7 @@ Besides tracking, this metric will be also used by default for metric-related ac
 
 There are many more properties to check in [Reference of root properties](reference.md#pipeline-root-properties)
 
-# Definining networks
+## Definining networks
 
 Lets check the next part of our example:
 
@@ -190,7 +191,7 @@ Also, `net` block uses `collapseConv` block by stating `collapseConv: [ 20, 7, 1
  
 [architecture](reference.md#architecture) instruction sets `net` block as the entry point for the whole experiment.
 
-## Built-in NN layers
+### Built-in NN layers
 
 There are a lot of built-in NN layers, basically, we support all layers that are supported by Keras.
 
@@ -206,11 +207,11 @@ Here are just a few:
 
 More can be found here: [Layer types](reference.md#layer-types)
 
-## Control layers
+### Control layers
 
 [Utility layers](reference.md#utility-layers) can be used to set control and data flow inside their bodies. Here are some examples:
 
-### Simple Data Flow constructions
+#### Simple Data Flow constructions
 
 ```yaml
   inceptionBlock:
@@ -231,7 +232,7 @@ More can be found here: [Layer types](reference.md#layer-types)
             - Conv2D: [channels,1]            
 ```            
 
-### Repeat and With
+#### Repeat and With
 
 ```yaml
 declarations:
@@ -246,7 +247,7 @@ declarations:
       - convBlock: [120]
 ```
 
-### Conditional layers
+#### Conditional layers
 
 ```yaml
 declarations:
@@ -264,7 +265,7 @@ declarations:
       - Dense: [4, sigmoid]
 ```
 
-### Shared Weights
+#### Shared Weights
 
 ```yaml
 #Basic example with sequencial model
@@ -282,7 +283,7 @@ declarations:
       - convBlock: [3] #weights of convBlock will be shared between invocations
 ```
 
-### Wrapper layers
+#### Wrapper layers
 
 ```yaml
   net:
@@ -299,7 +300,7 @@ declarations:
     - dense: [3, sigmoid]
 ```    
 
-### Manually controlling data flow
+#### Manually controlling data flow
 ```yaml
   net:
     inputs: [i1,i2]
@@ -327,12 +328,12 @@ declarations:
 
 Full list can be found [here](reference.md#utility-layers)
 
-# Datasets
+## Datasets
 
 Datasets allow to define the ways to load data for this particular project.
 As this pipeline is designed to support an arbitrary data, the only way to add dataset is to put in some custom python code and then refer it from YAML:
 
-```yaml
+```python
 class DischargeData(datasets.DataSet):
 
     def __init__(self,ids,normalize=True, flatten=False):
@@ -372,7 +373,7 @@ datasets:
 
 [datasets](reference.md#datasets) sets up a list of available data sets to be referred by other entities.
                                   
-# Callbacks
+## Callbacks
 
 Lets check the following block from out main example:
 
@@ -396,7 +397,7 @@ We set up two callback, which are being invoked during the training time:
 
 The list of callbacks can be found [here](reference.md#callbacks)
 
-# Stages
+## Stages
 
 [stages](reference.md#stages) instruction allows to set up stages of the train process, where for each stage it is possible to set some specific training options like the number of epochs, learning rate, loss, callbacks, etc.
 Full list of stage properties can be found [here](reference.md#stage-properties).
@@ -409,7 +410,7 @@ stages:
   - epochs: 100 #Let's go for 100 epochs
 ```
 
-# [Preprocessors](reference.md#preprocessors)
+## [Preprocessors](reference.md#preprocessors)
 
 [Preprocessors](reference.md#preprocessors) are the custom python functions that transform dataset. 
 
@@ -459,7 +460,7 @@ def rescale(input,size):
     return np.concatenate([mean,max,min])
 ```
 
-# How to check training results
+## How to check training results
 
 In experiment folder `metrics` subfolder contain a CSV report file for each fold and stage.
 

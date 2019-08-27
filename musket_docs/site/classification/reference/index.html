@@ -1,200 +1,654 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        
-        
-        
-        <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>Reference - Musket ML</title>
-        <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
-        <link href="../../css/font-awesome.min.css" rel="stylesheet">
-        <link href="../../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
-        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-        <!--[if lt IE 9]>
-            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-        <![endif]-->
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>Reference - Musket ML</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
-        <script src="../../js/jquery-1.10.2.min.js" defer></script>
-        <script src="../../js/bootstrap-3.0.3.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-        <script>hljs.initHighlightingOnLoad();</script> 
-    </head>
+  <link rel="stylesheet" href="../../css/theme.css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Reference";
+    var mkdocs_page_input_path = "classification\\reference.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/Python.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
 
-    <body>
+<body class="wy-body-for-nav" role="document">
 
-        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
-            <div class="container">
+  <div class="wy-grid-for-nav">
 
-                <!-- Collapsed navigation -->
-                <div class="navbar-header">
-                    <!-- Expander button -->
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" href="../..">Musket ML</a>
-                </div>
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> Musket ML</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
 
-                <!-- Expanded navigation -->
-                <div class="navbar-collapse collapse">
-                        <!-- Main navigation -->
-                        <ul class="nav navbar-nav">
-                            <li >
-                                <a href="../..">Home</a>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Generic <b class="caret"></b></a>
-                                <ul class="dropdown-menu">
-                                    
-<li >
-    <a href="../../generic/">User guide</a>
-</li>
-                                    
-<li >
-    <a href="../../generic/reference/">Reference</a>
-</li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Segmentation <b class="caret"></b></a>
-                                <ul class="dropdown-menu">
-                                    
-<li >
-    <a href="../../segmentation/">User guide</a>
-</li>
-                                    
-<li >
-    <a href="../../segmentation/reference/">Reference</a>
-</li>
-                                </ul>
-                            </li>
-                            <li class="dropdown active">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Classification <b class="caret"></b></a>
-                                <ul class="dropdown-menu">
-                                    
-<li >
-    <a href="../">User guide</a>
-</li>
-                                    
-<li class="active">
-    <a href="./">Reference</a>
-</li>
-                                </ul>
-                            </li>
-                        </ul>
-
-                    <ul class="nav navbar-nav navbar-right">
-                        <li>
-                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
-                                <i class="fa fa-search"></i> Search
-                            </a>
-                        </li>
-                            <li >
-                                <a rel="next" href="../">
-                                    <i class="fa fa-arrow-left"></i> Previous
-                                </a>
-                            </li>
-                            <li class="disabled">
-                                <a rel="prev" >
-                                    Next <i class="fa fa-arrow-right"></i>
-                                </a>
-                            </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="container">
-                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
-    <ul class="nav bs-sidenav">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <p class="caption"><span class="caption-text">Generic</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../generic/">User guide</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../generic/#reasons-to-use-generic-pipeline">Reasons to use Generic Pipeline</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../generic/#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../generic/#project-structure">Project structure</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../generic/#launching">Launching</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../generic/#general-train-properties">General train properties</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../generic/#definining-networks">Definining networks</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/#built-in-nn-layers">Built-in NN layers</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/#control-layers">Control layers</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../../generic/#simple-data-flow-constructions">Simple Data Flow constructions</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../generic/#repeat-and-with">Repeat and With</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../generic/#conditional-layers">Conditional layers</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../generic/#shared-weights">Shared Weights</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../generic/#wrapper-layers">Wrapper layers</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../generic/#manually-controlling-data-flow">Manually controlling data flow</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../generic/#datasets">Datasets</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../generic/#callbacks">Callbacks</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../generic/#stages">Stages</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../generic/#preprocessors">Preprocessors</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../generic/#how-to-check-training-results">How to check training results</a>
+    </li>
     </ul>
-</div></div>
-                <div class="col-md-9" role="main">
-
-</div>
-        </div>
-
-        <footer class="col-md-12">
-            <hr>
-            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
-        </footer>
-        <script>
-            var base_url = "../..",
-                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
-        </script>
-        <script src="../../js/base.js" defer></script>
-        <script src="../../search/main.js" defer></script>
-
-        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
-            </div>
-            <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
-                <form role="form">
-                    <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
-                    </div>
-                </form>
-                <div id="mkdocs-search-results"></div>
-            </div>
-            <div class="modal-footer">
-            </div>
-        </div>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../../generic/reference/">Reference</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../generic/reference/#pipeline-root-properties">Pipeline root properties</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#activation">activation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#aggregation_metric">aggregation_metric</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#architecture">architecture</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#augmentation">augmentation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#batch">batch</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#classes">classes</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#callbacks">callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#copyweights">copyWeights</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#clipnorm">clipnorm</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#clipvalue">clipvalue</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#dataset">dataset</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#datasets">datasets</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#dataset_augmenter">dataset_augmenter</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#dropout">dropout</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#declarations">declarations</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#extra_train_data">extra_train_data</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#folds_count">folds_count</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#freeze_encoder">freeze_encoder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#final_metrics">final_metrics</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#holdout">holdout</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#imports">imports</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#inference_batch">inference_batch</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#loss">loss</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#lr">lr</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#metrics">metrics</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#num_seeds">num_seeds</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#optimizer">optimizer</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#primary_metric">primary_metric</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#primary_metric_mode">primary_metric_mode</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#preprocessing">preprocessing</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#random_state">random_state</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#stages">stages</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#stratified">stratified</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#testsplit">testSplit</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#testsplitseed">testSplitSeed</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#testtimeaugmentation">testTimeAugmentation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#transforms">transforms</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#validationsplit">validationSplit</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../generic/reference/#callback-types">Callback types</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#earlystopping">EarlyStopping</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#reducelronplateau">ReduceLROnPlateau</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#cycliclr">CyclicLR</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#lrvariator">LRVariator</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#tensorboard">TensorBoard</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../generic/reference/#layer-types">Layer types</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#input">Input</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#gaussiannoise">GaussianNoise</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#dropout_1">Dropout</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#spatialdropout1d">SpatialDropout1D</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#lstm">LSTM</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#globalmaxpool1d">GlobalMaxPool1D</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#globalaveragepooling1d">GlobalAveragePooling1D</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#batchnormalization">BatchNormalization</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#concatenate">Concatenate</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#add">Add</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#substract">Substract</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#mult">Mult</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#max">Max</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#min">Min</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#conv1d">Conv1D</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#conv2d">Conv2D</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#maxpool1d">MaxPool1D</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#maxpool2d">MaxPool2D</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#averagepooling1d">AveragePooling1D</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#cudnnlstm">CuDNNLSTM</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#dense">Dense</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#flatten">Flatten</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#bidirectional">Bidirectional</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../generic/reference/#utility-layers">Utility layers</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#split">split</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#split-concat">split-concat</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#split-concatenate">split-concatenate</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#split-add">split-add</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#split-substract">split-substract</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#split-mult">split-mult</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#split-min">split-min</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#split-max">split-max</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#split-dot">split-dot</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#split-dot-normalize">split-dot-normalize</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#seq">seq</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#input_1">input</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#pass">pass</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#transform-concat">transform-concat</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#transform-add">transform-add</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../generic/reference/#stage-properties">Stage properties</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#loss_1">loss</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#lr_1">lr</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#initial_weights">initial_weights</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#epochs">epochs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#unfreeze_encoder">unfreeze_encoder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#callbacks_1">callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#extra_callbacks">extra_callbacks</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../generic/reference/#preprocessors">Preprocessors</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#cache">cache</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#disk-cache">disk-cache</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#split-preprocessor">split-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#split-concat-preprocessor">split-concat-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#seq-preprocessor">seq-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/reference/#augmentation_1">augmentation</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Segmentation</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../segmentation/">User guide</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/#motivation">Motivation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/#usage-guide">Usage guide</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/#training-a-model">Training a model</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#image-and-mask-augmentations">Image and Mask Augmentations</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#freezing-and-unfreezing-encoder">Freezing and Unfreezing encoder</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#custom-datasets">Custom datasets</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#balancing-your-data">Balancing your data</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#multistage-training">Multistage training</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#composite-losses">Composite losses</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#cyclical-learning-rates">Cyclical learning rates</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#lr-finder">LR Finder</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#background-augmenter">Background Augmenter</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#training-on-crops">Training on crops</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/#using-trained-model">Using trained model</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#ensembling-predictions">Ensembling predictions</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/#custom-evaluation-code">Custom evaluation code</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/#accessing-model">Accessing model</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/#analyzing-experiments-results">Analyzing experiments results</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/#what-is-supported">What is supported?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/#custom-architectures-callbacks-metrics">Custom architectures, callbacks, metrics</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/#examples">Examples</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../../segmentation/reference/">Reference</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/reference/#pipeline-root-properties">Pipeline root properties</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#activation">activation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#aggregation_metric">aggregation_metric</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#architecture">architecture</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#augmentation">augmentation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#backbone">backbone</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#batch">batch</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#classifier">classifier</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#classifier_lr">classifier_lr</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#classes">classes</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#callbacks">callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#compresspredictionsasints">compressPredictionsAsInts</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#copyweights">copyWeights</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#clipnorm">clipnorm</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#clipvalue">clipvalue</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#crops">crops</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#dataset">dataset</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#datasets">datasets</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#dataset_augmenter">dataset_augmenter</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#dropout">dropout</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#encoder_weights">encoder_weights</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#extra_train_data">extra_train_data</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#folds_count">folds_count</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#freeze_encoder">freeze_encoder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#final_metrics">final_metrics</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#holdout">holdout</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#imports">imports</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#inference_batch">inference_batch</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#loss">loss</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#lr">lr</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#manualresize">manualResize</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#metrics">metrics</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#num_seeds">num_seeds</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#optimizer">optimizer</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#primary_metric">primary_metric</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#primary_metric_mode">primary_metric_mode</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#preprocessing">preprocessing</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#random_state">random_state</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#shape">shape</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#stages">stages</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#stratified">stratified</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#testsplit">testSplit</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#testsplitseed">testSplitSeed</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#testtimeaugmentation">testTimeAugmentation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#transforms">transforms</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#validationsplit">validationSplit</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/reference/#callback-types">Callback types</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#earlystopping">EarlyStopping</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#reducelronplateau">ReduceLROnPlateau</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#cycliclr">CyclicLR</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#lrvariator">LRVariator</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#tensorboard">TensorBoard</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/reference/#stage-properties">Stage properties</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#loss_1">loss</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#lr_1">lr</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#initial_weights">initial_weights</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#epochs">epochs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#unfreeze_encoder">unfreeze_encoder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#callbacks_1">callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#extra_callbacks">extra_callbacks</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/reference/#preprocessors">Preprocessors</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#cache">cache</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#disk-cache">disk-cache</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#split-preprocessor">split-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#split-concat-preprocessor">split-concat-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#seq-preprocessor">seq-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#augmentation_1">augmentation</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Classification</span></p>
+                <ul class="current">
+                    <li class="toctree-l1"><a class="reference internal" href="../">User guide</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../#motivation">Motivation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../#usage-guide">Usage guide</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../#training-a-model">Training a model</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../#image-augmentations">Image Augmentations</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../#freezingunfreezing-encoder">Freezing/Unfreezing encoder</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../#custom-datasets">Custom datasets</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../#balancing-your-data">Balancing your data</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../#multistage-training">Multistage training</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../#composite-losses">Composite losses</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../#cyclical-learning-rates">Cyclical learning rates</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../#lr-finder">LR Finder</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../#training-on-crops">Training on crops</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../#using-trained-model">Using trained model</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../#ensembling-predictions">Ensembling predictions</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../#custom-evaluation-code">Custom evaluation code</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../#accessing-model">Accessing model</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../#analyzing-experiments-results">Analyzing experiments results</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../#what-is-supported">What is supported?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../#custom-architectures-callbacks-metrics">Custom architectures, callbacks, metrics</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Reference</a>
+                    </li>
+                </ul>
+      </div>
     </div>
-</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
-            </div>
-            <div class="modal-body">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th style="width: 20%;">Keys</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td class="help shortcut"><kbd>?</kbd></td>
-                    <td>Open this help</td>
-                  </tr>
-                  <tr>
-                    <td class="next shortcut"><kbd>n</kbd></td>
-                    <td>Next page</td>
-                  </tr>
-                  <tr>
-                    <td class="prev shortcut"><kbd>p</kbd></td>
-                    <td>Previous page</td>
-                  </tr>
-                  <tr>
-                    <td class="search shortcut"><kbd>s</kbd></td>
-                    <td>Search</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="modal-footer">
-            </div>
-        </div>
-    </div>
-</div>
+    </nav>
 
-    </body>
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">Musket ML</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Classification &raquo;</li>
+        
+      
+    
+    <li>Reference</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                
+              
+            </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+    </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script type="text/javascript" defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(false);
+        };
+    </script>
+
+</body>
 </html>

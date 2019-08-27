@@ -1,229 +1,618 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        
-        
-        
-        <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>Reference - Musket ML</title>
-        <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
-        <link href="../../css/font-awesome.min.css" rel="stylesheet">
-        <link href="../../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
-        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-        <!--[if lt IE 9]>
-            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-        <![endif]-->
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>Reference - Musket ML</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
-        <script src="../../js/jquery-1.10.2.min.js" defer></script>
-        <script src="../../js/bootstrap-3.0.3.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-        <script>hljs.initHighlightingOnLoad();</script> 
-    </head>
+  <link rel="stylesheet" href="../../css/theme.css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Reference";
+    var mkdocs_page_input_path = "generic\\reference.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/Python.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
 
-    <body>
+<body class="wy-body-for-nav" role="document">
 
-        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
-            <div class="container">
+  <div class="wy-grid-for-nav">
 
-                <!-- Collapsed navigation -->
-                <div class="navbar-header">
-                    <!-- Expander button -->
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" href="../..">Musket ML</a>
-                </div>
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> Musket ML</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
 
-                <!-- Expanded navigation -->
-                <div class="navbar-collapse collapse">
-                        <!-- Main navigation -->
-                        <ul class="nav navbar-nav">
-                            <li >
-                                <a href="../..">Home</a>
-                            </li>
-                            <li class="dropdown active">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Generic <b class="caret"></b></a>
-                                <ul class="dropdown-menu">
-                                    
-<li >
-    <a href="../">User guide</a>
-</li>
-                                    
-<li class="active">
-    <a href="./">Reference</a>
-</li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Segmentation <b class="caret"></b></a>
-                                <ul class="dropdown-menu">
-                                    
-<li >
-    <a href="../../segmentation/">User guide</a>
-</li>
-                                    
-<li >
-    <a href="../../segmentation/reference/">Reference</a>
-</li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Classification <b class="caret"></b></a>
-                                <ul class="dropdown-menu">
-                                    
-<li >
-    <a href="../../classification/">User guide</a>
-</li>
-                                    
-<li >
-    <a href="../../classification/reference/">Reference</a>
-</li>
-                                </ul>
-                            </li>
-                        </ul>
-
-                    <ul class="nav navbar-nav navbar-right">
-                        <li>
-                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
-                                <i class="fa fa-search"></i> Search
-                            </a>
-                        </li>
-                            <li >
-                                <a rel="next" href="../">
-                                    <i class="fa fa-arrow-left"></i> Previous
-                                </a>
-                            </li>
-                            <li >
-                                <a rel="prev" href="../../segmentation/">
-                                    Next <i class="fa fa-arrow-right"></i>
-                                </a>
-                            </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="container">
-                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
-    <ul class="nav bs-sidenav">
-        <li class="main active"><a href="#generic-pipeline-reference">Generic pipeline reference</a></li>
-        <li class="main "><a href="#pipeline-root-properties">Pipeline root properties</a></li>
-            <li><a href="#activation">activation</a></li>
-            <li><a href="#aggregation_metric">aggregation_metric</a></li>
-            <li><a href="#architecture">architecture</a></li>
-            <li><a href="#augmentation">augmentation</a></li>
-            <li><a href="#batch">batch</a></li>
-            <li><a href="#classes">classes</a></li>
-            <li><a href="#callbacks">callbacks</a></li>
-            <li><a href="#copyweights">copyWeights</a></li>
-            <li><a href="#clipnorm">clipnorm</a></li>
-            <li><a href="#clipvalue">clipvalue</a></li>
-            <li><a href="#dataset">dataset</a></li>
-            <li><a href="#datasets">datasets</a></li>
-            <li><a href="#dataset_augmenter">dataset_augmenter</a></li>
-            <li><a href="#dropout">dropout</a></li>
-            <li><a href="#declarations">declarations</a></li>
-            <li><a href="#extra_train_data">extra_train_data</a></li>
-            <li><a href="#folds_count">folds_count</a></li>
-            <li><a href="#freeze_encoder">freeze_encoder</a></li>
-            <li><a href="#final_metrics">final_metrics</a></li>
-            <li><a href="#holdout">holdout</a></li>
-            <li><a href="#imports">imports</a></li>
-            <li><a href="#inference_batch">inference_batch</a></li>
-            <li><a href="#loss">loss</a></li>
-            <li><a href="#lr">lr</a></li>
-            <li><a href="#metrics">metrics</a></li>
-            <li><a href="#num_seeds">num_seeds</a></li>
-            <li><a href="#optimizer">optimizer</a></li>
-            <li><a href="#primary_metric">primary_metric</a></li>
-            <li><a href="#primary_metric_mode">primary_metric_mode</a></li>
-            <li><a href="#preprocessing">preprocessing</a></li>
-            <li><a href="#random_state">random_state</a></li>
-            <li><a href="#stages">stages</a></li>
-            <li><a href="#stratified">stratified</a></li>
-            <li><a href="#testsplit">testSplit</a></li>
-            <li><a href="#testsplitseed">testSplitSeed</a></li>
-            <li><a href="#testtimeaugmentation">testTimeAugmentation</a></li>
-            <li><a href="#transforms">transforms</a></li>
-            <li><a href="#validationsplit">validationSplit</a></li>
-        <li class="main "><a href="#callback-types">Callback types</a></li>
-            <li><a href="#earlystopping">EarlyStopping</a></li>
-            <li><a href="#reducelronplateau">ReduceLROnPlateau</a></li>
-            <li><a href="#cycliclr">CyclicLR</a></li>
-            <li><a href="#lrvariator">LRVariator</a></li>
-            <li><a href="#tensorboard">TensorBoard</a></li>
-        <li class="main "><a href="#layer-types">Layer types</a></li>
-            <li><a href="#input">Input</a></li>
-            <li><a href="#gaussiannoise">GaussianNoise</a></li>
-            <li><a href="#dropout_1">Dropout</a></li>
-            <li><a href="#spatialdropout1d">SpatialDropout1D</a></li>
-            <li><a href="#lstm">LSTM</a></li>
-            <li><a href="#globalmaxpool1d">GlobalMaxPool1D</a></li>
-            <li><a href="#globalaveragepooling1d">GlobalAveragePooling1D</a></li>
-            <li><a href="#batchnormalization">BatchNormalization</a></li>
-            <li><a href="#concatenate">Concatenate</a></li>
-            <li><a href="#add">Add</a></li>
-            <li><a href="#substract">Substract</a></li>
-            <li><a href="#mult">Mult</a></li>
-            <li><a href="#max">Max</a></li>
-            <li><a href="#min">Min</a></li>
-            <li><a href="#conv1d">Conv1D</a></li>
-            <li><a href="#conv2d">Conv2D</a></li>
-            <li><a href="#maxpool1d">MaxPool1D</a></li>
-            <li><a href="#maxpool2d">MaxPool2D</a></li>
-            <li><a href="#averagepooling1d">AveragePooling1D</a></li>
-            <li><a href="#cudnnlstm">CuDNNLSTM</a></li>
-            <li><a href="#dense">Dense</a></li>
-            <li><a href="#flatten">Flatten</a></li>
-            <li><a href="#bidirectional">Bidirectional</a></li>
-        <li class="main "><a href="#utility-layers">Utility layers</a></li>
-            <li><a href="#split">split</a></li>
-            <li><a href="#split-concat">split-concat</a></li>
-            <li><a href="#split-concatenate">split-concatenate</a></li>
-            <li><a href="#split-add">split-add</a></li>
-            <li><a href="#split-substract">split-substract</a></li>
-            <li><a href="#split-mult">split-mult</a></li>
-            <li><a href="#split-min">split-min</a></li>
-            <li><a href="#split-max">split-max</a></li>
-            <li><a href="#split-dot">split-dot</a></li>
-            <li><a href="#split-dot-normalize">split-dot-normalize</a></li>
-            <li><a href="#seq">seq</a></li>
-            <li><a href="#input_1">input</a></li>
-            <li><a href="#cache">cache</a></li>
-            <li><a href="#disk-cache">disk-cache</a></li>
-            <li><a href="#split-preprocessor">split-preprocessor</a></li>
-            <li><a href="#split-concat-preprocessor">split-concat-preprocessor</a></li>
-            <li><a href="#seq-preprocessor">seq-preprocessor</a></li>
-            <li><a href="#augmentation_1">augmentation</a></li>
-            <li><a href="#pass">pass</a></li>
-            <li><a href="#transform-concat">transform-concat</a></li>
-            <li><a href="#transform-add">transform-add</a></li>
-        <li class="main "><a href="#stage-properties">Stage properties</a></li>
-            <li><a href="#loss_1">loss</a></li>
-            <li><a href="#initial_weights">initial_weights</a></li>
-            <li><a href="#epochs">epochs</a></li>
-            <li><a href="#unfreeze_encoder">unfreeze_encoder</a></li>
-            <li><a href="#lr_1">lr</a></li>
-            <li><a href="#callbacks_1">callbacks</a></li>
-            <li><a href="#extra_callbacks">extra_callbacks</a></li>
-            <li><a href="#preprocessors">Preprocessors</a></li>
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <p class="caption"><span class="caption-text">Generic</span></p>
+                <ul class="current">
+                    <li class="toctree-l1"><a class="reference internal" href="../">User guide</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../#reasons-to-use-generic-pipeline">Reasons to use Generic Pipeline</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../#project-structure">Project structure</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../#launching">Launching</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../#general-train-properties">General train properties</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../#definining-networks">Definining networks</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../#built-in-nn-layers">Built-in NN layers</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../#control-layers">Control layers</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../#simple-data-flow-constructions">Simple Data Flow constructions</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../#repeat-and-with">Repeat and With</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../#conditional-layers">Conditional layers</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../#shared-weights">Shared Weights</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../#wrapper-layers">Wrapper layers</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../#manually-controlling-data-flow">Manually controlling data flow</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../#datasets">Datasets</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../#callbacks">Callbacks</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../#stages">Stages</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../#preprocessors">Preprocessors</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../#how-to-check-training-results">How to check training results</a>
+    </li>
     </ul>
-</div></div>
-                <div class="col-md-9" role="main">
+                    </li>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Reference</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#pipeline-root-properties">Pipeline root properties</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#activation">activation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#aggregation_metric">aggregation_metric</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#architecture">architecture</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#augmentation">augmentation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#batch">batch</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#classes">classes</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#callbacks">callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#copyweights">copyWeights</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#clipnorm">clipnorm</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#clipvalue">clipvalue</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#dataset">dataset</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#datasets">datasets</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#dataset_augmenter">dataset_augmenter</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#dropout">dropout</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#declarations">declarations</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#extra_train_data">extra_train_data</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#folds_count">folds_count</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#freeze_encoder">freeze_encoder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#final_metrics">final_metrics</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#holdout">holdout</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#imports">imports</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#inference_batch">inference_batch</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#loss">loss</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#lr">lr</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#metrics">metrics</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#num_seeds">num_seeds</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#optimizer">optimizer</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#primary_metric">primary_metric</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#primary_metric_mode">primary_metric_mode</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#preprocessing">preprocessing</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#random_state">random_state</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#stages">stages</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#stratified">stratified</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#testsplit">testSplit</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#testsplitseed">testSplitSeed</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#testtimeaugmentation">testTimeAugmentation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#transforms">transforms</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#validationsplit">validationSplit</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#callback-types">Callback types</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#earlystopping">EarlyStopping</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#reducelronplateau">ReduceLROnPlateau</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cycliclr">CyclicLR</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#lrvariator">LRVariator</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#tensorboard">TensorBoard</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#layer-types">Layer types</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#input">Input</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#gaussiannoise">GaussianNoise</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#dropout_1">Dropout</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#spatialdropout1d">SpatialDropout1D</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#lstm">LSTM</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#globalmaxpool1d">GlobalMaxPool1D</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#globalaveragepooling1d">GlobalAveragePooling1D</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#batchnormalization">BatchNormalization</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#concatenate">Concatenate</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#add">Add</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#substract">Substract</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#mult">Mult</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#max">Max</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#min">Min</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#conv1d">Conv1D</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#conv2d">Conv2D</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#maxpool1d">MaxPool1D</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#maxpool2d">MaxPool2D</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#averagepooling1d">AveragePooling1D</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cudnnlstm">CuDNNLSTM</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#dense">Dense</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#flatten">Flatten</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#bidirectional">Bidirectional</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#utility-layers">Utility layers</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#split">split</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#split-concat">split-concat</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#split-concatenate">split-concatenate</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#split-add">split-add</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#split-substract">split-substract</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#split-mult">split-mult</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#split-min">split-min</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#split-max">split-max</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#split-dot">split-dot</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#split-dot-normalize">split-dot-normalize</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#seq">seq</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#input_1">input</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pass">pass</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#transform-concat">transform-concat</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#transform-add">transform-add</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#stage-properties">Stage properties</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#loss_1">loss</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#lr_1">lr</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#initial_weights">initial_weights</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#epochs">epochs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#unfreeze_encoder">unfreeze_encoder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#callbacks_1">callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#extra_callbacks">extra_callbacks</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#preprocessors">Preprocessors</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#cache">cache</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#disk-cache">disk-cache</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#split-preprocessor">split-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#split-concat-preprocessor">split-concat-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#seq-preprocessor">seq-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#augmentation_1">augmentation</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Segmentation</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../segmentation/">User guide</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/#motivation">Motivation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/#usage-guide">Usage guide</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/#training-a-model">Training a model</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#image-and-mask-augmentations">Image and Mask Augmentations</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#freezing-and-unfreezing-encoder">Freezing and Unfreezing encoder</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#custom-datasets">Custom datasets</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#balancing-your-data">Balancing your data</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#multistage-training">Multistage training</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#composite-losses">Composite losses</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#cyclical-learning-rates">Cyclical learning rates</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#lr-finder">LR Finder</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#background-augmenter">Background Augmenter</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#training-on-crops">Training on crops</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/#using-trained-model">Using trained model</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../../segmentation/#ensembling-predictions">Ensembling predictions</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/#custom-evaluation-code">Custom evaluation code</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/#accessing-model">Accessing model</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/#analyzing-experiments-results">Analyzing experiments results</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/#what-is-supported">What is supported?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/#custom-architectures-callbacks-metrics">Custom architectures, callbacks, metrics</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/#examples">Examples</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../../segmentation/reference/">Reference</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/reference/#pipeline-root-properties">Pipeline root properties</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#activation">activation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#aggregation_metric">aggregation_metric</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#architecture">architecture</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#augmentation">augmentation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#backbone">backbone</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#batch">batch</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#classifier">classifier</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#classifier_lr">classifier_lr</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#classes">classes</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#callbacks">callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#compresspredictionsasints">compressPredictionsAsInts</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#copyweights">copyWeights</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#clipnorm">clipnorm</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#clipvalue">clipvalue</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#crops">crops</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#dataset">dataset</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#datasets">datasets</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#dataset_augmenter">dataset_augmenter</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#dropout">dropout</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#encoder_weights">encoder_weights</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#extra_train_data">extra_train_data</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#folds_count">folds_count</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#freeze_encoder">freeze_encoder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#final_metrics">final_metrics</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#holdout">holdout</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#imports">imports</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#inference_batch">inference_batch</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#loss">loss</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#lr">lr</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#manualresize">manualResize</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#metrics">metrics</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#num_seeds">num_seeds</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#optimizer">optimizer</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#primary_metric">primary_metric</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#primary_metric_mode">primary_metric_mode</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#preprocessing">preprocessing</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#random_state">random_state</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#shape">shape</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#stages">stages</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#stratified">stratified</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#testsplit">testSplit</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#testsplitseed">testSplitSeed</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#testtimeaugmentation">testTimeAugmentation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#transforms">transforms</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#validationsplit">validationSplit</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/reference/#callback-types">Callback types</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#earlystopping">EarlyStopping</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#reducelronplateau">ReduceLROnPlateau</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#cycliclr">CyclicLR</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#lrvariator">LRVariator</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#tensorboard">TensorBoard</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/reference/#stage-properties">Stage properties</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#loss_1">loss</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#lr_1">lr</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#initial_weights">initial_weights</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#epochs">epochs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#unfreeze_encoder">unfreeze_encoder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#callbacks_1">callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#extra_callbacks">extra_callbacks</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/reference/#preprocessors">Preprocessors</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#cache">cache</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#disk-cache">disk-cache</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#split-preprocessor">split-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#split-concat-preprocessor">split-concat-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#seq-preprocessor">seq-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#augmentation_1">augmentation</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Classification</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../classification/">User guide</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../classification/#motivation">Motivation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../classification/#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../classification/#usage-guide">Usage guide</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../classification/#training-a-model">Training a model</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../../classification/#image-augmentations">Image Augmentations</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../classification/#freezingunfreezing-encoder">Freezing/Unfreezing encoder</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../classification/#custom-datasets">Custom datasets</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../classification/#balancing-your-data">Balancing your data</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../classification/#multistage-training">Multistage training</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../classification/#composite-losses">Composite losses</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../classification/#cyclical-learning-rates">Cyclical learning rates</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../classification/#lr-finder">LR Finder</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../classification/#training-on-crops">Training on crops</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../classification/#using-trained-model">Using trained model</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../../classification/#ensembling-predictions">Ensembling predictions</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../classification/#custom-evaluation-code">Custom evaluation code</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../classification/#accessing-model">Accessing model</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../classification/#analyzing-experiments-results">Analyzing experiments results</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../classification/#what-is-supported">What is supported?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../classification/#custom-architectures-callbacks-metrics">Custom architectures, callbacks, metrics</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../../classification/reference/">Reference</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
 
-<h1 id="generic-pipeline-reference">Generic pipeline reference</h1>
-<h1 id="pipeline-root-properties">Pipeline root properties</h1>
-<h2 id="activation">activation</h2>
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">Musket ML</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Generic &raquo;</li>
+        
+      
+    
+    <li>Reference</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="generic-pipeline-reference">Generic pipeline reference</h1>
+<h2 id="pipeline-root-properties">Pipeline root properties</h2>
+<h3 id="activation">activation</h3>
 <p>TODO: does it have any use in the root of the file?</p>
-<h2 id="aggregation_metric">aggregation_metric</h2>
+<h3 id="aggregation_metric">aggregation_metric</h3>
 <p><strong>type</strong>: <code>string</code> </p>
 <p>Metric to calculate against the combination of all stages and report in <code>allStages</code> section of summary.yaml file after all experiment instances are finished.</p>
 <p>Uses metric name detection mechanism to search for the built-in metric or for a custom function with the same name across project modules.</p>
@@ -233,7 +622,7 @@
 
 </code></pre>
 
-<h2 id="architecture">architecture</h2>
+<h3 id="architecture">architecture</h3>
 <p><strong>type</strong>: <code>string</code> </p>
 <p>Name of the <a href="#declarations">declaration</a> that will be used as an entry point or root of the main network. </p>
 <p>Example:</p>
@@ -248,28 +637,40 @@ architecture: mainNetwork
 
 </code></pre>
 
-<h2 id="augmentation">augmentation</h2>
+<h3 id="augmentation">augmentation</h3>
 <p><strong>type</strong>: ```` </p>
-<p>TODO: does it have any use in the root of the file?</p>
+<p>TODO: isnt that a property from segmentation/classification, not generic pipeline?</p>
+<p><strong>type</strong>: <code>complex</code> </p>
+<p><a href="https://imgaug.readthedocs.io">IMGAUG</a> transformations sequence.
+Each object is mapped on <a href="https://imgaug.readthedocs.io">IMGAUG</a> transformer by name, parameters are mapped too.</p>
 <p>Example:</p>
-<pre><code class="yaml">
+<pre><code class="yaml">transforms:
+ Fliplr: 0.5
+ Affine:
+   translate_px:
+     x:
+       - -50
+       - +50
+     y:
+       - -50
+       - +50
 </code></pre>
 
-<h2 id="batch">batch</h2>
+<h3 id="batch">batch</h3>
 <p><strong>type</strong>: <code>integer</code> </p>
 <p>Sets up training batch size.</p>
 <p>Example:</p>
 <pre><code class="yaml">batch: 512
 </code></pre>
 
-<h2 id="classes">classes</h2>
+<h3 id="classes">classes</h3>
 <p><strong>type</strong>: ```` </p>
 <p>TODO: does it have any use in generic pipeline?</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="callbacks">callbacks</h2>
+<h3 id="callbacks">callbacks</h3>
 <p><strong>type</strong>: <code>array of callback instances</code> </p>
 <p>Sets up training-time callbacks. See individual <a href="#callback-types">callback descriptions</a>.</p>
 <p>Example:</p>
@@ -287,28 +688,28 @@ architecture: mainNetwork
     verbose: 1
 </code></pre>
 
-<h2 id="copyweights">copyWeights</h2>
+<h3 id="copyweights">copyWeights</h3>
 <p><strong>type</strong>: <code>boolean</code> </p>
 <p>Whether to copy saved weights.</p>
 <p>Example:</p>
 <pre><code class="yaml">copyWeights: true
 </code></pre>
 
-<h2 id="clipnorm">clipnorm</h2>
-<p><strong>type</strong>: ```` </p>
+<h3 id="clipnorm">clipnorm</h3>
+<p><strong>type</strong>: <code>float</code> </p>
 <p>Maximum clip norm of a gradient for an optimizer.</p>
 <p>Example:</p>
 <pre><code class="yaml">clipnorm: 1.0
 </code></pre>
 
-<h2 id="clipvalue">clipvalue</h2>
-<p><strong>type</strong>: ```` </p>
+<h3 id="clipvalue">clipvalue</h3>
+<p><strong>type</strong>: <code>float</code> </p>
 <p>Clip value of a gradient for an optimizer.</p>
 <p>Example:</p>
 <pre><code class="yaml">clipvalue: 0.5
 </code></pre>
 
-<h2 id="dataset">dataset</h2>
+<h3 id="dataset">dataset</h3>
 <p><strong>type</strong>: <code>complex object</code> </p>
 <p>Key is a name of the python function in scope, which returns training data set.
 Value is an array of parameters to pass to a function.</p>
@@ -317,7 +718,7 @@ Value is an array of parameters to pass to a function.</p>
   getTrain: [false,false]
 </code></pre>
 
-<h2 id="datasets">datasets</h2>
+<h3 id="datasets">datasets</h3>
 <p><strong>type</strong>: <code>map containing complex objects</code> </p>
 <p>Sets up a list of available data sets to be referred by other entities.</p>
 <p>For each object, key is a name of the python function in scope, which returns training dataset.
@@ -328,7 +729,7 @@ Value is an array of parameters to pass to a function.</p>
     getTest: [false,false]
 </code></pre>
 
-<h2 id="dataset_augmenter">dataset_augmenter</h2>
+<h3 id="dataset_augmenter">dataset_augmenter</h3>
 <p><strong>type</strong>: <code>complex object</code> </p>
 <p>Sets up a custom augmenter function to be applied to a dataset.
 Object must have a name property, whic will be used as a name of the python function in scope.
@@ -340,15 +741,15 @@ TODO: check that description and example are correct?</p>
     parameter: test
 </code></pre>
 
-<h2 id="dropout">dropout</h2>
-<p><strong>type</strong>: ```` </p>
+<h3 id="dropout">dropout</h3>
+<p><strong>type</strong>: <code>float</code> </p>
 <p>TODO: does it have any use in generic pipeline root?</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="declarations">declarations</h2>
-<p><strong>type</strong>: ```` </p>
+<h3 id="declarations">declarations</h3>
+<p><strong>type</strong>: <code>complex</code> </p>
 <p>Sets up network layer building blocks. </p>
 <p>Each declaration is an object with a key setting up declaration name
 and value being a complex object containing <code>parameters</code> array listing 
@@ -376,28 +777,30 @@ come directly inside layer definition.</p>
        - dense: [1,&quot;sigmoid&quot;]
 </code></pre>
 
-<h2 id="extra_train_data">extra_train_data</h2>
-<p><strong>type</strong>: ```` </p>
-<p>D</p>
+<h3 id="extra_train_data">extra_train_data</h3>
+<p><strong>type</strong>: <code>string</code> </p>
+<p>Name of the additional dataset that will be added (per element) to the training dataset before train launching.
+TODO is that correct?</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="folds_count">folds_count</h2>
-<p><strong>type</strong>: ```` </p>
-<p>D</p>
+<h3 id="folds_count">folds_count</h3>
+<p><strong>type</strong>: <code>integer</code> </p>
+<p>Number of folds to train. Default is 5.</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="freeze_encoder">freeze_encoder</h2>
-<p><strong>type</strong>: ```` </p>
-<p>D</p>
+<h3 id="freeze_encoder">freeze_encoder</h3>
+<p><strong>type</strong>: <code>boolean</code> </p>
+<p>Whether to freeze encoder during the training process.
+TODO isnt it non-generic property?</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="final_metrics">final_metrics</h2>
+<h3 id="final_metrics">final_metrics</h3>
 <p><strong>type</strong>: <code>array of strings</code> </p>
 <p>Metrics to calculate against every stage and report in <code>stages</code> section of summary.yaml file after all experiment instances are finished.</p>
 <p>Uses metric name detection mechanism to search for the built-in metric or for a custom function with the same name across project modules.</p>
@@ -407,14 +810,14 @@ come directly inside layer definition.</p>
 
 </code></pre>
 
-<h2 id="holdout">holdout</h2>
+<h3 id="holdout">holdout</h3>
 <p><strong>type</strong>: ```` </p>
-<p>D</p>
+<p>TODO what is this?</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="imports">imports</h2>
+<h3 id="imports">imports</h3>
 <p><strong>type</strong>: <code>array of strings</code> </p>
 <p>Imports python files from <code>modules</code> folder of the project and make their properly annotated contents to be available to be referred from YAML.</p>
 <p>Example:</p>
@@ -423,29 +826,29 @@ come directly inside layer definition.</p>
 </code></pre>
 
 <p>this will import <code>layers.py</code> and <code>preprocessors.py</code></p>
-<h2 id="inference_batch">inference_batch</h2>
-<p><strong>type</strong>: ```` </p>
-<p>D</p>
+<h3 id="inference_batch">inference_batch</h3>
+<p><strong>type</strong>: <code>integer</code> </p>
+<p>Size of batch during inferring process.</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="loss">loss</h2>
-<p><strong>type</strong>: ```` </p>
+<h3 id="loss">loss</h3>
+<p><strong>type</strong>: <code>string</code> </p>
 <p>Sets the loss name.</p>
 <p>Uses loss name detection mechanism to search for the built-in loss or for a custom function with the same name across project modules.</p>
 <p>Example:</p>
 <pre><code class="yaml">loss: binary_crossentropy
 </code></pre>
 
-<h2 id="lr">lr</h2>
-<p><strong>type</strong>: ```` </p>
-<p>D</p>
+<h3 id="lr">lr</h3>
+<p><strong>type</strong>: <code>float</code> </p>
+<p>Learning rate.</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="metrics">metrics</h2>
+<h3 id="metrics">metrics</h3>
 <p><strong>type</strong>: <code>array of strings</code> </p>
 <p>Array of metrics to track during the training process. Metric calculation results will be printed in the console and to <code>metrics</code> folder of the experiment.</p>
 <p>Uses metric name detection mechanism to search for the built-in metric or for a custom function with the same name across project modules.</p>
@@ -458,21 +861,22 @@ come directly inside layer definition.</p>
 
 </code></pre>
 
-<h2 id="num_seeds">num_seeds</h2>
-<p><strong>type</strong>: ```` </p>
-<p>D</p>
+<h3 id="num_seeds">num_seeds</h3>
+<p><strong>type</strong>: <code>integer</code> </p>
+<p>If set, training process (for all folds) will be executed <code>num_seeds</code> times, each time resetting the random seeds.
+Respective folders (like <code>metrics</code>) will obtain subfolders <code>0</code>, <code>1</code> etc... for each seed.</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="optimizer">optimizer</h2>
+<h3 id="optimizer">optimizer</h3>
 <p><strong>type</strong>: <code>string</code> </p>
 <p>Sets the optimizer.</p>
 <p>Example:</p>
 <pre><code class="yaml">optimizer: Adam
 </code></pre>
 
-<h2 id="primary_metric">primary_metric</h2>
+<h3 id="primary_metric">primary_metric</h3>
 <p><strong>type</strong>: <code>string</code> </p>
 <p>Metric to track during the training process. Metric calculation results will be printed in the console and to <code>metrics</code> folder of the experiment.</p>
 <p>Besides tracking, this metric will be also used by default for metric-related activity, in example, for decision regarding which epoch results are better.</p>
@@ -482,7 +886,7 @@ come directly inside layer definition.</p>
 <pre><code class="yaml">primary_metric: val_macro_f1
 </code></pre>
 
-<h2 id="primary_metric_mode">primary_metric_mode</h2>
+<h3 id="primary_metric_mode">primary_metric_mode</h3>
 <p><strong>type</strong>: <code>enum: auto,min,max</code> </p>
 <p><strong>default</strong>: <code>auto</code> </p>
 <p>In case of a usage of a primary metrics calculation results across several instances (i.e. batches), this will be a mathematical operation to find a final result.</p>
@@ -490,35 +894,49 @@ come directly inside layer definition.</p>
 <pre><code class="yaml">primary_metric_mode: max
 </code></pre>
 
-<h2 id="preprocessing">preprocessing</h2>
-<p><strong>type</strong>: ```` </p>
-<p>D</p>
+<h3 id="preprocessing">preprocessing</h3>
+<p><strong>type</strong>: <code>complex</code> </p>
+<p>Preprocessors are the custom python functions that transform dataset. </p>
+<p>Such functions should be defined in python files that are in a project scope (<code>modules</code>) folder and imported.
+Preprocessing functions should be also marked with <code>@preprocessing.dataset_preprocessor</code> annotation.</p>
+<p><code>preprocessing</code> instruction then can be used to chain preprocessors as needed for this particular experiment, and even cache the result on disk to be reused between experiments.</p>
+<p><a href="#preprocessors">Preprocessors</a> contain some of the preprocessor utility instructions.</p>
+<p>Example:</p>
+<pre><code class="yaml">preprocessing: 
+  - binarize_target: 
+  - tokenize:  
+  - tokens_to_indexes:
+       maxLen: 160
+  - disk-cache: 
+</code></pre>
+
+<h3 id="random_state">random_state</h3>
+<p><strong>type</strong>: <code>integer</code> </p>
+<p>The seed of randomness.</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="random_state">random_state</h2>
-<p><strong>type</strong>: ```` </p>
-<p>D</p>
+<h3 id="stages">stages</h3>
+<p><strong>type</strong>: <code>complex</code> </p>
+<p>Sets up training process stages. 
+Contains YAML array of stages, where each stage is a complex type that may contain properties described in the <a href="#stage-properties">Stage properties</a> section.  </p>
+<p>Example:</p>
+<pre><code class="yaml">stages:
+  - epochs: 6
+  - epochs: 6
+    lr: 0.01
+
+</code></pre>
+
+<h3 id="stratified">stratified</h3>
+<p><strong>type</strong>: <code>boolean</code> </p>
+<p>Whether to use stratified strategy when splitting training set.</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="stages">stages</h2>
-<p><strong>type</strong>: ```` </p>
-<p>D</p>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="stratified">stratified</h2>
-<p><strong>type</strong>: ```` </p>
-<p>D</p>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="testsplit">testSplit</h2>
+<h3 id="testsplit">testSplit</h3>
 <p><strong>type</strong>: <code>float 0-1</code> </p>
 <p>Splits the train set into two parts, using one part for train and leaving the other untouched for a later testing.
 The split is shuffled.</p>
@@ -526,36 +944,50 @@ The split is shuffled.</p>
 <pre><code class="yaml">testSplit: 0.4
 </code></pre>
 
-<h2 id="testsplitseed">testSplitSeed</h2>
+<h3 id="testsplitseed">testSplitSeed</h3>
 <p><strong>type</strong>: ```` </p>
-<p>D</p>
+<p>Seed of randomness for the split of the training set.</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="testtimeaugmentation">testTimeAugmentation</h2>
-<p><strong>type</strong>: ```` </p>
-<p>D</p>
+<h3 id="testtimeaugmentation">testTimeAugmentation</h3>
+<p><strong>type</strong>: <code>string</code> </p>
+<p>Test-time augumentation function name.
+Function must be reachable on project scope, accept and return numpy array.</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="transforms">transforms</h2>
-<p><strong>type</strong>: ```` </p>
-<p>D</p>
+<h3 id="transforms">transforms</h3>
+<p><strong>type</strong>: <code>complex</code> </p>
+<p>TODO is that true? 
+If yes, why are we having pure IMGAUG in generic called just "transforms", maybe we should call it "imageTransforms" or simply "imgaug". 
+Btw, isnt it crossing with preprocessing, maybe we should just create "imgaug" preprocessor with all these goodies inside? </p>
+<p><a href="https://imgaug.readthedocs.io">IMGAUG</a> transformations sequence.
+Each object is mapped on <a href="https://imgaug.readthedocs.io">IMGAUG</a> transformer by name, parameters are mapped too.</p>
+<p>Example:</p>
+<pre><code class="yaml">transforms:
+ Fliplr: 0.5
+ Affine:
+   translate_px:
+     x:
+       - -50
+       - +50
+     y:
+       - -50
+       - +50
+</code></pre>
+
+<h3 id="validationsplit">validationSplit</h3>
+<p><strong>type</strong>: <code>float</code> </p>
+<p>Float 0-1 setting up how much of the training set (after holdout is already cut off) to allocate for validation.</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="validationsplit">validationSplit</h2>
-<p><strong>type</strong>: ```` </p>
-<p>D</p>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h1 id="callback-types">Callback types</h1>
-<h2 id="earlystopping">EarlyStopping</h2>
+<h2 id="callback-types">Callback types</h2>
+<h3 id="earlystopping">EarlyStopping</h3>
 <p>Stop training when a monitored metric has stopped improving.</p>
 <p>Properties:</p>
 <ul>
@@ -572,7 +1004,7 @@ The split is shuffled.</p>
     verbose: 1
 </code></pre>
 
-<h2 id="reducelronplateau">ReduceLROnPlateau</h2>
+<h3 id="reducelronplateau">ReduceLROnPlateau</h3>
 <p>Reduce learning rate when a metric has stopped improving.</p>
 <p>Properties:</p>
 <ul>
@@ -594,7 +1026,7 @@ The split is shuffled.</p>
     verbose: 1
 </code></pre>
 
-<h2 id="cycliclr">CyclicLR</h2>
+<h3 id="cycliclr">CyclicLR</h3>
 <p>Cycles learning rate across epochs.</p>
 <p>Functionally, it defines the cycle amplitude (max_lr - base_lr).
 The lr at any cycle is the sum of base_lr
@@ -618,7 +1050,7 @@ scaling function.</p>
     mode: triangular
 </code></pre>
 
-<h2 id="lrvariator">LRVariator</h2>
+<h3 id="lrvariator">LRVariator</h3>
 <p>Changes learning rate between two values</p>
 <p>Properties:</p>
 <ul>
@@ -640,7 +1072,7 @@ also it is unclear how to number of steps is being set up.
 Example</p>
 <pre><code class="yaml"></code></pre>
 
-<h2 id="tensorboard">TensorBoard</h2>
+<h3 id="tensorboard">TensorBoard</h3>
 <p>This callback writes a log for TensorBoard, which allows you to visualize dynamic graphs of your training and test metrics, as well as activation histograms for the different layers in your model.</p>
 <p>Properties:</p>
 <ul>
@@ -665,8 +1097,8 @@ Example</p>
     update_freq: batch
 </code></pre>
 
-<h1 id="layer-types">Layer types</h1>
-<h2 id="input">Input</h2>
+<h2 id="layer-types">Layer types</h2>
+<h3 id="input">Input</h3>
 <p>TODO: description</p>
 <p>Properties:</p>
 <ul>
@@ -678,7 +1110,7 @@ Example</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="gaussiannoise">GaussianNoise</h2>
+<h3 id="gaussiannoise">GaussianNoise</h3>
 <p>Apply additive zero-centered Gaussian noise.</p>
 <p>Properties:</p>
 <ul>
@@ -690,13 +1122,14 @@ Example</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="dropout_1">Dropout</h2>
+<h3 id="dropout_1">Dropout</h3>
 <p>Applies Dropout to the input.</p>
 <p>Properties:</p>
 <ul>
 <li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
 <li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
 <li><strong>rate</strong> - float; float between 0 and 1. Fraction of the input units to drop.</li>
+<li><strong>seed</strong> - integer; integer to use as random seed</li>
 </ul>
 <p>Example:</p>
 <pre><code class="yaml">declarations:
@@ -704,7 +1137,7 @@ Example</p>
     - dropout: 0.5
 </code></pre>
 
-<h2 id="spatialdropout1d">SpatialDropout1D</h2>
+<h3 id="spatialdropout1d">SpatialDropout1D</h3>
 <p>Spatial 1D version of Dropout.</p>
 <p>This version performs the same function as Dropout, however it drops entire 1D feature maps instead of individual elements. If adjacent frames within feature maps are strongly correlated (as is normally the case in early convolution layers) then regular dropout will not regularize the activations and will otherwise just result in an effective learning rate decrease. In this case, SpatialDropout1D will help promote independence between feature maps and should be used instead.</p>
 <p>Properties:</p>
@@ -717,23 +1150,639 @@ Example</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="lstm">LSTM</h2>
+<h3 id="lstm">LSTM</h3>
 <p>Long Short-Term Memory layer</p>
 <p>Properties:</p>
 <ul>
 <li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
 <li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li><strong>units</strong> - Positive integer, dimensionality of the output space.</li>
-<li><strong>return_sequences</strong> - Boolean. Whether to return the last output in the output sequence, or the full sequence.</li>
-<li><strong>return_state</strong> - Boolean. Whether to return the last state in addition to the output. The returned elements of the states list are the hidden state and the cell state, respectively.</li>
-<li><strong>stateful</strong> - Boolean (default False). If True, the last state for each sample at index i in a batch will be used as initial state for the sample of index i in the following batch.</li>
+<li><strong>units</strong>: Positive integer, dimensionality of the output space.</li>
+<li><strong>activation</strong>: Activation function to use
+    (see <a href="https://keras.io/activations/">activations</a>).
+    Default: hyperbolic tangent (<code>tanh</code>).
+    If you pass <code>None</code>, no activation is applied
+    (ie. "linear" activation: <code>a(x) = x</code>).</li>
+<li><strong>recurrent_activation</strong>: Activation function to use
+    for the recurrent step
+    (see <a href="https://keras.io/activations/">activations</a>).
+    Default: hard sigmoid (<code>hard_sigmoid</code>).
+    If you pass <code>None</code>, no activation is applied
+    (ie. "linear" activation: <code>a(x) = x</code>).</li>
+<li><strong>use_bias</strong>: Boolean, whether the layer uses a bias vector.</li>
+<li><strong>kernel_initializer</strong>: Initializer for the <code>kernel</code> weights matrix,
+    used for the linear transformation of the inputs.
+    (see <a href="https://keras.io/initializers/">initializers</a>).</li>
+<li><strong>recurrent_initializer</strong>: Initializer for the <code>recurrent_kernel</code>
+    weights matrix,
+    used for the linear transformation of the recurrent state.
+    (see <a href="https://keras.io/initializers/">initializers</a>).</li>
+<li><strong>bias_initializer</strong>: Initializer for the bias vector
+    (see <a href="https://keras.io/initializers/">initializers</a>).</li>
+<li><strong>unit_forget_bias</strong>: Boolean.
+    If True, add 1 to the bias of the forget gate at initialization.
+    Setting it to true will also force <code>bias_initializer="zeros"</code>.
+    This is recommended in <a href="http://www.jmlr.org/proceedings/papers/v37/jozefowicz15.pdf">Jozefowicz et al. (2015)</a>.</li>
+<li><strong>kernel_regularizer</strong>: Regularizer function applied to
+    the <code>kernel</code> weights matrix
+    (see <a href="https://keras.io/regularizers/">regularizer</a>).</li>
+<li><strong>recurrent_regularizer</strong>: Regularizer function applied to
+    the <code>recurrent_kernel</code> weights matrix
+    (see <a href="https://keras.io/regularizers/">regularizer</a>).</li>
+<li><strong>bias_regularizer</strong>: Regularizer function applied to the bias vector
+    (see <a href="https://keras.io/regularizers/">regularizer</a>).</li>
+<li><strong>activity_regularizer</strong>: Regularizer function applied to
+    the output of the layer (its "activation").
+    (see <a href="https://keras.io/regularizers/">regularizer</a>).</li>
+<li><strong>kernel_constraint</strong>: Constraint function applied to
+    the <code>kernel</code> weights matrix
+    (see <a href="https://keras.io/constraints/">constraints</a>).</li>
+<li><strong>recurrent_constraint</strong>: Constraint function applied to
+    the <code>recurrent_kernel</code> weights matrix
+    (see <a href="https://keras.io/constraints/">constraints</a>).</li>
+<li><strong>bias_constraint</strong>: Constraint function applied to the bias vector
+    (see <a href="https://keras.io/constraints/">constraints</a>).</li>
+<li><strong>dropout</strong>: Float between 0 and 1.
+    Fraction of the units to drop for
+    the linear transformation of the inputs.</li>
+<li><strong>recurrent_dropout</strong>: Float between 0 and 1.
+    Fraction of the units to drop for
+    the linear transformation of the recurrent state.</li>
+<li><strong>implementation</strong>: Implementation mode, either 1 or 2.
+    Mode 1 will structure its operations as a larger number of
+    smaller dot products and additions, whereas mode 2 will
+    batch them into fewer, larger operations. These modes will
+    have different performance profiles on different hardware and
+    for different applications.</li>
+<li><strong>return_sequences</strong>: Boolean. Whether to return the last output
+    in the output sequence, or the full sequence.</li>
+<li><strong>return_state</strong>: Boolean. Whether to return the last state
+    in addition to the output. The returned elements of the
+    states list are the hidden state and the cell state, respectively.</li>
+<li><strong>go_backwards</strong>: Boolean (default False).
+    If True, process the input sequence backwards and return the
+    reversed sequence.</li>
+<li><strong>stateful</strong>: Boolean (default False). If True, the last state
+    for each sample at index i in a batch will be used as initial
+    state for the sample of index i in the following batch.</li>
+<li><strong>unroll</strong>: Boolean (default False).
+    If True, the network will be unrolled,
+    else a symbolic loop will be used.
+    Unrolling can speed-up a RNN,
+    although it tends to be more memory-intensive.
+    Unrolling is only suitable for short sequences.</li>
 </ul>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="globalmaxpool1d">GlobalMaxPool1D</h2>
-<p>D</p>
+<h3 id="globalmaxpool1d">GlobalMaxPool1D</h3>
+<p>Global max pooling operation for temporal data.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+<li><strong>data_format</strong> - A string, one of channels_last (default) or channels_first. The ordering of the dimensions in the inputs.  channels_last corresponds to inputs with shape  (batch, steps, features) while channels_first corresponds to inputs with shape  (batch, features, steps).</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="globalaveragepooling1d">GlobalAveragePooling1D</h3>
+<p>Global average pooling operation for temporal data.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+<li><strong>data_format</strong> - A string, one of channels_last (default) or channels_first. The ordering of the dimensions in the inputs.  channels_last corresponds to inputs with shape  (batch, steps, features) while channels_first corresponds to inputs with shape  (batch, features, steps).</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="batchnormalization">BatchNormalization</h3>
+<p>Batch normalization layer.</p>
+<p>Normalize the activations of the previous layer at each batch,
+i.e. applies a transformation that maintains the mean activation
+close to 0 and the activation standard deviation close to 1.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+<li><strong>axis</strong>: Integer, the axis that should be normalized
+    (typically the features axis).
+    For instance, after a <code>Conv2D</code> layer with
+    <code>data_format="channels_first"</code>,
+    set <code>axis=1</code> in <code>BatchNormalization</code>.</li>
+<li><strong>momentum</strong>: Momentum for the moving mean and the moving variance.</li>
+<li><strong>epsilon</strong>: Small float added to variance to avoid dividing by zero.</li>
+<li><strong>center</strong>: If True, add offset of <code>beta</code> to normalized tensor.
+    If False, <code>beta</code> is ignored.</li>
+<li><strong>scale</strong>: If True, multiply by <code>gamma</code>.
+    If False, <code>gamma</code> is not used.
+    When the next layer is linear (also e.g. <code>nn.relu</code>),
+    this can be disabled since the scaling
+    will be done by the next layer.</li>
+<li><strong>beta_initializer</strong>: Initializer for the beta weight.</li>
+<li><strong>gamma_initializer</strong>: Initializer for the gamma weight.</li>
+<li><strong>moving_mean_initializer</strong>: Initializer for the moving mean.</li>
+<li><strong>moving_variance_initializer</strong>: Initializer for the moving variance.</li>
+<li><strong>beta_regularizer</strong>: Optional regularizer for the beta weight.</li>
+<li><strong>gamma_regularizer</strong>: Optional regularizer for the gamma weight.</li>
+<li><strong>beta_constraint</strong>: Optional constraint for the beta weight.</li>
+<li><strong>gamma_constraint</strong>: Optional constraint for the gamma weight.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="concatenate">Concatenate</h3>
+<p>Layer that concatenates a list of inputs.</p>
+<p>Example:</p>
+<pre><code class="yaml">- concatenate: [lstmBranch,textFeatureBranch]
+</code></pre>
+
+<h3 id="add">Add</h3>
+<p>Layer that adds a list of inputs.</p>
+<p>It takes as input a list of tensors, all of the same shape, and returns a single tensor (also of the same shape).</p>
+<p>Example:</p>
+<pre><code class="yaml">- add: [first,second]
+</code></pre>
+
+<h3 id="substract">Substract</h3>
+<p>ayer that subtracts two inputs.</p>
+<p>It takes as input a list of tensors of size 2, both of the same shape, and returns a single tensor, (inputs[0] - inputs[1]), also of the same shape.</p>
+<p>Example:</p>
+<pre><code class="yaml">- substract: [first,second]
+</code></pre>
+
+<h3 id="mult">Mult</h3>
+<p>Layer that multiplies (element-wise) a list of inputs.</p>
+<p>It takes as input a list of tensors, all of the same shape, and returns a single tensor (also of the same shape).</p>
+<p>Example:</p>
+<pre><code class="yaml">- mult: [first,second]
+</code></pre>
+
+<h3 id="max">Max</h3>
+<p>Layer that computes the maximum (element-wise) a list of inputs.</p>
+<p>It takes as input a list of tensors, all of the same shape, and returns a single tensor (also of the same shape).</p>
+<p>Example:</p>
+<pre><code class="yaml">- max: [first,second]
+</code></pre>
+
+<h3 id="min">Min</h3>
+<p>Layer that computes the minimum (element-wise) a list of inputs.</p>
+<p>It takes as input a list of tensors, all of the same shape, and returns a single tensor (also of the same shape).</p>
+<p>Example:</p>
+<pre><code class="yaml">- min: [first,second]
+</code></pre>
+
+<h3 id="conv1d">Conv1D</h3>
+<p>1D convolution layer (e.g. temporal convolution).</p>
+<p>This layer creates a convolution kernel that is convolved with the layer input over a single spatial (or temporal) dimension to produce a tensor of outputs. If use_bias is True, a bias vector is created and added to the outputs. Finally, if activation is not None, it is applied to the outputs as well.</p>
+<p>When using this layer as the first layer in a model, provide an input_shape argument (tuple of integers or None, does not include the batch axis), e.g. input_shape=(10, 128) for time series sequences of 10 time steps with 128 features per step in data_format="channels_last", or (None, 128) for variable-length sequences with 128 features per step.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+<li><strong>filters</strong>: Integer, the dimensionality of the output space
+    (i.e. the number of output filters in the convolution).</li>
+<li><strong>kernel_size</strong>: An integer or tuple/list of a single integer,
+    specifying the length of the 1D convolution window.</li>
+<li><strong>strides</strong>: An integer or tuple/list of a single integer,
+    specifying the stride length of the convolution.
+    Specifying any stride value != 1 is incompatible with specifying
+    any <code>dilation_rate</code> value != 1.</li>
+<li><strong>padding</strong>: One of <code>"valid"</code>, <code>"causal"</code> or <code>"same"</code> (case-insensitive).
+    <code>"valid"</code> means "no padding".
+    <code>"same"</code> results in padding the input such that
+    the output has the same length as the original input.
+    <code>"causal"</code> results in causal (dilated) convolutions,
+    e.g. <code>output[t]</code> does not depend on <code>input[t + 1:]</code>.
+    A zero padding is used such that
+    the output has the same length as the original input.
+    Useful when modeling temporal data where the model
+    should not violate the temporal order. See
+    <a href="https://arxiv.org/abs/1609.03499">WaveNet: A Generative Model for Raw Audio, section 2.1</a>.</li>
+<li><strong>data_format</strong>: A string,
+    one of <code>"channels_last"</code> (default) or <code>"channels_first"</code>.
+    The ordering of the dimensions in the inputs.
+    <code>"channels_last"</code> corresponds to inputs with shape
+    <code>(batch, steps, channels)</code>
+    (default format for temporal data in Keras)
+    while <code>"channels_first"</code> corresponds to inputs
+    with shape <code>(batch, channels, steps)</code>.</li>
+<li><strong>dilation_rate</strong>: an integer or tuple/list of a single integer, specifying
+    the dilation rate to use for dilated convolution.
+    Currently, specifying any <code>dilation_rate</code> value != 1 is
+    incompatible with specifying any <code>strides</code> value != 1.</li>
+<li><strong>activation</strong>: Activation function to use
+    (see <a href="https://keras.io/activations/">activations</a>).
+    If you don't specify anything, no activation is applied
+    (ie. "linear" activation: <code>a(x) = x</code>).</li>
+<li><strong>use_bias</strong>: Boolean, whether the layer uses a bias vector.</li>
+<li><strong>kernel_initializer</strong>: Initializer for the <code>kernel</code> weights matrix
+    (see <a href="https://keras.io/initializers/">initializers</a>).</li>
+<li><strong>bias_initializer</strong>: Initializer for the bias vector
+    (see <a href="https://keras.io/initializers/">initializers</a>).</li>
+<li><strong>kernel_regularizer</strong>: Regularizer function applied to
+    the <code>kernel</code> weights matrix
+    (see <a href="https://keras.io/regularizers/">regularizer</a>).</li>
+<li><strong>bias_regularizer</strong>: Regularizer function applied to the bias vector
+    (see <a href="https://keras.io/regularizers/">regularizer</a>).</li>
+<li><strong>activity_regularizer</strong>: Regularizer function applied to
+    the output of the layer (its "activation").
+    (see <a href="https://keras.io/regularizers/">regularizer</a>).</li>
+<li><strong>kernel_constraint</strong>: Constraint function applied to the kernel matrix
+    (see <a href="https://keras.io/constraints/">constraints</a>).</li>
+<li><strong>bias_constraint</strong>: Constraint function applied to the bias vector
+    (see <a href="https://keras.io/constraints/">constraints</a>).</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="conv2d">Conv2D</h3>
+<p>2D convolution layer (e.g. spatial convolution over images).</p>
+<p>This layer creates a convolution kernel that is convolved with the layer input to produce a tensor of outputs. If use_bias is True, a bias vector is created and added to the outputs. Finally, if activation is not None, it is applied to the outputs as well.</p>
+<p>When using this layer as the first layer in a model, provide the keyword argument input_shape (tuple of integers, does not include the batch axis), e.g. input_shape=(128, 128, 3) for 128x128 RGB pictures in data_format="channels_last".</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+<li><strong>filters</strong>: Integer, the dimensionality of the output space
+    (i.e. the number of output filters in the convolution).</li>
+<li><strong>kernel_size</strong>: An integer or tuple/list of 2 integers, specifying the
+    height and width of the 2D convolution window.
+    Can be a single integer to specify the same value for
+    all spatial dimensions.</li>
+<li><strong>strides</strong>: An integer or tuple/list of 2 integers,
+    specifying the strides of the convolution
+    along the height and width.
+    Can be a single integer to specify the same value for
+    all spatial dimensions.
+    Specifying any stride value != 1 is incompatible with specifying
+    any <code>dilation_rate</code> value != 1.</li>
+<li><strong>padding</strong>: one of <code>"valid"</code> or <code>"same"</code> (case-insensitive).
+    Note that <code>"same"</code> is slightly inconsistent across backends with
+    <code>strides</code> != 1, as described
+    <a href="https://github.com/keras-team/keras/pull/9473#issuecomment-372166860">here</a></li>
+<li><strong>data_format</strong>: A string,
+    one of <code>"channels_last"</code> or <code>"channels_first"</code>.
+    The ordering of the dimensions in the inputs.
+    <code>"channels_last"</code> corresponds to inputs with shape
+    <code>(batch, height, width, channels)</code> while <code>"channels_first"</code>
+    corresponds to inputs with shape
+    <code>(batch, channels, height, width)</code>.
+    It defaults to the <code>image_data_format</code> value found in your
+    Keras config file at <code>~/.keras/keras.json</code>.
+    If you never set it, then it will be "channels_last".</li>
+<li><strong>dilation_rate</strong>: an integer or tuple/list of 2 integers, specifying
+    the dilation rate to use for dilated convolution.
+    Can be a single integer to specify the same value for
+    all spatial dimensions.
+    Currently, specifying any <code>dilation_rate</code> value != 1 is
+    incompatible with specifying any stride value != 1.</li>
+<li><strong>activation</strong>: Activation function to use
+    (see <a href="https://keras.io/activations/">activations</a>).
+    If you don't specify anything, no activation is applied
+    (ie. "linear" activation: <code>a(x) = x</code>).</li>
+<li><strong>use_bias</strong>: Boolean, whether the layer uses a bias vector.</li>
+<li><strong>kernel_initializer</strong>: Initializer for the <code>kernel</code> weights matrix
+    (see <a href="https://keras.io/initializers/">initializers</a>).</li>
+<li><strong>bias_initializer</strong>: Initializer for the bias vector
+    (see <a href="https://keras.io/initializers/">initializers</a>).</li>
+<li><strong>kernel_regularizer</strong>: Regularizer function applied to
+    the <code>kernel</code> weights matrix
+    (see <a href="https://keras.io/regularizers/">regularizer</a>).</li>
+<li><strong>bias_regularizer</strong>: Regularizer function applied to the bias vector
+    (see <a href="https://keras.io/regularizers/">regularizer</a>).</li>
+<li><strong>activity_regularizer</strong>: Regularizer function applied to
+    the output of the layer (its "activation").
+    (see <a href="https://keras.io/regularizers/">regularizer</a>).</li>
+<li><strong>kernel_constraint</strong>: Constraint function applied to the kernel matrix
+    (see <a href="https://keras.io/constraints/">constraints</a>).</li>
+<li><strong>bias_constraint</strong>: Constraint function applied to the bias vector
+    (see <a href="https://keras.io/constraints/">constraints</a>).</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="maxpool1d">MaxPool1D</h3>
+<p>Max pooling operation for temporal data.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+<li><strong>pool_size</strong>: Integer, size of the max pooling windows.</li>
+<li><strong>strides</strong>: Integer, or None. Factor by which to downscale.
+    E.g. 2 will halve the input.
+    If None, it will default to <code>pool_size</code>.</li>
+<li><strong>padding</strong>: One of <code>"valid"</code> or <code>"same"</code> (case-insensitive).</li>
+<li><strong>data_format</strong>: A string,
+    one of <code>channels_last</code> (default) or <code>channels_first</code>.
+    The ordering of the dimensions in the inputs.
+    <code>channels_last</code> corresponds to inputs with shape
+    <code>(batch, steps, features)</code> while <code>channels_first</code>
+    corresponds to inputs with shape
+    <code>(batch, features, steps)</code>.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="maxpool2d">MaxPool2D</h3>
+<p>Max pooling operation for spatial data.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+<li><strong>pool_size</strong>: integer or tuple of 2 integers,
+    factors by which to downscale (vertical, horizontal).
+    (2, 2) will halve the input in both spatial dimension.
+    If only one integer is specified, the same window length
+    will be used for both dimensions.</li>
+<li><strong>strides</strong>: Integer, tuple of 2 integers, or None.
+    Strides values.
+    If None, it will default to <code>pool_size</code>.</li>
+<li><strong>padding</strong>: One of <code>"valid"</code> or <code>"same"</code> (case-insensitive).</li>
+<li><strong>data_format</strong>: A string,
+    one of <code>channels_last</code> (default) or <code>channels_first</code>.
+    The ordering of the dimensions in the inputs.
+    <code>channels_last</code> corresponds to inputs with shape
+    <code>(batch, height, width, channels)</code> while <code>channels_first</code>
+    corresponds to inputs with shape
+    <code>(batch, channels, height, width)</code>.
+    It defaults to the <code>image_data_format</code> value found in your
+    Keras config file at <code>~/.keras/keras.json</code>.
+    If you never set it, then it will be "channels_last".</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="averagepooling1d">AveragePooling1D</h3>
+<p>Average pooling for temporal data.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+<li><strong>pool_size</strong>: Integer, size of the average pooling windows.</li>
+<li><strong>strides</strong>: Integer, or None. Factor by which to downscale.
+    E.g. 2 will halve the input.
+    If None, it will default to <code>pool_size</code>.</li>
+<li><strong>padding</strong>: One of <code>"valid"</code> or <code>"same"</code> (case-insensitive).</li>
+<li><strong>data_format</strong>: A string,
+    one of <code>channels_last</code> (default) or <code>channels_first</code>.
+    The ordering of the dimensions in the inputs.
+    <code>channels_last</code> corresponds to inputs with shape
+    <code>(batch, steps, features)</code> while <code>channels_first</code>
+    corresponds to inputs with shape
+    <code>(batch, features, steps)</code>.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="cudnnlstm">CuDNNLSTM</h3>
+<p>Fast LSTM implementation with <a href="https://developer.nvidia.com/cudnn">CuDNN</a>.</p>
+<p>Can only be run on GPU, with the TensorFlow backend.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+<li><strong>units</strong>: Positive integer, dimensionality of the output space.</li>
+<li><strong>kernel_initializer</strong>: Initializer for the <code>kernel</code> weights matrix,
+    used for the linear transformation of the inputs.
+    (see <a href="https://keras.io/initializers/">initializers</a>).</li>
+<li><strong>recurrent_initializer</strong>: Initializer for the <code>recurrent_kernel</code>
+    weights matrix,
+    used for the linear transformation of the recurrent state.
+    (see <a href="https://keras.io/initializers/">initializers</a>).</li>
+<li><strong>bias_initializer</strong>: Initializer for the bias vector
+    (see <a href="https://keras.io/initializers/">initializers</a>).</li>
+<li><strong>unit_forget_bias</strong>: Boolean.
+    If True, add 1 to the bias of the forget gate at initialization.
+    Setting it to true will also force <code>bias_initializer="zeros"</code>.
+    This is recommended in <a href="http://www.jmlr.org/proceedings/papers/v37/jozefowicz15.pdf">Jozefowicz et al. (2015)</a>.</li>
+<li><strong>kernel_regularizer</strong>: Regularizer function applied to
+    the <code>kernel</code> weights matrix
+    (see <a href="https://keras.io/regularizers/">regularizer</a>).</li>
+<li><strong>recurrent_regularizer</strong>: Regularizer function applied to
+    the <code>recurrent_kernel</code> weights matrix
+    (see <a href="https://keras.io/regularizers/">regularizer</a>).</li>
+<li><strong>bias_regularizer</strong>: Regularizer function applied to the bias vector
+    (see <a href="https://keras.io/regularizers/">regularizer</a>).</li>
+<li><strong>activity_regularizer</strong>: Regularizer function applied to
+    the output of the layer (its "activation").
+    (see <a href="https://keras.io/regularizers/">regularizer</a>).</li>
+<li><strong>kernel_constraint</strong>: Constraint function applied to
+    the <code>kernel</code> weights matrix
+    (see <a href="https://keras.io/constraints/">constraints</a>).</li>
+<li><strong>recurrent_constraint</strong>: Constraint function applied to
+    the <code>recurrent_kernel</code> weights matrix
+    (see <a href="https://keras.io/constraints/">constraints</a>).</li>
+<li><strong>bias_constraint</strong>: Constraint function applied to the bias vector
+    (see <a href="https://keras.io/constraints/">constraints</a>).</li>
+<li><strong>return_sequences</strong>: Boolean. Whether to return the last output.
+    in the output sequence, or the full sequence.</li>
+<li><strong>return_state</strong>: Boolean. Whether to return the last state
+    in addition to the output.</li>
+<li><strong>stateful</strong>: Boolean (default False). If True, the last state
+    for each sample at index i in a batch will be used as initial
+    state for the sample of index i in the following batch.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="dense">Dense</h3>
+<p>Regular densely-connected NN layer.</p>
+<p><code>Dense</code> implements the operation:
+<code>output = activation(dot(input, kernel) + bias)</code>
+where <code>activation</code> is the element-wise activation function
+passed as the <code>activation</code> argument, <code>kernel</code> is a weights matrix
+created by the layer, and <code>bias</code> is a bias vector created by the layer
+(only applicable if <code>use_bias</code> is <code>True</code>).</p>
+<p>Note: if the input to the layer has a rank greater than 2, then
+it is flattened prior to the initial dot product with <code>kernel</code>.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+<li><strong>units</strong>: Positive integer, dimensionality of the output space.</li>
+<li><strong>activation</strong>: Activation function to use
+    (see <a href="https://keras.io/activations/">activations</a>).
+    If you don't specify anything, no activation is applied
+    (ie. "linear" activation: <code>a(x) = x</code>).</li>
+<li><strong>use_bias</strong>: Boolean, whether the layer uses a bias vector.</li>
+<li><strong>kernel_initializer</strong>: Initializer for the <code>kernel</code> weights matrix
+    (see <a href="https://keras.io/initializers/">initializers</a>).</li>
+<li><strong>bias_initializer</strong>: Initializer for the bias vector
+    (see <a href="https://keras.io/initializers/">initializers</a>).</li>
+<li><strong>kernel_regularizer</strong>: Regularizer function applied to
+    the <code>kernel</code> weights matrix
+    (see <a href="https://keras.io/regularizers/">regularizer</a>).</li>
+<li><strong>bias_regularizer</strong>: Regularizer function applied to the bias vector
+    (see <a href="https://keras.io/regularizers/">regularizer</a>).</li>
+<li><strong>activity_regularizer</strong>: Regularizer function applied to
+    the output of the layer (its "activation").
+    (see <a href="https://keras.io/regularizers/">regularizer</a>).</li>
+<li><strong>kernel_constraint</strong>: Constraint function applied to
+    the <code>kernel</code> weights matrix
+    (see <a href="https://keras.io/constraints/">constraints</a>).</li>
+<li><strong>bias_constraint</strong>: Constraint function applied to the bias vector
+    (see <a href="https://keras.io/constraints/">constraints</a>).</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="flatten">Flatten</h3>
+<p>Flattens the input. Does not affect the batch size.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+<li><strong>data_format</strong>: A string,
+    one of <code>channels_last</code> (default) or <code>channels_first</code>.
+    The ordering of the dimensions in the inputs.
+    The purpose of this argument is to preserve weight
+    ordering when switching a model from one data format
+    to another.
+    <code>channels_last</code> corresponds to inputs with shape
+    <code>(batch, ..., channels)</code> while <code>channels_first</code> corresponds to
+    inputs with shape <code>(batch, channels, ...)</code>.
+    It defaults to the <code>image_data_format</code> value found in your
+    Keras config file at <code>~/.keras/keras.json</code>.
+    If you never set it, then it will be "channels_last".</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="bidirectional">Bidirectional</h3>
+<p>Bidirectional wrapper for RNNs.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+<li><strong>layer</strong>: <code>Recurrent</code> instance.</li>
+<li><strong>merge_mode</strong>: Mode by which outputs of the
+    forward and backward RNNs will be combined.
+    One of {'sum', 'mul', 'concat', 'ave', None}.
+    If None, the outputs will not be combined,
+    they will be returned as a list.</li>
+<li><strong>weights</strong>: Initial weights to load in the Bidirectional model</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h2 id="utility-layers">Utility layers</h2>
+<h3 id="split">split</h3>
+<p>Splits current flow into several ones.
+Each child is a separate flow with an input equal to the input of the split operation.</p>
+<p>Number of outputs is equal to a number of children.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="split-concat">split-concat</h3>
+<p>Splits current flow into several ones.
+Each child is a separate flow with an input equal to the input of the split operation.</p>
+<p>Output is a concatenation of child flows.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">- split-concat:
+         - word_indexes_embedding:  [ embeddings/glove.840B.300d.txt ]
+         - word_indexes_embedding:  [ embeddings/paragram_300_sl999.txt ]
+         - word_indexes_embedding:  [ embeddings/wiki-news-300d-1M.vec]
+- lstm2: [128]
+</code></pre>
+
+<h3 id="split-concatenate">split-concatenate</h3>
+<p>Splits current flow into several ones.
+Each child is a separate flow with an input equal to the input of the split operation.</p>
+<p>Output is a concatenation of child flows (equal to the usage of <a href="#concatenate">Concatenate</a> layer).</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">- split-concat:
+         - word_indexes_embedding:  [ embeddings/glove.840B.300d.txt ]
+         - word_indexes_embedding:  [ embeddings/paragram_300_sl999.txt ]
+         - word_indexes_embedding:  [ embeddings/wiki-news-300d-1M.vec]
+- lstm2: [128]
+</code></pre>
+
+<h3 id="split-add">split-add</h3>
+<p>Splits current flow into several ones.
+Each child is a separate flow with an input equal to the input of the split operation.</p>
+<p>Output is an addition of child flows (equal to the usage of <a href="#add">Add</a> layer).</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="split-substract">split-substract</h3>
+<p>Splits current flow into several ones.
+Each child is a separate flow with an input equal to the input of the split operation.</p>
+<p>Output is a substraction of child flows (equal to the usage of <a href="#substract">Substract</a> layer).</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="split-mult">split-mult</h3>
+<p>Splits current flow into several ones.
+Each child is a separate flow with an input equal to the input of the split operation.</p>
+<p>Output is a multiplication of child flows (equal to the usage of <a href="#mult">Mult</a> layer).</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="split-min">split-min</h3>
+<p>Splits current flow into several ones.
+Each child is a separate flow with an input equal to the input of the split operation.</p>
+<p>Output is a minimum of child flows (equal to the usage of <a href="#min">Min</a> layer).</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="split-max">split-max</h3>
+<p>Splits current flow into several ones.
+Each child is a separate flow with an input equal to the input of the split operation.</p>
+<p>Output is a maximum of child flows (equal to the usage of <a href="#max">Max</a> layer).</p>
 <p>Properties:</p>
 <ul>
 <li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
@@ -744,8 +1793,68 @@ Example</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="globalaveragepooling1d">GlobalAveragePooling1D</h2>
-<p>D</p>
+<h3 id="split-dot">split-dot</h3>
+<p>Splits current flow into several ones.
+Each child is a separate flow with an input equal to the input of the split operation.</p>
+<p>Output is a dot product of child flows.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="split-dot-normalize">split-dot-normalize</h3>
+<p>Splits current flow into several ones.
+Each child is a separate flow with an input equal to the input of the split operation.</p>
+<p>Output is a dot product with normalization of child flows.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="seq">seq</h3>
+<p>Executes child elements as a sequence of operations, one by one.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="input_1">input</h3>
+<p>Overrides current input with what is listed.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">input: [firstRef, secondRef]
+</code></pre>
+
+<h3 id="pass">pass</h3>
+<p>Stops execution of this branch and drops its output.
+TODO check that description is correct.</p>
+<p>Properties:</p>
+<ul>
+<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
+<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="transform-concat">transform-concat</h3>
+<p>TODO</p>
 <p>Properties:</p>
 <ul>
 <li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
@@ -756,8 +1865,8 @@ Example</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="batchnormalization">BatchNormalization</h2>
-<p>D</p>
+<h3 id="transform-add">transform-add</h3>
+<p>TODO</p>
 <p>Properties:</p>
 <ul>
 <li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
@@ -768,524 +1877,167 @@ Example</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="concatenate">Concatenate</h2>
-<p>D</p>
+<h2 id="stage-properties">Stage properties</h2>
+<h3 id="loss_1">loss</h3>
+<p><strong>type</strong>: <code>string</code> </p>
+<p>Sets the loss name.</p>
+<p>Uses loss name detection mechanism to search for the built-in loss or for a custom function with the same name across project modules.</p>
+<p>Example:</p>
+<pre><code class="yaml">loss: binary_crossentropy
+</code></pre>
+
+<h3 id="lr_1">lr</h3>
+<p><strong>type</strong>: <code>float</code> </p>
+<p>Learning rate.</p>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="initial_weights">initial_weights</h3>
+<p><strong>type</strong>: <code>string</code> </p>
+<p>Fil path to load stage NN initial weights from.</p>
+<p>Example:</p>
+<pre><code class="yaml">initial_weights: /initial.weights
+</code></pre>
+
+<h3 id="epochs">epochs</h3>
+<p><strong>type</strong>: <code>integer</code> </p>
+<p>Number of epochs to train for this stage.</p>
+<p>Example:</p>
+<pre><code class="yaml">
+</code></pre>
+
+<h3 id="unfreeze_encoder">unfreeze_encoder</h3>
+<p>TODO is this for generic?</p>
+<h3 id="callbacks_1">callbacks</h3>
+<p><strong>type</strong>: <code>array of callback instances</code> </p>
+<p>Sets up training-time callbacks. See individual <a href="#callback-types">callback descriptions</a>.</p>
+<p>Example:</p>
+<pre><code class="yaml">callbacks:
+  EarlyStopping:
+    patience: 100
+    monitor: val_binary_accuracy
+    verbose: 1
+  ReduceLROnPlateau:
+    patience: 16
+    factor: 0.5
+    monitor: val_binary_accuracy
+    mode: auto
+    cooldown: 5
+    verbose: 1
+</code></pre>
+
+<h3 id="extra_callbacks">extra_callbacks</h3>
+<p>TODO</p>
+<h2 id="preprocessors">Preprocessors</h2>
+<p><strong>type</strong>: <code>complex</code> </p>
+<p>Preprocessors are the custom python functions that transform dataset. </p>
+<p>Such functions should be defined in python files that are in a project scope (<code>modules</code>) folder and imported.
+Preprocessing functions should be also marked with <code>@preprocessing.dataset_preprocessor</code> annotation.</p>
+<p><code>Preprocessors</code> instruction then can be used to chain preprocessors as needed for this particular experiment, and even cache the result on disk to be reused between experiments.</p>
+<p>Example:</p>
+<pre><code class="yaml">preprocessing: 
+  - binarize_target: 
+  - tokenize:  
+  - tokens_to_indexes:
+       maxLen: 160
+  - disk-cache: 
+</code></pre>
+
+<h3 id="cache">cache</h3>
+<p>Caches its input.
+TODO what for?</p>
 <p>Properties:</p>
 <ul>
 <li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
 <li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
 </ul>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="add">Add</h2>
-<p>D</p>
+<h3 id="disk-cache">disk-cache</h3>
+<p>Caches its input on disk, including the full flow. 
+On subsequent launches if nothing was changed in the flow, takes its output from disk instead of re-launching previous operations. </p>
 <p>Properties:</p>
 <ul>
 <li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
 <li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
 </ul>
+<p>Example:</p>
+<pre><code class="yaml">preprocessing: 
+  - binarize_target: 
+  - tokenize:  
+  - tokens_to_indexes:
+       maxLen: 160
+  - disk-cache: 
+</code></pre>
+
+<h3 id="split-preprocessor">split-preprocessor</h3>
+<p>An analogue of <a href="#split">split</a> for preprocessor operations.</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="substract">Substract</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
+<h3 id="split-concat-preprocessor">split-concat-preprocessor</h3>
+<p>An analogue of <a href="#split-concat">split-concat</a> for preprocessor operations.</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="mult">Mult</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
+<h3 id="seq-preprocessor">seq-preprocessor</h3>
+<p>An analogue of <a href="#seq-concat">seq</a> for preprocessor operations.</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h2 id="max">Max</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
+<h3 id="augmentation_1">augmentation</h3>
+<p>Preprocessor instruction, which body only runs during the training and is skipped when the inferring.</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
+              
+            </div>
+          </div>
+          <footer>
+  
 
-<h2 id="min">Min</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
+  <hr/>
 
-<h2 id="conv1d">Conv1D</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
 
-<h2 id="conv2d">Conv2D</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="maxpool1d">MaxPool1D</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="maxpool2d">MaxPool2D</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="averagepooling1d">AveragePooling1D</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="cudnnlstm">CuDNNLSTM</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="dense">Dense</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="flatten">Flatten</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="bidirectional">Bidirectional</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h1 id="utility-layers">Utility layers</h1>
-<h2 id="split">split</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="split-concat">split-concat</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="split-concatenate">split-concatenate</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="split-add">split-add</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="split-substract">split-substract</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="split-mult">split-mult</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="split-min">split-min</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="split-max">split-max</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="split-dot">split-dot</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="split-dot-normalize">split-dot-normalize</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="seq">seq</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="input_1">input</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="cache">cache</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="disk-cache">disk-cache</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="split-preprocessor">split-preprocessor</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="split-concat-preprocessor">split-concat-preprocessor</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="seq-preprocessor">seq-preprocessor</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="augmentation_1">augmentation</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="pass">pass</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="transform-concat">transform-concat</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h2 id="transform-add">transform-add</h2>
-<p>D</p>
-<p>Properties:</p>
-<ul>
-<li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
-<li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
-<li>**** - </li>
-</ul>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h1 id="stage-properties">Stage properties</h1>
-<h2 id="loss_1">loss</h2>
-<h2 id="initial_weights">initial_weights</h2>
-<h2 id="epochs">epochs</h2>
-<h2 id="unfreeze_encoder">unfreeze_encoder</h2>
-<h2 id="lr_1">lr</h2>
-<h2 id="callbacks_1">callbacks</h2>
-<h2 id="extra_callbacks">extra_callbacks</h2>
-<h2 id="preprocessors">Preprocessors</h2></div>
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
         </div>
+      </div>
 
-        <footer class="col-md-12">
-            <hr>
-            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
-        </footer>
-        <script>
-            var base_url = "../..",
-                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
-        </script>
-        <script src="../../js/base.js" defer></script>
-        <script src="../../search/main.js" defer></script>
+    </section>
 
-        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
-            </div>
-            <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
-                <form role="form">
-                    <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
-                    </div>
-                </form>
-                <div id="mkdocs-search-results"></div>
-            </div>
-            <div class="modal-footer">
-            </div>
-        </div>
-    </div>
-</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
-            </div>
-            <div class="modal-body">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th style="width: 20%;">Keys</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td class="help shortcut"><kbd>?</kbd></td>
-                    <td>Open this help</td>
-                  </tr>
-                  <tr>
-                    <td class="next shortcut"><kbd>n</kbd></td>
-                    <td>Next page</td>
-                  </tr>
-                  <tr>
-                    <td class="prev shortcut"><kbd>p</kbd></td>
-                    <td>Previous page</td>
-                  </tr>
-                  <tr>
-                    <td class="search shortcut"><kbd>s</kbd></td>
-                    <td>Search</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="modal-footer">
-            </div>
-        </div>
-    </div>
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../../segmentation/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
 </div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script type="text/javascript" defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(false);
+        };
+    </script>
 
-    </body>
+</body>
 </html>
