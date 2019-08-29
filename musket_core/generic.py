@@ -2,12 +2,14 @@ import musket_core.generic_config as generic
 import musket_core.datasets as datasets
 import musket_core.configloader as configloader
 import musket_core.utils as utils
+import musket_core.context as context
 import numpy as np
 import keras
 import musket_core.net_declaration as net
 import musket_core.quasymodels as qm
 import os
 import tqdm
+import sys
 
 
 
@@ -184,6 +186,21 @@ class GenericPipeline(generic.GenericTaskConfig):
 
 
 def parse(path,extra=None) -> GenericPipeline:
+    extraImports=[]
+    if isinstance(path, str):
+        if not os.path.exists(path):
+            pth=context.get_current_project_path()
+            if os.path.exists(pth+"/experiments/"+path+"/config.yaml"):
+                path=pth+"/experiments/"+path+"/config.yaml"
+            if os.path.exists(pth+"/common.yaml") and extra is None:
+                extra=pth+"/common.yaml"
+            if os.path.exists(pth+"/modules"):
+                for m in os.listdir(pth+"/modules"):
+                    sys.path.insert(0, pth+"/modules")
+                    if ".py" in m:
+                        extraImports.append(m[0:m.index(".py")])   
     cfg = configloader.parse("generic", path,extra)
     cfg.path = path    
+    for e in extraImports:
+        cfg.imports.append(e)
     return cfg

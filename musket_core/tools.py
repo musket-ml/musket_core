@@ -445,7 +445,8 @@ class Launch(yaml.YAMLObject):
                 exp.gpus=self.gpusPerNet
                 exp.onlyReports=self.onlyReports
                 exp.launchTasks=self.launchTasks
-                exp.time = self.time
+                if hasattr(self, "time"):
+                    exp.time = self.time
 
                 if hasattr(self, "folds"):
                     exp.folds=self.folds
