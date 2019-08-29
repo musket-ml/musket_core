@@ -1,14 +1,22 @@
 # Segmentation Training Pipeline
 
-## Motivation
+## Reasons to use Segmentation Pipeline
+Segmentation Pipeline was developed with a focus of enabling to make fast and 
+simply-declared experiments, which can be easily stored, 
+reproduced and compared to each other.
 
-Idea for this project came from my first attempts to participate in Kaggle competitions. My programmers heart was painfully damaged by looking on my own code as well as on other people kernels. Code was highly repetitive, suffering from numerous reimplementations of same or almost same things through the kernels, model/experiment configuration was often mixed with models code, in other words - from programmer perspective it all looked horrible. 
+Segmentation Pipeline has a lot of common parts with [Generic pipeline](../generic/index.md), but it is easier to define an architecture of the network.
+Also there are a number of segmentation-specific features.
 
-So I decided to extract repetitive things into framework that will work at least for me and will follow these statements: 
- - experiment configurations should be cleanly separated from model definitions;
- - experiment configuration files should be easy to compare and should fully describe experiment that is being performed except for the dataset;
-- common blocks like an architecture, callbacks, storing model metrics, visualizing network predictions, should be written once and be a part of common library
+The pipeline provides the following features:
 
+* Allows to describe experiments in a compact and expressive way
+* Provides a way to store and compare experiments in order to methodically find the best deap learning solution
+* Easy to share experiments and their results to work in a team
+* Experiment configurations are separated from model definitions
+* It is easy to configure network architecture
+* Provides great flexibility and extensibility via support of custom substances
+* Common blocks like an architecture, callbacks, model metrics, predictions vizualizers and others should be written once and be a part of a common library
 
 ## Installation
 
@@ -48,6 +56,7 @@ classes: 1 #we have just one class (mask or no mask)
 activation: sigmoid #one class means that our last layer should use sigmoid activation
 encoder_weights: pascal_voc #we would like to start from network pretrained on pascal_voc dataset
 shape: [320, 320, 3] #This is our desired input image and mask size, everything will be resized to fit.
+testSplit: 0.4
 optimizer: Adam #Adam optimizer is a good default choice
 batch: 16 #Our batch size will be 16
 metrics: #We would like to track some metrics
@@ -73,7 +82,10 @@ stages:
 
 So as you see, we have decomposed our task in two parts, *code that actually trains the model* and *experiment configuration*,
 which determines the model and how it should be trained from the set of predefined building blocks.
- 
+
+Moreover, the whole fitting and prediction process can be launched with built-in script, 
+the only really required python code is dataset definition to let the system know, which data to load.
+
 What does this code actually do behind the scenes?
 
 -  it splits your data into 5 folds, and trains one model per fold;
@@ -82,6 +94,68 @@ What does this code actually do behind the scenes?
 -  All your folds are initialized from fixed default seed, so different experiments will use exactly the same train/validation splits
 
 Also, datasets can be specified directly in your config file in more generic way, see examples ds_1, ds_2, ds_3 in "segmentation_training_pipeline/examples/people" folder. In this case you can just call cfg.fit() without providing dataset programmatically.
+
+Lets discover what's going on in more details:
+
+#### General train properties
+
+Lets take our standard example and check the following set of instructions:
+
+```yaml
+testSplit: 0.4
+optimizer: Adam #Adam optimizer is a good default choice
+batch: 16 #Our batch size will be 16
+metrics: #We would like to track some metrics
+  - binary_accuracy 
+  - iou
+primary_metric: val_binary_accuracy #and the most interesting metric is val_binary_accuracy
+loss: binary_crossentropy #We use simple binary_crossentropy loss
+```
+
+[testSplit](reference.md#testsplit) Splits the train set into two parts, using one part for train and leaving the other untouched for a later testing.
+The split is shuffled. 
+
+[optimizer](reference.md#optimizer) sets the optimizer.
+
+[batch](reference.md#batch) sets the training batch size.
+
+[metrics](reference.md#metrics) sets the metrics to track during the training process. Metric calculation results will be printed in the console and to `metrics` folder of the experiment.
+
+[primary_metric](reference.md#primary_metric) Metric to track during the training process. Metric calculation results will be printed in the console and to `metrics` folder of the experiment.
+Besides tracking, this metric will be also used by default for metric-related activity, in example, for decision regarding which epoch results are better.
+
+[loss](reference.md#loss) sets the loss function. if your network has multiple outputs, you also may pass a list of loss functions (one per output) 
+
+There are many more properties to check in [Reference of root properties](reference.md#pipeline-root-properties)
+
+#### Defining architecture
+
+Lets take a look at the following part of our example:
+
+```yaml
+backbone: mobilenetv2 #let's select classifier backbone for our network 
+architecture: DeepLabV3 #let's select segmentation architecture that we would like to use
+classes: 1 #we have just one class (mask or no mask)
+activation: sigmoid #one class means that our last layer should use sigmoid activation
+encoder_weights: pascal_voc #we would like to start from network pretrained on pascal_voc dataset
+shape: [320, 320, 3] #This is our desired input image and mask size, everything will be resized to fit.
+```
+
+The following three properties are required to set:
+
+[backbone](reference.md#backbone) This property configures encoder that should be used. Different kinds of `FPN`, `PSP`, `Linkenet`, `UNet` and more are supported.
+
+[architecture](reference.md#architecture) This property configures decoder architecture that should be used. `net`, `Linknet`, `PSP`, `FPN` and more are supported.
+
+[classes](reference.md#classes) sets the number of classes that should be used. 
+
+The following ones are optional, but commonly used:
+
+[activation](reference.md#activation) sets activation function that should be used in last layer.
+
+[shape](reference.md#shape) set the desired shape of the input picture and mask, in the form heigth, width, number of channels. Input will be resized to fit.
+
+[encoder_weights](reference.md#encoder_weights) configures initial weights of the encoder.
 
 #### Image and Mask Augmentations
 

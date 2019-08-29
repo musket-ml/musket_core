@@ -318,7 +318,7 @@
                 <ul>
                     <li class="toctree-l1"><a class="reference internal" href="../segmentation/">User guide</a>
     <ul>
-    <li class="toctree-l2"><a class="reference internal" href="../segmentation/#motivation">Motivation</a>
+    <li class="toctree-l2"><a class="reference internal" href="../segmentation/#reasons-to-use-segmentation-pipeline">Reasons to use Segmentation Pipeline</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="../segmentation/#installation">Installation</a>
     </li>
@@ -326,6 +326,10 @@
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="../segmentation/#training-a-model">Training a model</a>
         <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../segmentation/#general-train-properties">General train properties</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../segmentation/#defining-architecture">Defining architecture</a>
+    </li>
     <li class="toctree-l4"><a class="reference internal" href="../segmentation/#image-and-mask-augmentations">Image and Mask Augmentations</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="../segmentation/#freezing-and-unfreezing-encoder">Freezing and Unfreezing encoder</a>
@@ -521,7 +525,7 @@
                 <ul class="current">
                     <li class="toctree-l1 current"><a class="reference internal current" href="./">User guide</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#motivation">Motivation</a>
+    <li class="toctree-l2"><a class="reference internal" href="#reasons-to-use-classification-pipeline">Reasons to use Classification Pipeline</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a>
     </li>
@@ -529,6 +533,10 @@
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#training-a-model">Training a model</a>
         <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#general-train-properties">General train properties</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#defining-architecture">Defining architecture</a>
+    </li>
     <li class="toctree-l4"><a class="reference internal" href="#image-augmentations">Image Augmentations</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#freezingunfreezing-encoder">Freezing/Unfreezing encoder</a>
@@ -745,13 +753,22 @@
             <div class="section">
               
                 <h1 id="classification-training-pipeline">Classification training pipeline</h1>
-<p>My puny attempt to build reusable training pipeline for image classification</p>
-<h2 id="motivation">Motivation</h2>
-<p>Idea for this project came from my first attempts to participate in Kaggle competitions. My programmers heart was painfully damaged by looking on my own code as well as on other people kernels. Code was highly repetitive, suffering from numerous reimplementations of same or almost same things through the kernels, model/experiment configuration was often mixed with models code, in other words - from programmer perspective it all looked horrible. </p>
-<p>So I decided to extract repetitive things into framework that will work at least for me and will follow these statements: 
- - experiment configurations should be cleanly separated from model definitions;
- - experiment configuration files should be easy to compare and should fully describe experiment that is being performed except for the dataset;
-- common blocks like an architecture, callbacks, storing model metrics, visualizing network predictions, should be written once and be a part of common library</p>
+<h2 id="reasons-to-use-classification-pipeline">Reasons to use Classification Pipeline</h2>
+<p>Classification Pipeline was developed with a focus of enabling to make fast and 
+simply-declared experiments, which can be easily stored, 
+reproduced and compared to each other.</p>
+<p>Classification Pipeline has a lot of common parts with <a href="../generic/">Generic pipeline</a>, but it is easier to define an architecture of the network.
+Also there are a number of classification-specific features.</p>
+<p>The pipeline provides the following features:</p>
+<ul>
+<li>Allows to describe experiments in a compact and expressive way</li>
+<li>Provides a way to store and compare experiments in order to methodically find the best deap learning solution</li>
+<li>Easy to share experiments and their results to work in a team</li>
+<li>Experiment configurations are separated from model definitions</li>
+<li>It is easy to configure network architecture</li>
+<li>Provides great flexibility and extensibility via support of custom substances</li>
+<li>Common blocks like an architecture, callbacks, model metrics, predictions vizualizers and others should be written once and be a part of a common library</li>
+</ul>
 <h2 id="installation">Installation</h2>
 <p>At this moment library requires the latest version of imgaug which has not been published yet to pip, so installation requires
 execution of following two commands </p>
@@ -805,6 +822,7 @@ classes: 28 #define the number of classes
 activation: sigmoid #as we have multilabel classification, the activation for last layer is sigmoid
 weights: imagenet #we would like to start from network pretrained on imagenet dataset
 shape: [224, 224, 3] #our desired input image size, everything will be resized to fit
+testSplit: 0.4
 optimizer: Adam #Adam optimizer is a good default choice
 batch: 16 #our batch size will be 16
 lr: 0.005
@@ -841,6 +859,43 @@ which determines the model and how it should be trained from the set of predefin
    be stored in the folders just near your <code>config.yaml</code>;</li>
 <li>All your folds are initialized from fixed default seed, so different experiments will use exactly the same train/validation splits.</li>
 </ul>
+<h4 id="general-train-properties">General train properties</h4>
+<p>Lets take our standard example and check the following set of instructions:</p>
+<pre><code class="yaml">testSplit: 0.4
+optimizer: Adam #Adam optimizer is a good default choice
+batch: 16 #Our batch size will be 16
+metrics: #We would like to track some metrics
+  - binary_accuracy 
+  - iou
+primary_metric: val_binary_accuracy #and the most interesting metric is val_binary_accuracy
+loss: binary_crossentropy #We use simple binary_crossentropy loss
+</code></pre>
+
+<p><a href="reference/#testsplit">testSplit</a> Splits the train set into two parts, using one part for train and leaving the other untouched for a later testing.
+The split is shuffled. </p>
+<p><a href="reference/#optimizer">optimizer</a> sets the optimizer.</p>
+<p><a href="reference/#batch">batch</a> sets the training batch size.</p>
+<p><a href="reference/#metrics">metrics</a> sets the metrics to track during the training process. Metric calculation results will be printed in the console and to <code>metrics</code> folder of the experiment.</p>
+<p><a href="reference/#primary_metric">primary_metric</a> Metric to track during the training process. Metric calculation results will be printed in the console and to <code>metrics</code> folder of the experiment.
+Besides tracking, this metric will be also used by default for metric-related activity, in example, for decision regarding which epoch results are better.</p>
+<p><a href="reference/#loss">loss</a> sets the loss function. if your network has multiple outputs, you also may pass a list of loss functions (one per output) </p>
+<p>There are many more properties to check in <a href="reference/#pipeline-root-properties">Reference of root properties</a></p>
+<h4 id="defining-architecture">Defining architecture</h4>
+<p>Lets take a look at the following part of our example:</p>
+<pre><code class="yaml">architecture: DenseNet201 #let's select segmentation architecture that we would like to use
+classes: 28 #we have just one class (mask or no mask)
+activation: sigmoid #one class means that our last layer should use sigmoid activation
+weights: imagenet
+shape: [224, 224, 3] #This is our desired input image and mask size, everything will be resized to fit.
+</code></pre>
+
+<p>The following three properties are required to set:</p>
+<p><a href="reference/#architecture">architecture</a> This property configures architecture that should be used. <code>net</code>, <code>Linknet</code>, <code>PSP</code>, <code>FPN</code> and more are supported.</p>
+<p><a href="reference/#classes">classes</a> sets the number of classes that should be used. </p>
+<p>The following ones are optional, but commonly used:</p>
+<p><a href="reference/#activation">activation</a> sets activation function that should be used in last layer.</p>
+<p><a href="reference/#shape">shape</a> set the desired shape of the input picture and mask, in the form heigth, width, number of channels. Input will be resized to fit.</p>
+<p><a href="reference/#weights">weights</a> configures initial weights of the encoder.</p>
 <h4 id="image-augmentations">Image Augmentations</h4>
 <p>Framework uses awesome <a href="https://github.com/aleju/imgaug">imgaug</a> library for augmentation, so you only need to configure your augmentation process in declarative way like in the following example:</p>
 <pre><code class="yaml">augmentation:  
