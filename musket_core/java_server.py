@@ -1,10 +1,13 @@
 from py4j.clientserver import ClientServer, JavaParameters, PythonParameters,JavaGateway,GatewayParameters,CallbackServerParameters
-from musket_core import projects
+from musket_core import projects, tools, parralel
 import yaml
 import io
-from musket_core import tools
 import sys
-from musket_core import parralel
+
+from kaggle.api.kaggle_api_extended import KaggleApi
+from kaggle.api_client import ApiClient
+
+import json
 
 class DataSetProxy:
     def __init__(self,ds:projects.WrappedDataSet,p):
@@ -59,6 +62,8 @@ class Project(projects.Project):
     class Java:
         implements = ["com.onpositive.musket_core.IProject"]
 
+def convert_ds(ds):
+    return {"ref": ds.ref, "url": ds.url}
 
 class Server(projects.Workspace):
 
@@ -82,7 +87,20 @@ class Server(projects.Workspace):
             return results
         except:
             parralel.Error()
-      
+
+    def getDatasets(self, search, mine):
+        api = KaggleApi(ApiClient())
+
+        api.authenticate()
+
+        return json.JSONEncoder().encode([convert_ds(item) for item in api.dataset_list(search=search, mine=mine)])
+
+    def downloadDataset(self, id, dest):
+        api = KaggleApi(ApiClient())
+
+        api.authenticate()
+
+        api.dataset_download_files(id, dest, quiet=False, unzip=True)
 
     class Java:
         implements = ["com.onpositive.musket_core.IServer"]
