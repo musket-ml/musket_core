@@ -12,9 +12,17 @@ class AnsembleModel:
         rm=res[0]
         for r in range(1,len(self.models)):
             rm=rm+res[r];
-        if isinstance(rm, list):
-            return [x/float(len(self.models)) for x in rm]    
-        return rm/float(len(self.models));
+        return self.avarage(rm)
+
+    def avarage(self, x):
+        if isinstance(x, list):
+            return [self.avarage(y) for y in x]
+        if isinstance(x,tuple):
+            result = tuple([self.avarage(y) for y in x])
+            return result
+        if isinstance(x,dict):
+            return x
+        return x / float(len(self.models))
 
 
 class TestTimeAugModel:
