@@ -82,7 +82,7 @@ batch: 512
 ### classes
 **type**: `integer` 
 
-Number of classes that should be segmented.
+Number of classes that should be used.
 
 Example:
 ```yaml

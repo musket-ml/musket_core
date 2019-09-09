@@ -1,17 +1,19 @@
 # Generic pipeline
 ## Reasons to use Generic Pipeline
 
-TODO: add more text from a general promo here
-
-Generic Pipeline was developed with a focus of enabling to make fast and simply-declared experiments, which can be easily stored, reproduced and compared to each other.
+Generic Pipeline was developed with a focus of enabling to make fast and 
+simply-declared experiments, which can be easily stored, 
+reproduced and compared to each other.
   
 It provides the following features:
 
 * Allows to describe experiments in a compact and expressive way
 * Provides a way to store and compare experiments in order to methodically find the best deap learning solution
 * Easy to share experiments and their results to work in a team
+* Experiment configurations are separated from model definitions
 * Allows to define custom neural networks in a declarative style, by building it from blocks
 * Provides great flexibility and extensibility via support of custom substances
+* Common blocks like an architecture, callbacks, model metrics, predictions vizualizers and others should be written once and be a part of a common library
 
 All experiments are declared in YAML dialect with lots of defaults, allowing to describe an initial experiment in several lines and then set more details if needed.
 
