@@ -322,7 +322,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         self._reporter=None
         self.testTimeAugmentation=None
         self.stratified=False
-        self.needsSessionForPrediction=False
+        self.needsSessionForPrediction=True
         self.compressPredictionsAsInts=True
         self.preprocessing=None
         self.verbose = 1

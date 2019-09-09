@@ -188,7 +188,7 @@ class GenericPipeline(generic.GenericTaskConfig):
 def parse(path,extra=None) -> GenericPipeline:
     extraImports=[]
     if isinstance(path, str):
-        if not os.path.exists(path):
+        if not os.path.exists(path) or os.path.isdir(path):
             pth=context.get_current_project_path()
             if os.path.exists(pth+"/experiments/"+path+"/config.yaml"):
                 path=pth+"/experiments/"+path+"/config.yaml"
