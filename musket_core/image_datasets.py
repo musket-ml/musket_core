@@ -632,25 +632,241 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
     
     def __init__(self,imagePath,csvPath,imColumn):
         super().__init__(imagePath)
+        self.imColumn=imColumn
         self.data=pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath))
-        
-        if not imColumn in self.data.columns:
-            for c in self.data.columns:
-                if imColumn in c:
-                    self.data[c].values
-                    
-        else: 
-            self.imageIds=sorted(list(set(self.data[imColumn].values)))
+        for m in self.data.columns:
+            parts=m.split("_")
+            ind=0
+            for col in parts:                
+                if not col in self.data.columns:
+                    try:
+                        vl=[x[ind] for x in self.data[m].str.split("_")]
+                        self.data.insert(0,col,value=vl)
+                    except:
+                        pass    
+                ind=ind+1
+        self.imageIds=sorted(list(set(self.get_values(imColumn))))                            
     
     def get_values(self,col):
-        if col in self.data.columns:
-            return self.data[col]
-        for m in self.data.columns: 
-            pass
+        return self.data[col]
+            
     def __len__(self):
         return len(self.imageIds)
     
+    def get_all_about(self,item):
+        return self.data[self.data[self.imColumn]==item]
+    
     def __getitem__(self, item)->PredictionItem:
-        return self.get_image(self.imageIds[item])  
+        raise ValueError()
+
+def mask2rle_relative(img, width, height):
+    rle = []
+    lastColor = 0;
+    currentPixel = 0;
+    runStart = -1;
+    runLength = 0;
+
+    for x in range(width):
+        for y in range(height):
+            currentColor = img[x][y]
+            if currentColor != lastColor:
+                if currentColor == 255:
+                    runStart = currentPixel;
+                    runLength = 1;
+                else:
+                    rle.append(str(runStart));
+                    rle.append(str(runLength));
+                    runStart = -1;
+                    runLength = 0;
+                    currentPixel = 0;
+            elif runStart > -1:
+                runLength += 1
+            lastColor = currentColor;
+            currentPixel+=1;
+
+    return " ".join(rle)
+
+def rle2mask_relative(rle, shape):
+    width=shape[0]
+    height=shape[1]
+    mask= np.zeros(width* height)
+    array = np.asarray([int(x) for x in rle.split()])
+    starts = array[0::2]
+    lengths = array[1::2]
+
+    current_position = 0
+    for index, start in enumerate(starts):
+        current_position += start
+        mask[current_position:current_position+lengths[index]] = 255
+        current_position += lengths[index]
+
+    return mask.reshape(width, height)
+
+def rle_encode(img):
+    '''
+    img: numpy array, 1 - mask, 0 - background
+    Returns run length as string formated
+    '''
+    pixels = img.flatten()
+    pixels = np.concatenate([[0], pixels, [0]])
+    runs = np.where(pixels[1:] != pixels[:-1])[0] + 1
+    runs[1::2] -= runs[::2]
+    return ' '.join(str(x) for x in runs)
+ 
+def rle_decode(mask_rle, shape):
+    '''
+    mask_rle: run-length as string formated (start length)
+    shape: (height,width) of array to return 
+    Returns numpy array, 1 - mask, 0 - background
+
+    '''
+    s = mask_rle.split()
+    starts, lengths = [np.asarray(x, dtype=int) for x in (s[0:][::2], s[1:][::2])]
+    starts -= 1
+    ends = starts + lengths
+    img = np.zeros(shape[0]*shape[1], dtype=np.uint8)
+    for lo, hi in zip(starts, ends):
+        img[lo:hi] = 1
+    return img.reshape(shape)
+    
+
+class BinarySegmentationDataSet(CSVReferencedDataSet):    
+    
+    def __init__(self,imagePath,csvPath,imColumn,rleColumn=None,maskShape=None,rMask=True,isRel=False):   
+        super().__init__(imagePath,csvPath,imColumn)
+        self.rleColumn=rleColumn
+        self.maskShape=maskShape
+        self.rMask=rMask
+        self.rle_decode=rle_decode
+        if isRel:
+            self.rle_decode=rle2mask_relative
         
+    def get_target(self,item):    
+        imageId=self.imageIds[item]
+        vl = self.get_all_about(imageId)
+        rleString = vl[self.rleColumn].values[0]
+        if isinstance(rleString, str):
+            if rleString.strip() != "-1":
+                return 1
+        return 0    
+    
+    
+    def get_mask(self, image,imShape):
+        prediction = None
+        vl = self.get_all_about(image)
+        rleString = vl[self.rleColumn].values[0]
+        if isinstance(rleString, str):
+            if rleString.strip() != "-1":
+                shape = (imShape[0], imShape[1])
+                if self.maskShape is not None:
+                    shape = self.maskShape
+                if self.rMask:
+                    prediction = self.rle_decode(rleString, (shape[1],shape[0]))
+                else:
+                    prediction = self.rle_decode(rleString, shape)
+                
+                prediction=np.rot90(prediction)
+                prediction=np.flipud(prediction)
+        if prediction is None:
+            prediction = np.zeros((imShape[0], imShape[1], 1), dtype=np.bool)
+        return prediction
+    
+    def __getitem__(self, item)->PredictionItem:
+        imageId=self.imageIds[item]
+        image=self.get_image(imageId)
+        prediction = self.get_mask(imageId,image.shape)
+        return PredictionItem(imageId,image,prediction)
+     
+
+class MultiClassSegmentationDataSet(BinarySegmentationDataSet):    
+    
+    def __init__(self,imagePath,csvPath,imColumn,rleColumn,clazzColumn,maskShape=None,rMask=True,isRel=False):   
+        super().__init__(imagePath,csvPath,imColumn,rleColumn,maskShape,rMask,isRel)
+        self.clazzColumn=clazzColumn    
+        self.classes=sorted(list(set(self.data[clazzColumn].values)))
+        self.class2Num={}
+        num=0
+        for c in self.classes:
+            self.class2Num[c]=num
+            num=num+1    
         
+    def get_target(self,item):    
+        imageId=self.imageIds[item]
+        vl = self.get_all_about(imageId)
+        for i in range(len(vl)):
+            rleString = vl[self.rleColumn].values[i]
+            if isinstance(rleString, str):
+                if rleString.strip() != "-1":
+                    return 1
+        return 0    
+    
+    
+    def get_mask(self, image,imShape):
+        prediction = np.zeros((imShape[0], imShape[1], len(self.classes)), dtype=np.bool)
+        vl = self.get_all_about(image)
+        rle=vl[self.rleColumn].values
+        classes=vl[self.clazzColumn].values
+        for i in range(len(vl)):
+            rleString = rle[i]
+            clazz=classes[i]
+            if isinstance(rleString, str):
+                if rleString.strip() != "-1":
+                    shape = (imShape[0], imShape[1])
+                    if self.maskShape is not None:
+                        shape = self.maskShape
+                    if self.rMask:     
+                        lp = self.rle_decode(rleString, (shape[1],shape[0]))
+                        
+                    else:
+                        lp = self.rle_decode(rleString, shape)
+                    lp=np.rot90(lp)
+                    lp=np.flipud(lp)        
+                    prediction[:,:,self.class2Num[clazz]]=lp        
+        return prediction
+    
+    def __getitem__(self, item)->PredictionItem:
+        imageId=self.imageIds[item]
+        image=self.get_image(imageId)
+        prediction = self.get_mask(imageId,image.shape)
+        return PredictionItem(imageId,image,prediction)
+
+class ClassificationDataSet(CSVReferencedDataSet): 
+    
+    def __init__(self,imagePath,csvPath,imColumn,clazzColumn,nothingAsClazz=False,multipleClasses=False):   
+        super().__init__(imagePath,csvPath,imColumn)
+        self.clazzColumn=clazzColumn    
+        self.classes=sorted(list(set(self.data[clazzColumn].values)))
+        self.nothingAsClazz=nothingAsClazz
+        self.class2Num={}
+        self.multipleClasses=multipleClasses
+        
+        num=0
+        for c in self.classes:
+            self.class2Num[c]=num
+            num=num+1
+            
+    def get_target(self,item):    
+        imageId=self.imageIds[item]
+        vl = self.get_all_about(imageId)        
+        if self.nothingAsClazz:
+            result=np.zeros((len(self.classes)+1),dtype=np.bool)
+        else:
+            result=np.zeros((len(self.classes)),dtype=np.bool)
+                
+        for i in range(len(vl)):
+            clazz = vl[self.clazzColumn].values[i]
+            if self.multipleClasses:
+                for x in clazz.split(" "):
+                    result[self.class2Num[x]]=1
+            else:    
+                result[self.class2Num[clazz]]=1
+        if self.nothingAsClazz:
+            if result.sum()==0:
+                result[len(result)-1]=1    
+        return result        
+            
+    def __getitem__(self, item)->PredictionItem:
+        imageId=self.imageIds[item]
+        image=self.get_image(imageId)
+        prediction = self.get_target(item)
+        return PredictionItem(imageId,image,prediction)          

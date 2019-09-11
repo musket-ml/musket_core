@@ -4,6 +4,7 @@ import imageio
 import sys
 import numpy as np
 import imgaug
+from imgaug.augmentables.segmaps import SegmentationMapOnImage
 
 @dataset_visualizer
 @visualize_as_text
@@ -23,6 +24,7 @@ def image_visializer(p:PredictionItem):
     imageio.imwrite(path,p.x)    
     return path
 
+
 @dataset_visualizer
 @visualize_as_image
 def image_with_mask_visializer(p:PredictionItem):
@@ -31,8 +33,10 @@ def image_with_mask_visializer(p:PredictionItem):
     if os.path.exists(path):
         return path
     arr=np.copy(p.x)
-    res=imgaug.SegmentationMapOnImage(p.y, p.y.shape).draw_on_image(arr)    
-    imageio.imwrite(path,res)    
+    res=imgaug.SegmentationMapsOnImage(p.y, p.y.shape).draw()
+    for i in res:
+        arr[np.mean(i,axis=2)!=0]=i[np.mean(i,axis=2)!=0]
+    imageio.imwrite(path,arr)    
     return path
 
 @dataset_visualizer
@@ -43,11 +47,12 @@ def image_with_mask_and_prediction_visializer(p:PredictionItem):
     if os.path.exists(path):
         return path
     arr=np.copy(p.x)
-    res=imgaug.SegmentationMapOnImage(p.y, p.y.shape).draw_on_image(arr)    
+    imgaug.SegmentationMapOnImage(p.y, p.y.shape).draw_on_image(arr)    
     
     arr1=np.copy(p.x)
-    res1=imgaug.SegmentationMapOnImage(p.prediction, p.prediction.shape).draw_on_image(arr1)
+    for i in imgaug.SegmentationMapOnImage(p.prediction, p.prediction.shape).draw(arr1):
+        arr1[i!=0]=i
     
-    imgs_comb = np.hstack([res,res1])
+    imgs_comb = np.hstack([arr,arr1])
     imageio.imwrite(path,imgs_comb)    
     return path

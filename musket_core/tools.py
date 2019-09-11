@@ -484,6 +484,9 @@ class WrappedDS(SubDataSet):
 
     def item(self,num):
         return self._visualizer[num]
+    
+    def id(self,num):
+        return self[num].id
 
     def __getitem__(self, item):
         it = super().__getitem__(item)
