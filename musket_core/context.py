@@ -37,4 +37,7 @@ def get_current_project_path():
         context.projectPath=_find_path();
     return context.projectPath
 
-
+def get_current_project_data_path():
+    if not hasattr(context,"projectPath"):
+        context.projectPath=_find_path();
+    return os.path.join(context.projectPath,"data")

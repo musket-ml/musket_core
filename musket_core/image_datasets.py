@@ -1,12 +1,14 @@
 import imageio
 import cv2 as cv
-
+import pandas as pd
 from musket_core import datasources as datasources, dsconfig as dsconfig
-from musket_core.datasets import PredictionItem, ImageKFoldedDataSet, DataSetLoader, NullTerminatable
+from musket_core.datasets import PredictionItem, ImageKFoldedDataSet, DataSetLoader, NullTerminatable,DataSet
+from musket_core import context
 import os
 import  numpy as np
 import random
 import scipy
+
 import imgaug
 
 class NegativeDataSet:
@@ -586,3 +588,69 @@ class NoChangeDataSetImageClassificationImage(ImageKFoldedDataSet):
                         yield x,y,r
                     else: yield x,y
         return NullTerminatable(),NullTerminatable(),r
+    
+    
+class AbstractImagePathDataSet(DataSet):
+    
+    def __init__(self,imagePath):
+        self.images={}
+        if isinstance(imagePath, list): 
+            for v in imagePath:
+                self.addPath(v)
+        else: 
+            self.addPath(imagePath)
+        self.dim=3 
+
+    def addPath(self, imagePath):
+        p0 = os.path.join(context.get_current_project_data_path(), imagePath)
+        if not os.path.exists(p0):
+            p0 = imagePath
+        ld0 = os.listdir(p0)
+        for x in ld0:
+            fp = os.path.join(p0, x)
+            self.images[x] = fp
+            self.images[x[:-4]] = fp
+        
+    
+    def get_image(self,im_id):
+        im=imageio.imread(self.images[im_id])
+        if len(im.shape)!=3:
+            im=np.expand_dims(im, -1)
+        if im.shape[2]!=self.dim:
+            if self.dim==3:
+                im=np.concatenate([im,im,im],axis=2)
+            elif self.dim==1:         
+                im=np.mean(im,axis=2)
+            else:
+                raise ValueError("Unsupported conversion")    
+        return im 
+        
+    def __getitem__(self, item)->PredictionItem:
+        raise ValueError()
+    
+class CSVReferencedDataSet(AbstractImagePathDataSet):        
+    
+    def __init__(self,imagePath,csvPath,imColumn):
+        super().__init__(imagePath)
+        self.data=pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath))
+        
+        if not imColumn in self.data.columns:
+            for c in self.data.columns:
+                if imColumn in c:
+                    self.data[c].values
+                    
+        else: 
+            self.imageIds=sorted(list(set(self.data[imColumn].values)))
+    
+    def get_values(self,col):
+        if col in self.data.columns:
+            return self.data[col]
+        for m in self.data.columns: 
+            pass
+    def __len__(self):
+        return len(self.imageIds)
+    
+    def __getitem__(self, item)->PredictionItem:
+        return self.get_image(self.imageIds[item])  
+        
+        
