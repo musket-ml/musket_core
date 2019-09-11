@@ -91,6 +91,16 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="generic/#stages">Stages</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="generic/#balancing-your-data">Balancing your data</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="generic/#advanced-learning-rates">Advanced learning rates</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="generic/#dynamic-learning-rates">Dynamic learning rates</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="generic/#lr-finder">LR Finder</a>
+    </li>
+        </ul>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="generic/#preprocessors">Preprocessors</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="generic/#how-to-check-training-results">How to check training results</a>
@@ -279,19 +289,25 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="generic/reference/#stage-properties">Stage properties</a>
         <ul>
+    <li class="toctree-l3"><a class="reference internal" href="generic/reference/#callbacks_1">callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="generic/reference/#epochs">epochs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="generic/reference/#extra_callbacks">extra_callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="generic/reference/#freeze_encoder_1">freeze_encoder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="generic/reference/#initial_weights">initial_weights</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="generic/reference/#negatives">negatives</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="generic/reference/#loss_1">loss</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="generic/reference/#lr_1">lr</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="generic/reference/#initial_weights">initial_weights</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="generic/reference/#epochs">epochs</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="generic/reference/#unfreeze_encoder">unfreeze_encoder</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="generic/reference/#callbacks_1">callbacks</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="generic/reference/#extra_callbacks">extra_callbacks</a>
+    <li class="toctree-l3"><a class="reference internal" href="generic/reference/#validation_negatives">validation_negatives</a>
     </li>
         </ul>
     </li>
@@ -336,17 +352,11 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="segmentation/#custom-datasets">Custom datasets</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="segmentation/#balancing-your-data">Balancing your data</a>
-    </li>
     <li class="toctree-l4"><a class="reference internal" href="segmentation/#multistage-training">Multistage training</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="segmentation/#composite-losses">Composite losses</a>
+    <li class="toctree-l4"><a class="reference internal" href="segmentation/#balancing-your-data">Balancing your data</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="segmentation/#cyclical-learning-rates">Cyclical learning rates</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="segmentation/#lr-finder">LR Finder</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="segmentation/#background-augmenter">Background Augmenter</a>
+    <li class="toctree-l4"><a class="reference internal" href="segmentation/#advanced-learning-rates">Advanced learning rates</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="segmentation/#training-on-crops">Training on crops</a>
     </li>
@@ -486,19 +496,25 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="segmentation/reference/#stage-properties">Stage properties</a>
         <ul>
+    <li class="toctree-l3"><a class="reference internal" href="segmentation/reference/#callbacks_1">callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="segmentation/reference/#epochs">epochs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="segmentation/reference/#extra_callbacks">extra_callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="segmentation/reference/#freeze_encoder_1">freeze_encoder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="segmentation/reference/#initial_weights">initial_weights</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="segmentation/reference/#negatives">negatives</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="segmentation/reference/#loss_1">loss</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="segmentation/reference/#lr_1">lr</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="segmentation/reference/#initial_weights">initial_weights</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="segmentation/reference/#epochs">epochs</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="segmentation/reference/#unfreeze_encoder">unfreeze_encoder</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="segmentation/reference/#callbacks_1">callbacks</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="segmentation/reference/#extra_callbacks">extra_callbacks</a>
+    <li class="toctree-l3"><a class="reference internal" href="segmentation/reference/#validation_negatives">validation_negatives</a>
     </li>
         </ul>
     </li>
@@ -539,19 +555,15 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="classification/#image-augmentations">Image Augmentations</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="classification/#freezingunfreezing-encoder">Freezing/Unfreezing encoder</a>
+    <li class="toctree-l4"><a class="reference internal" href="classification/#freezing-and-unfreezing-encoder">Freezing and Unfreezing encoder</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="classification/#custom-datasets">Custom datasets</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="classification/#balancing-your-data">Balancing your data</a>
-    </li>
     <li class="toctree-l4"><a class="reference internal" href="classification/#multistage-training">Multistage training</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="classification/#composite-losses">Composite losses</a>
+    <li class="toctree-l4"><a class="reference internal" href="classification/#balancing-your-data">Balancing your data</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="classification/#cyclical-learning-rates">Cyclical learning rates</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="classification/#lr-finder">LR Finder</a>
+    <li class="toctree-l4"><a class="reference internal" href="classification/#advanced-learning-rates">Advanced learning rates</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="classification/#training-on-crops">Training on crops</a>
     </li>
@@ -681,19 +693,25 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="classification/reference/#stage-properties">Stage properties</a>
         <ul>
+    <li class="toctree-l3"><a class="reference internal" href="classification/reference/#callbacks_1">callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="classification/reference/#epochs">epochs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="classification/reference/#extra_callbacks">extra_callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="classification/reference/#freeze_encoder_1">freeze_encoder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="classification/reference/#initial_weights">initial_weights</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="classification/reference/#negatives">negatives</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="classification/reference/#loss_1">loss</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="classification/reference/#lr_1">lr</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="classification/reference/#initial_weights">initial_weights</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="classification/reference/#epochs">epochs</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="classification/reference/#unfreeze_encoder">unfreeze_encoder</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="classification/reference/#callbacks_1">callbacks</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="classification/reference/#extra_callbacks">extra_callbacks</a>
+    <li class="toctree-l3"><a class="reference internal" href="classification/reference/#validation_negatives">validation_negatives</a>
     </li>
         </ul>
     </li>
@@ -1016,5 +1034,5 @@ stages:
 
 <!--
 MkDocs version : 1.0.4
-Build Date UTC : 2019-08-29 00:22:18
+Build Date UTC : 2019-09-11 21:20:29
 -->
