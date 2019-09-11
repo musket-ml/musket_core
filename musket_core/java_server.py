@@ -3,6 +3,9 @@ from musket_core import projects, tools, parralel
 import yaml
 import io
 import sys
+import shutil
+import zipfile
+import os
 
 from kaggle.api.kaggle_api_extended import KaggleApi
 from kaggle.api_client import ApiClient
@@ -63,7 +66,7 @@ class Project(projects.Project):
         implements = ["com.onpositive.musket_core.IProject"]
 
 def convert_ds(ds):
-    return {"ref": ds.ref, "url": ds.url}
+    return {"ref": ds.ref, "size": (ds.size if hasattr(ds, "size") else "unknown")}
 
 class Server(projects.Workspace):
 
@@ -95,12 +98,39 @@ class Server(projects.Workspace):
 
         return json.JSONEncoder().encode([convert_ds(item) for item in api.dataset_list(search=search, mine=mine)])
 
+    def getCompetitions(self, search, mine):
+        api = KaggleApi(ApiClient())
+
+        api.authenticate()
+
+        return json.JSONEncoder().encode([convert_ds(item) for item in api.competitions_list("entered" if mine else "general", "all", "recentlyCreated", 1, search)])
+
     def downloadDataset(self, id, dest):
         api = KaggleApi(ApiClient())
 
         api.authenticate()
 
         api.dataset_download_files(id, dest, quiet=False, unzip=True)
+
+    def downloadCompetitionFiles(self, id, dest):
+        api = KaggleApi(ApiClient())
+
+        api.authenticate()
+
+        api.competition_download_files(id, dest, True, False)
+
+        for item in os.listdir(dest):
+            path = os.path.join(dest, item)
+
+            if zipfile.is_zipfile(path):
+                new_dir = path[0: path.rindex(".")]
+
+                with zipfile.ZipFile(path) as zip:
+                    zip.extractall(new_dir)
+
+                    print("removing: " + path)
+
+                    os.remove(path)
 
     class Java:
         implements = ["com.onpositive.musket_core.IServer"]
