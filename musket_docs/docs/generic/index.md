@@ -148,6 +148,12 @@ Besides tracking, this metric will be also used by default for metric-related ac
 
 [loss](reference.md#loss) sets the loss function. if your network has multiple outputs, you also may pass a list of loss functions (one per output) 
 
+Framework supports composing loss as a weighted sum of predefined loss functions. For example, following construction
+```yaml
+loss: binary_crossentropy+0.1*dice_loss
+```
+will result in loss function which is composed from `binary_crossentropy` and `dice_loss` functions.
+
 There are many more properties to check in [Reference of root properties](reference.md#pipeline-root-properties)
 
 ## Definining networks
@@ -403,9 +409,11 @@ The list of callbacks can be found [here](reference.md#callbacks)
 
 ## Stages
 
+Sometimes you need to split your training into several stages. You can easily do it by adding several stage entries
+in your experiment configuration file.
+
 [stages](reference.md#stages) instruction allows to set up stages of the train process, where for each stage it is possible to set some specific training options like the number of epochs, learning rate, loss, callbacks, etc.
 Full list of stage properties can be found [here](reference.md#stage-properties).
-
 
 ```yaml
 stages:
@@ -413,6 +421,115 @@ stages:
   - epochs: 100 #Let's go for 100 epochs
   - epochs: 100 #Let's go for 100 epochs
 ```
+
+```yaml
+stages:
+  - epochs: 6 #Train for 6 epochs
+    negatives: none #do not include negative examples in your training set 
+    validation_negatives: real #validation should contain all negative examples    
+
+  - lr: 0.0001 #let's use different starting learning rate
+    epochs: 6
+    negatives: real
+    validation_negatives: real
+
+  - loss: lovasz_loss #let's override loss function
+    lr: 0.00001
+    epochs: 6
+    initial_weights: ./fpn-resnext2/weights/best-0.1.weights #let's load weights from this file    
+```
+
+## Balancing your data
+
+One common case is the situation when part of your images does not contain any objects of interest, like in 
+[Airbus ship detection challenge](https://www.kaggle.com/c/airbus-ship-detection/overview). More over your data may
+be to heavily inbalanced, so you may want to rebalance it. Alternatively you may want to inject some additional
+images that do not contain objects of interest to decrease amount of false positives that will be produced by the framework.
+    
+These scenarios are supported by [negatives](reference.md#negatives) and 
+[validation_negatives](reference.md#validation_negatives) settings of training stage configuration,
+these settings accept following values:
+
+- none - exclude negative examples from the data
+- real - include all negative examples 
+- integer number(1 or 2 or anything), how many negative examples should be included per one positive example   
+
+```yaml
+stages:
+  - epochs: 6 #Train for 6 epochs
+    negatives: none #do not include negative examples in your training set 
+    validation_negatives: real #validation should contain all negative examples    
+
+  - lr: 0.0001 #let's use different starting learning rate
+    epochs: 6
+    negatives: real
+    validation_negatives: real
+
+  - loss: lovasz_loss #let's override loss function
+    lr: 0.00001
+    epochs: 6
+    initial_weights: ./fpn-resnext2/weights/best-0.1.weights #let's load weights from this file    
+```
+
+if you are using this setting your dataset class must support `isPositive` method which returns true for indexes
+which contain positive examples: 
+
+```python        
+    def isPositive(self, item):
+        pixels=self.ddd.get_group(self.ids[item])["EncodedPixels"]
+        for mask in pixels:
+            if isinstance(mask, str):
+                return True;
+        return False
+```        
+
+## Advanced learning rates
+### Dynamic learning rates
+
+![Example](https://github.com/bckenstler/CLR/blob/master/images/triangularDiag.png?raw=true)
+
+As told in [Cyclical learning rates for training neural networks](https://arxiv.org/abs/1506.01186) CLR policies can provide quicker converge for some neural network tasks and architectures. 
+
+![Example2](https://github.com/bckenstler/CLR/raw/master/images/cifar.png)
+
+We support them by adopting Brad Kenstler [CLR callback](https://github.com/bckenstler/CLR) for Keras.
+
+If you want to use them, just add [CyclicLR](reference.md#cycliclr) in your experiment configuration file as shown below: 
+
+```yaml
+callbacks:
+  EarlyStopping:
+    patience: 40
+    monitor: val_binary_accuracy
+    verbose: 1
+  CyclicLR:
+     base_lr: 0.0001
+     max_lr: 0.01
+     mode: triangular2
+     step_size: 300
+```
+
+There are also [ReduceLROnPlateau](reference.md#reducelronplateau) and [LRVariator](reference.md#lrvariator) options to modify learning rate on the fly.
+
+### LR Finder
+
+[Estimating optimal learning rate for your model](https://arxiv.org/abs/1506.01186) is an important thing, we support this by using slightly changed 
+version of [Pavel Surmenok - Keras LR Finder](https://github.com/surmenok/keras_lr_finder)
+
+```python
+cfg= segmentation.parse(people-1.yaml)
+ds=SimplePNGMaskDataSet("./train","./train_mask")
+finder=cfg.lr_find(ds,start_lr=0.00001,end_lr=1,epochs=5)
+finder.plot_loss(n_skip_beginning=20, n_skip_end=5)
+plt.show()
+finder.plot_loss_change(sma=20, n_skip_beginning=20, n_skip_end=5, y_lim=(-0.01, 0.01))
+plt.show()
+```
+will result in this couple of helpful images: 
+
+![image](https://camo.githubusercontent.com/b41aeaff00fb7b214b5eb2e5c151e7e353a7263e/68747470733a2f2f63646e2d696d616765732d312e6d656469756d2e636f6d2f6d61782f313630302f312a48566a5f344c57656d6a764f57762d63514f397939672e706e67)
+
+![image](https://camo.githubusercontent.com/834996d32bbd2edf7435c5e105b53a6b447ef083/68747470733a2f2f63646e2d696d616765732d312e6d656469756d2e636f6d2f6d61782f313630302f312a38376d4b715f586f6d59794a4532396c39314b3064772e706e67)
 
 ## [Preprocessors](reference.md#preprocessors)
 
