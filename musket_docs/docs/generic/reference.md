@@ -49,7 +49,7 @@ Each object is mapped on [IMGAUG](https://imgaug.readthedocs.io) transformer by 
 
 Example:
 ```yaml
-transforms:
+augmentation:
  Fliplr: 0.5
  Affine:
    translate_px:
@@ -60,6 +60,10 @@ transforms:
        - -50
        - +50
 ```
+
+In this example, `Fliplr` key is automatically mapped on [Fliplr agugmenter](https://imgaug.readthedocs.io/en/latest/source/api_augmenters_flip.html),
+their `0.5` parameter is mapped on the first `p` parameter of the augmenter.
+Named parameters are also mapped, in example `translate_px` key of `Affine` is mapped on `translate_px` parameter of [Affine augmenter](https://imgaug.readthedocs.io/en/latest/source/augmenters.html?highlight=affine#affine).
 
 ### batch
 
@@ -242,15 +246,19 @@ Example:
 
 ```
 ### freeze_encoder
-
+TODO isnt it for other pipelines?
 **type**: ``boolean`` 
 
 Whether to freeze encoder during the training process.
-TODO isnt it non-generic property?
 
 Example:
 ```yaml
+freeze_encoder: true
+stages:
+  - epochs: 10 #Let's go for 10 epochs with frozen encoder
 
+  - epochs: 100 #Now let's go for 100 epochs with trainable encoder
+    unfreeze_encoder: true  
 ```
 ### final_metrics
 
@@ -1535,6 +1543,98 @@ Example:
 
 ## Stage properties
 
+### callbacks
+**type**: ``array of callback instances`` 
+
+Sets up training-time callbacks. See individual [callback descriptions](#callback-types).
+
+Example:
+```yaml
+callbacks:
+  EarlyStopping:
+    patience: 100
+    monitor: val_binary_accuracy
+    verbose: 1
+  ReduceLROnPlateau:
+    patience: 16
+    factor: 0.5
+    monitor: val_binary_accuracy
+    mode: auto
+    cooldown: 5
+    verbose: 1
+```
+
+### epochs
+**type**: ``integer`` 
+
+Number of epochs to train for this stage.
+
+Example:
+```yaml
+
+```
+### extra_callbacks
+TODO
+
+### freeze_encoder
+TODO is this for generic?
+
+**type**: ``boolean`` 
+
+Whether to freeze encoder during the training process.
+
+Example:
+```yaml
+freeze_encoder: true
+stages:
+  - epochs: 10 #Let's go for 10 epochs with frozen encoder
+
+  - epochs: 100 #Now let's go for 100 epochs with trainable encoder
+    unfreeze_encoder: true  
+```
+
+### initial_weights
+**type**: ``string`` 
+
+Fil path to load stage NN initial weights from.
+
+Example:
+```yaml
+initial_weights: /initial.weights
+```
+### negatives
+
+**type**: `string or integer` 
+
+The support of binary data balancing for training set.
+
+Following values are acceptable:
+
+- none - exclude negative examples from the data
+- real - include all negative examples 
+- integer number(1 or 2 or anything), how many negative examples should be included per one positive example
+
+In order for the system to determine whether a particular example is positive or negative,
+the data set class defined by the [dataset](#dataset) property should have `isPositive` method declared 
+that accepts data set item and returns boolean.
+
+Example:
+```yaml
+stages:
+  - epochs: 6 #Train for 6 epochs
+    negatives: none #do not include negative examples in your training set 
+    validation_negatives: real #validation should contain all negative examples    
+
+  - lr: 0.0001 #let's use different starting learning rate
+    epochs: 6
+    negatives: real
+    validation_negatives: real
+
+  - loss: lovasz_loss #let's override loss function
+    lr: 0.00001
+    epochs: 6
+    initial_weights: ./fpn-resnext2/weights/best-0.1.weights #let's load weights from this file    
+```
 ### loss
 
 **type**: ``string`` 
@@ -1557,48 +1657,57 @@ Example:
 ```yaml
 
 ```
-### initial_weights
-**type**: ``string`` 
 
-Fil path to load stage NN initial weights from.
-
-Example:
-```yaml
-initial_weights: /initial.weights
-```
-### epochs
-**type**: ``integer`` 
-
-Number of epochs to train for this stage.
-
-Example:
-```yaml
-
-```
 ### unfreeze_encoder
 TODO is this for generic?
-### callbacks
-**type**: ``array of callback instances`` 
 
-Sets up training-time callbacks. See individual [callback descriptions](#callback-types).
+**type**: ``boolean`` 
+
+Whether to unfreeze encoder during the training process.
 
 Example:
 ```yaml
-callbacks:
-  EarlyStopping:
-    patience: 100
-    monitor: val_binary_accuracy
-    verbose: 1
-  ReduceLROnPlateau:
-    patience: 16
-    factor: 0.5
-    monitor: val_binary_accuracy
-    mode: auto
-    cooldown: 5
-    verbose: 1
+freeze_encoder: true
+stages:
+  - epochs: 10 #Let's go for 10 epochs with frozen encoder
+
+  - epochs: 100 #Now let's go for 100 epochs with trainable encoder
+    unfreeze_encoder: true  
 ```
-### extra_callbacks
-TODO
+
+### validation_negatives
+
+**type**: `string or integer` 
+
+The support of binary data balancing for validation set.
+
+Following values are acceptable:
+
+- none - exclude negative examples from the data
+- real - include all negative examples 
+- integer number(1 or 2 or anything), how many negative examples should be included per one positive example
+
+In order for the system to determine whether a particular example is positive or negative,
+the data set class defined by the [dataset](#dataset) property should have `isPositive` method declared 
+that accepts data set item and returns boolean.
+
+Example:
+```yaml
+stages:
+  - epochs: 6 #Train for 6 epochs
+    negatives: none #do not include negative examples in your training set 
+    validation_negatives: real #validation should contain all negative examples    
+
+  - lr: 0.0001 #let's use different starting learning rate
+    epochs: 6
+    negatives: real
+    validation_negatives: real
+
+  - loss: lovasz_loss #let's override loss function
+    lr: 0.00001
+    epochs: 6
+    initial_weights: ./fpn-resnext2/weights/best-0.1.weights #let's load weights from this file    
+```
 
 ## Preprocessors
 **type**: ``complex`` 

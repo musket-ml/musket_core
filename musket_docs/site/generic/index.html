@@ -91,6 +91,16 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#stages">Stages</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#balancing-your-data">Balancing your data</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#advanced-learning-rates">Advanced learning rates</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#dynamic-learning-rates">Dynamic learning rates</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#lr-finder">LR Finder</a>
+    </li>
+        </ul>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#preprocessors">Preprocessors</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#how-to-check-training-results">How to check training results</a>
@@ -279,19 +289,25 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="reference/#stage-properties">Stage properties</a>
         <ul>
+    <li class="toctree-l3"><a class="reference internal" href="reference/#callbacks_1">callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="reference/#epochs">epochs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="reference/#extra_callbacks">extra_callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="reference/#freeze_encoder_1">freeze_encoder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="reference/#initial_weights">initial_weights</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="reference/#negatives">negatives</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#loss_1">loss</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#lr_1">lr</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#initial_weights">initial_weights</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#epochs">epochs</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#unfreeze_encoder">unfreeze_encoder</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#callbacks_1">callbacks</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#extra_callbacks">extra_callbacks</a>
+    <li class="toctree-l3"><a class="reference internal" href="reference/#validation_negatives">validation_negatives</a>
     </li>
         </ul>
     </li>
@@ -336,17 +352,11 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="../segmentation/#custom-datasets">Custom datasets</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="../segmentation/#balancing-your-data">Balancing your data</a>
-    </li>
     <li class="toctree-l4"><a class="reference internal" href="../segmentation/#multistage-training">Multistage training</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="../segmentation/#composite-losses">Composite losses</a>
+    <li class="toctree-l4"><a class="reference internal" href="../segmentation/#balancing-your-data">Balancing your data</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="../segmentation/#cyclical-learning-rates">Cyclical learning rates</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="../segmentation/#lr-finder">LR Finder</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="../segmentation/#background-augmenter">Background Augmenter</a>
+    <li class="toctree-l4"><a class="reference internal" href="../segmentation/#advanced-learning-rates">Advanced learning rates</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="../segmentation/#training-on-crops">Training on crops</a>
     </li>
@@ -486,19 +496,25 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="../segmentation/reference/#stage-properties">Stage properties</a>
         <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#callbacks_1">callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#epochs">epochs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#extra_callbacks">extra_callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#freeze_encoder_1">freeze_encoder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#initial_weights">initial_weights</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#negatives">negatives</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#loss_1">loss</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#lr_1">lr</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#initial_weights">initial_weights</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#epochs">epochs</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#unfreeze_encoder">unfreeze_encoder</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#callbacks_1">callbacks</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#extra_callbacks">extra_callbacks</a>
+    <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#validation_negatives">validation_negatives</a>
     </li>
         </ul>
     </li>
@@ -539,19 +555,15 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="../classification/#image-augmentations">Image Augmentations</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="../classification/#freezingunfreezing-encoder">Freezing/Unfreezing encoder</a>
+    <li class="toctree-l4"><a class="reference internal" href="../classification/#freezing-and-unfreezing-encoder">Freezing and Unfreezing encoder</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="../classification/#custom-datasets">Custom datasets</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="../classification/#balancing-your-data">Balancing your data</a>
-    </li>
     <li class="toctree-l4"><a class="reference internal" href="../classification/#multistage-training">Multistage training</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="../classification/#composite-losses">Composite losses</a>
+    <li class="toctree-l4"><a class="reference internal" href="../classification/#balancing-your-data">Balancing your data</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="../classification/#cyclical-learning-rates">Cyclical learning rates</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="../classification/#lr-finder">LR Finder</a>
+    <li class="toctree-l4"><a class="reference internal" href="../classification/#advanced-learning-rates">Advanced learning rates</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="../classification/#training-on-crops">Training on crops</a>
     </li>
@@ -681,19 +693,25 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="../classification/reference/#stage-properties">Stage properties</a>
         <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#callbacks_1">callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#epochs">epochs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#extra_callbacks">extra_callbacks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#freeze_encoder_1">freeze_encoder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#initial_weights">initial_weights</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#negatives">negatives</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#loss_1">loss</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#lr_1">lr</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#initial_weights">initial_weights</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#epochs">epochs</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#unfreeze_encoder">unfreeze_encoder</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#callbacks_1">callbacks</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#extra_callbacks">extra_callbacks</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#validation_negatives">validation_negatives</a>
     </li>
         </ul>
     </li>
@@ -819,8 +837,9 @@ stages:
 </code></pre>
 
 <h2 id="installation">Installation</h2>
-<p>TODO: make sure this actually works.
-<code>pip install musket_core</code></p>
+<pre><code>pip install musket_core 
+</code></pre>
+
 <h2 id="project-structure">Project structure</h2>
 <p>Each experiment is simply a folder with YAML file inside, it is easy to store and run experiment.</p>
 <p>Project is a folder with the following structure inside:</p>
@@ -853,7 +872,7 @@ stages:
 Each experiment starts with its configuration, other files are being added by the pipeline during th training.</p>
 <p><code>common.yaml</code> file may be added to set instructions, which will be applied to all project experiments.</p>
 <p><code>modules</code> folder may be added to set python files in project scope, so custom yaml declarations can be mapped 
-onto python classes and functions defined inside such files. <code>main.py</code> will be always executed, other files require <a href="reference/#imports">imports</a> instruction. </p>
+onto python classes and functions defined inside such files. all modules in this folder will be always executed, other modules require <a href="reference/#imports">imports</a> instruction. </p>
 <p><code>summary.yaml</code> and <code>metrics</code> folders inside each experiment appear after the experiment training is executed.</p>
 <p>There are more potential files, like intermediate results cache files etc.</p>
 <h2 id="launching">Launching</h2>
@@ -880,6 +899,11 @@ The split is shuffled. </p>
 <p><a href="reference/#primary_metric">primary_metric</a> Metric to track during the training process. Metric calculation results will be printed in the console and to <code>metrics</code> folder of the experiment.
 Besides tracking, this metric will be also used by default for metric-related activity, in example, for decision regarding which epoch results are better.</p>
 <p><a href="reference/#loss">loss</a> sets the loss function. if your network has multiple outputs, you also may pass a list of loss functions (one per output) </p>
+<p>Framework supports composing loss as a weighted sum of predefined loss functions. For example, following construction</p>
+<pre><code class="yaml">loss: binary_crossentropy+0.1*dice_loss
+</code></pre>
+
+<p>will result in loss function which is composed from <code>binary_crossentropy</code> and <code>dice_loss</code> functions.</p>
 <p>There are many more properties to check in <a href="reference/#pipeline-root-properties">Reference of root properties</a></p>
 <h2 id="definining-networks">Definining networks</h2>
 <p>Lets check the next part of our example:</p>
@@ -1100,6 +1124,8 @@ datasets:
 <a href="reference/#earlystopping">EarlyStopping</a> that monitors metrics and stops training if results doesnt get better, and <code>val_binary_accuracy</code> and <a href="reference/#reducelronplateau">ReduceLROnPlateau</a>, which reduces learning rate for the same reason.</p>
 <p>The list of callbacks can be found <a href="reference/#callbacks">here</a></p>
 <h2 id="stages">Stages</h2>
+<p>Sometimes you need to split your training into several stages. You can easily do it by adding several stage entries
+in your experiment configuration file.</p>
 <p><a href="reference/#stages">stages</a> instruction allows to set up stages of the train process, where for each stage it is possible to set some specific training options like the number of epochs, learning rate, loss, callbacks, etc.
 Full list of stage properties can be found <a href="reference/#stage-properties">here</a>.</p>
 <pre><code class="yaml">stages:
@@ -1108,6 +1134,96 @@ Full list of stage properties can be found <a href="reference/#stage-properties"
   - epochs: 100 #Let's go for 100 epochs
 </code></pre>
 
+<pre><code class="yaml">stages:
+  - epochs: 6 #Train for 6 epochs
+    negatives: none #do not include negative examples in your training set 
+    validation_negatives: real #validation should contain all negative examples    
+
+  - lr: 0.0001 #let's use different starting learning rate
+    epochs: 6
+    negatives: real
+    validation_negatives: real
+
+  - loss: lovasz_loss #let's override loss function
+    lr: 0.00001
+    epochs: 6
+    initial_weights: ./fpn-resnext2/weights/best-0.1.weights #let's load weights from this file    
+</code></pre>
+
+<h2 id="balancing-your-data">Balancing your data</h2>
+<p>One common case is the situation when part of your images does not contain any objects of interest, like in 
+<a href="https://www.kaggle.com/c/airbus-ship-detection/overview">Airbus ship detection challenge</a>. More over your data may
+be to heavily inbalanced, so you may want to rebalance it. Alternatively you may want to inject some additional
+images that do not contain objects of interest to decrease amount of false positives that will be produced by the framework.</p>
+<p>These scenarios are supported by <a href="reference/#negatives">negatives</a> and 
+<a href="reference/#validation_negatives">validation_negatives</a> settings of training stage configuration,
+these settings accept following values:</p>
+<ul>
+<li>none - exclude negative examples from the data</li>
+<li>real - include all negative examples </li>
+<li>integer number(1 or 2 or anything), how many negative examples should be included per one positive example   </li>
+</ul>
+<pre><code class="yaml">stages:
+  - epochs: 6 #Train for 6 epochs
+    negatives: none #do not include negative examples in your training set 
+    validation_negatives: real #validation should contain all negative examples    
+
+  - lr: 0.0001 #let's use different starting learning rate
+    epochs: 6
+    negatives: real
+    validation_negatives: real
+
+  - loss: lovasz_loss #let's override loss function
+    lr: 0.00001
+    epochs: 6
+    initial_weights: ./fpn-resnext2/weights/best-0.1.weights #let's load weights from this file    
+</code></pre>
+
+<p>if you are using this setting your dataset class must support <code>isPositive</code> method which returns true for indexes
+which contain positive examples: </p>
+<pre><code class="python">    def isPositive(self, item):
+        pixels=self.ddd.get_group(self.ids[item])[&quot;EncodedPixels&quot;]
+        for mask in pixels:
+            if isinstance(mask, str):
+                return True;
+        return False
+</code></pre>
+
+<h2 id="advanced-learning-rates">Advanced learning rates</h2>
+<h3 id="dynamic-learning-rates">Dynamic learning rates</h3>
+<p><img alt="Example" src="https://github.com/bckenstler/CLR/blob/master/images/triangularDiag.png?raw=true" /></p>
+<p>As told in <a href="https://arxiv.org/abs/1506.01186">Cyclical learning rates for training neural networks</a> CLR policies can provide quicker converge for some neural network tasks and architectures. </p>
+<p><img alt="Example2" src="https://github.com/bckenstler/CLR/raw/master/images/cifar.png" /></p>
+<p>We support them by adopting Brad Kenstler <a href="https://github.com/bckenstler/CLR">CLR callback</a> for Keras.</p>
+<p>If you want to use them, just add <a href="reference/#cycliclr">CyclicLR</a> in your experiment configuration file as shown below: </p>
+<pre><code class="yaml">callbacks:
+  EarlyStopping:
+    patience: 40
+    monitor: val_binary_accuracy
+    verbose: 1
+  CyclicLR:
+     base_lr: 0.0001
+     max_lr: 0.01
+     mode: triangular2
+     step_size: 300
+</code></pre>
+
+<p>There are also <a href="reference/#reducelronplateau">ReduceLROnPlateau</a> and <a href="reference/#lrvariator">LRVariator</a> options to modify learning rate on the fly.</p>
+<h3 id="lr-finder">LR Finder</h3>
+<p><a href="https://arxiv.org/abs/1506.01186">Estimating optimal learning rate for your model</a> is an important thing, we support this by using slightly changed 
+version of <a href="https://github.com/surmenok/keras_lr_finder">Pavel Surmenok - Keras LR Finder</a></p>
+<pre><code class="python">cfg= segmentation.parse(people-1.yaml)
+ds=SimplePNGMaskDataSet(&quot;./train&quot;,&quot;./train_mask&quot;)
+finder=cfg.lr_find(ds,start_lr=0.00001,end_lr=1,epochs=5)
+finder.plot_loss(n_skip_beginning=20, n_skip_end=5)
+plt.show()
+finder.plot_loss_change(sma=20, n_skip_beginning=20, n_skip_end=5, y_lim=(-0.01, 0.01))
+plt.show()
+</code></pre>
+
+<p>will result in this couple of helpful images: </p>
+<p><img alt="image" src="https://camo.githubusercontent.com/b41aeaff00fb7b214b5eb2e5c151e7e353a7263e/68747470733a2f2f63646e2d696d616765732d312e6d656469756d2e636f6d2f6d61782f313630302f312a48566a5f344c57656d6a764f57762d63514f397939672e706e67" /></p>
+<p><img alt="image" src="https://camo.githubusercontent.com/834996d32bbd2edf7435c5e105b53a6b447ef083/68747470733a2f2f63646e2d696d616765732d312e6d656469756d2e636f6d2f6d61782f313630302f312a38376d4b715f586f6d59794a4532396c39314b3064772e706e67" /></p>
 <h2 id="preprocessors"><a href="reference/#preprocessors">Preprocessors</a></h2>
 <p><a href="reference/#preprocessors">Preprocessors</a> are the custom python functions that transform dataset. </p>
 <p>Such functions should be defined in python files that are in a project scope (<code>modules</code>) folder and imported.
