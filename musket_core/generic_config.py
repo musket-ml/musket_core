@@ -53,7 +53,10 @@ from musket_core.parralel import  Task
 keras.utils.get_custom_objects().update({'matthews_correlation': musket_core.losses.matthews_correlation})
 keras.utils.get_custom_objects().update({'log_loss': musket_core.losses.log_loss})
 from musket_core import net_declaration as net
+def relu6(x):
+    return K.relu(x, max_value=6)
 
+keras.utils.get_custom_objects()["relu6"]=relu6
 from musket_core.datasets import DataSet, MeanDataSet, BufferedWriteableDS, WriteableDataSet
 
 dataset_augmenters={

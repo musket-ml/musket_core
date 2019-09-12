@@ -830,43 +830,97 @@ class MultiClassSegmentationDataSet(BinarySegmentationDataSet):
         prediction = self.get_mask(imageId,image.shape)
         return PredictionItem(imageId,image,prediction)
 
-class ClassificationDataSet(CSVReferencedDataSet): 
+
+
+class BinaryClassificationDataSet(CSVReferencedDataSet): 
     
-    def __init__(self,imagePath,csvPath,imColumn,clazzColumn,nothingAsClazz=False,multipleClasses=False):   
+
+    def initClasses(self, clazzColumn):
+        return sorted(list(set(self.data[clazzColumn].values)))
+
+    def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
         super().__init__(imagePath,csvPath,imColumn)
         self.clazzColumn=clazzColumn    
-        self.classes=sorted(list(set(self.data[clazzColumn].values)))
-        self.nothingAsClazz=nothingAsClazz
-        self.class2Num={}
-        self.multipleClasses=multipleClasses
-        
+        self.classes=self.initClasses(clazzColumn)
+        self.class2Num={}        
         num=0
         for c in self.classes:
             self.class2Num[c]=num
-            num=num+1
+            num=num+1            
             
     def get_target(self,item):    
         imageId=self.imageIds[item]
         vl = self.get_all_about(imageId)        
-        if self.nothingAsClazz:
-            result=np.zeros((len(self.classes)+1),dtype=np.bool)
-        else:
-            result=np.zeros((len(self.classes)),dtype=np.bool)
-                
+        result=np.zeros((1),dtype=np.bool)
         for i in range(len(vl)):
             clazz = vl[self.clazzColumn].values[i]
-            if self.multipleClasses:
-                for x in clazz.split(" "):
-                    result[self.class2Num[x]]=1
-            else:    
-                result[self.class2Num[clazz]]=1
-        if self.nothingAsClazz:
-            if result.sum()==0:
-                result[len(result)-1]=1    
+            if self.class2Num[clazz]==1:
+                result[0]=1                
         return result        
             
     def __getitem__(self, item)->PredictionItem:
         imageId=self.imageIds[item]
         image=self.get_image(imageId)
         prediction = self.get_target(item)
-        return PredictionItem(imageId,image,prediction)          
+        return PredictionItem(imageId,image,prediction)
+    
+class CategoryClassificationDataSet(BinaryClassificationDataSet): 
+    
+    def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
+        super().__init__(imagePath,csvPath,imColumn)        
+            
+    def get_target(self,item):    
+        imageId=self.imageIds[item]
+        vl = self.get_all_about(imageId)        
+        result=np.zeros((len(self.classes)),dtype=np.bool)                
+        for i in range(len(vl)):
+            clazz = vl[self.clazzColumn].values[i]
+            result[self.class2Num[clazz]]=1            
+        return result
+
+import math    
+class MultiClassClassificationDataSet(BinaryClassificationDataSet): 
+    
+    
+    def initClasses(self, clazzColumn):
+        realC=set()
+        tc=set(self.data[clazzColumn].values)
+        for v in tc:
+            if isinstance(v, float):
+                if math.isnan(v):
+                    continue
+            if len(v.strip())==0:
+                continue
+            if " " in v:
+                for w in v.split(" "):
+                    realC.add(w.strip())
+            if "|" in v:
+                for w in v.split("|"):
+                    realC.add(w.strip())
+        return sorted(list(realC))            
+    
+    def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
+        super().__init__(imagePath,csvPath,imColumn,clazzColumn)                
+            
+    def get_target(self,item):    
+        imageId=self.imageIds[item]
+        vl = self.get_all_about(imageId)        
+        result=np.zeros((len(self.classes)),dtype=np.bool)                
+        for i in range(len(vl)):
+            
+            clazz = vl[self.clazzColumn].values[i]
+            if isinstance(clazz, float):
+                if math.isnan(clazz):
+                    continue
+            if len(clazz.strip())==0:
+                continue
+            if " " in clazz:
+                for w in clazz.split(" "):
+                    result[self.class2Num[w]]=1
+            elif "|" in clazz:
+                for w in clazz.split("|"):
+                    result[self.class2Num[w]]=1
+            else:
+                result[self.class2Num[clazz.strip()]]=1        
+                        
+        return result    

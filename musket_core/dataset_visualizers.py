@@ -47,11 +47,14 @@ def image_with_mask_and_prediction_visializer(p:PredictionItem):
     if os.path.exists(path):
         return path
     arr=np.copy(p.x)
-    imgaug.SegmentationMapOnImage(p.y, p.y.shape).draw_on_image(arr)    
-    
+    res=imgaug.SegmentationMapsOnImage(p.y, p.y.shape).draw()
+    for i in res:
+        arr[np.mean(i,axis=2)!=0]=i[np.mean(i,axis=2)!=0]
+        
+    res=imgaug.SegmentationMapsOnImage(p.prediction>0.5, p.y.shape).draw()
     arr1=np.copy(p.x)
-    for i in imgaug.SegmentationMapOnImage(p.prediction, p.prediction.shape).draw(arr1):
-        arr1[i!=0]=i
+    for i in res:
+        arr1[np.mean(i,axis=2)!=0]=i[np.mean(i,axis=2)!=0]    
     
     imgs_comb = np.hstack([arr,arr1])
     imageio.imwrite(path,imgs_comb)    
