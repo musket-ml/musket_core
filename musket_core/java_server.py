@@ -132,7 +132,7 @@ class Server(projects.Workspace):
 
                     print("removing: " + path)
 
-                    shutil.rmtree(path)
+                os.remove(path)
 
         print("download complete")
 
