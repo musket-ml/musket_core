@@ -112,6 +112,8 @@ class Server(projects.Workspace):
 
         api.dataset_download_files(id, dest, quiet=False, unzip=True)
 
+        print("download complete")
+
     def downloadCompetitionFiles(self, id, dest):
         api = KaggleApi(ApiClient())
 
@@ -130,7 +132,9 @@ class Server(projects.Workspace):
 
                     print("removing: " + path)
 
-                    os.remove(path)
+                    shutil.rmtree(path)
+
+        print("download complete")
 
     class Java:
         implements = ["com.onpositive.musket_core.IServer"]
