@@ -19,7 +19,6 @@ from musket_core import utils
 AUGMENTER_QUEUE_LIMIT=10
 USE_MULTIPROCESSING=False
 
-
 class PredictionItem:
     def __init__(self, path, x, y, prediction = None):
         self.x=x
@@ -1165,3 +1164,13 @@ class TransformPrediction(DataSet):
         z=self.parent[item]
         r= PredictionItem(z.id,z.x,z.y,self.func(z.prediction))
         return r      
+
+def get_kaggle_input_root():
+    kernel_name_path = "/kaggle/working/project/kernel_name.txt"
+
+    if os.path.exists(kernel_name_path):
+        with open(kernel_name_path, "r") as f:
+            return os.path.join("/kaggle/input/", f.read())
+
+    else:
+        return "/kaggle/input"
