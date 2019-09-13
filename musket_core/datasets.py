@@ -1166,10 +1166,10 @@ class TransformPrediction(DataSet):
         return r      
 
 def get_kaggle_input_root():
-    kernel_name_path = "/kaggle/working/project/kernel_name.txt"
+    data_name_path = "/kaggle/working/project/dataset_id.txt"
 
-    if os.path.exists(kernel_name_path):
-        with open(kernel_name_path, "r") as f:
+    if os.path.exists(data_name_path):
+        with open(data_name_path, "r") as f:
             return os.path.join("/kaggle/input/", f.read())
 
     else:
