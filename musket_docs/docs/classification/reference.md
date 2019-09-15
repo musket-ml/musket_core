@@ -921,3 +921,295 @@ augmentation:
 In this example, `Fliplr` key is automatically mapped on [Fliplr agugmenter](https://imgaug.readthedocs.io/en/latest/source/api_augmenters_flip.html),
 their `0.5` parameter is mapped on the first `p` parameter of the augmenter.
 Named parameters are also mapped, in example `translate_px` key of `Affine` is mapped on `translate_px` parameter of [Affine augmenter](https://imgaug.readthedocs.io/en/latest/source/augmenters.html?highlight=affine#affine).
+
+## fit script arguments
+
+### fit.py project
+
+**type**: ``string`` 
+
+Folder to search for experiments, project root.
+
+Example:
+
+`fit.py --project "path/to/project"`
+
+### fit.py name
+
+**type**: ``string or comma-separated list of strings`` 
+
+Name of the experiment to launch, or a list of names.
+
+Example:
+
+`fit.py --name "experiment_name"`
+
+`fit.py --name "experiment_name1, experiment_name2"`
+
+### fit.py num_gpus
+
+**type**: ``integer``
+
+Default: 1
+
+Number of GPUs to use during experiment launch.
+
+Example:
+`fit.py --num_gpus=1`
+
+### fit.py gpus_per_net
+
+**type**: ``integer`` 
+
+Default: 1
+
+Maximum number of GPUs to use per single experiment.
+
+Example:
+`fit.py --gpus_per_net=1`
+
+### fit.py num_workers
+
+**type**: ``integer`` 
+
+Default: 1
+
+Number of workers to use.
+
+Example:
+`fit.py --num_workers=1`
+
+### fit.py allow_resume
+
+**type**: ``boolean`` 
+
+Default: False
+
+Whether to allow resuming of experiments, 
+which will cause unfinished experiments to start from the best saved weights.
+
+Example:
+`fit.py --allow_resume True`
+
+### fit.py force_recalc
+
+**type**: ``boolean`` 
+
+Default: False
+
+Whether to force rebuilding of reports and predictions.
+
+Example:
+`fit.py --force_recalc True`
+
+### fit.py launch_tasks
+
+**type**: ``boolean`` 
+
+Default: False
+
+Whether to launch associated tasks.
+
+Example:
+`fit.py --launch_tasks True`
+
+### fit.py only_report
+
+**type**: ``boolean`` 
+
+Default: False
+
+Whether to only generate reports for cached data, no training occurs.
+
+Example:
+`fit.py --only_report True`
+
+### fit.py cache
+
+**type**: ``string`` 
+
+Path to the cache folder. 
+Cache folder will contain temporary cached data for executed experiments.
+
+Example:
+`fit.py --cache "path/to/cache/folder"`
+
+### fit.py folds
+
+**type**: ``integer or comma-separated list of integers`` 
+
+Folds to launch. By default all folds of experiment will be executed, 
+this argument allows launching only some of them. 
+
+Example:
+`fit.py --folds 1,2`
+
+### fit.py time
+
+**type**: ``string`` 
+
+TODO 
+
+Example:
+`fit.py `
+
+## task script arguments
+
+### task.py project
+
+**type**: ``string`` 
+
+Folder to search for experiments, project root.
+
+Example:
+
+`task.py --project "path/to/project"`
+
+### task.py name
+
+**type**: ``string or comma-separated list of strings`` 
+
+Name of the experiment to launch, or a list of names.
+
+Example:
+
+`task.py --name "experiment_name"`
+
+`task.py --name "experiment_name1, experiment_name2"`
+
+### task.py task
+
+**type**: ``string or comma-separated list of strings`` 
+
+Default: all tasks.
+
+Name of the task to launch, or a list of names.
+
+Example:
+
+`task.py --task "task_name"`
+
+`task.py --task "task_name1, task_name2"`
+
+`task.py --task "all"`
+
+### task.py num_gpus
+
+**type**: ``integer``
+
+Default: 1
+
+Number of GPUs to use during experiment launch.
+
+Example:
+`task.py --num_gpus=1`
+
+### task.py gpus_per_net
+
+**type**: ``integer`` 
+
+Default: 1
+
+Maximum number of GPUs to use per single experiment.
+
+Example:
+`task.py --gpus_per_net=1`
+
+### task.py num_workers
+
+**type**: ``integer`` 
+
+Default: 1
+
+Number of workers to use.
+
+Example:
+`task.py --num_workers=1`
+
+### task.py allow_resume
+
+**type**: ``boolean`` 
+
+Default: False
+
+Whether to allow resuming of experiments, 
+which will cause unfinished experiments to start from the best saved weights.
+
+Example:
+`task.py --allow_resume True`
+
+### task.py force_recalc
+
+**type**: ``boolean`` 
+
+Default: False
+
+Whether to force rebuilding of reports and predictions.
+
+Example:
+`task.py --force_recalc True`
+
+### task.py launch_tasks
+
+**type**: ``boolean`` 
+
+Default: False
+
+Whether to launch associated tasks.
+
+Example:
+`task.py --launch_tasks True`
+
+### task.py cache
+
+**type**: ``string`` 
+
+Path to the cache folder. 
+Cache folder will contain temporary cached data for executed experiments.
+
+Example:
+`task.py --cache "path/to/cache/folder"`
+
+## analyze script arguments
+
+### analyze.py inputFolder
+
+**type**: ``string`` 
+
+Folder to search for finished experiments in. Typically, project root.
+
+Example:
+
+`analyze.py --inputFolder "path/to/project"`
+
+### analyze.py output
+
+**type**: ``string`` 
+
+Default: `report.csv` in project root.
+
+Output report file path.
+
+Example:
+
+`analyze.py --output "path/to/project/report/report.scv"`
+
+### analyze.py onlyMetric
+
+**type**: ``string`` 
+
+Name of the single metric to take into account.
+
+Example:
+
+`analyze.py --onlyMetric "metric_name"`
+
+### analyze.py sortBy
+
+**type**: ``string`` 
+
+Name of the metric to sort result by.
+
+Example:
+
+`analyze.py --sortBy "metric_name"`
