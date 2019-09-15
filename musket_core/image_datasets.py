@@ -8,7 +8,7 @@ import os
 import  numpy as np
 import random
 import scipy
-
+import tqdm
 import imgaug
 
 class NegativeDataSet:
@@ -738,8 +738,10 @@ class BinarySegmentationDataSet(CSVReferencedDataSet):
         self.maskShape=maskShape
         self.rMask=rMask
         self.rle_decode=rle_decode
+        self.rle_encode=rle_encode
         if isRel:
             self.rle_decode=rle2mask_relative
+            self.rle_encode=mask2rle_relative
         
     def get_target(self,item):    
         imageId=self.imageIds[item]
@@ -750,7 +752,15 @@ class BinarySegmentationDataSet(CSVReferencedDataSet):
                 return 1
         return 0    
     
-    
+    def get_rleString(self, item):
+        imageId=item.id
+        vl = self.get_all_about(imageId)
+        rleString = vl[self.rleColumn].values[0]
+        if isinstance(rleString,float):
+            if math.isnan(rleString):
+                return ""
+        return rleString
+        
     def get_mask(self, image,imShape):
         prediction = None
         vl = self.get_all_about(image)
@@ -767,6 +777,8 @@ class BinarySegmentationDataSet(CSVReferencedDataSet):
                 
                 prediction=np.rot90(prediction)
                 prediction=np.flipud(prediction)
+                prediction = np.expand_dims(prediction,2).astype(np.bool)
+                
         if prediction is None:
             prediction = np.zeros((imShape[0], imShape[1], 1), dtype=np.bool)
         return prediction
@@ -776,7 +788,25 @@ class BinarySegmentationDataSet(CSVReferencedDataSet):
         image=self.get_image(imageId)
         prediction = self.get_mask(imageId,image.shape)
         return PredictionItem(imageId,image,prediction)
-     
+    
+    def encode(self,item:PredictionItem,encode_y=False,treshold=0.5):
+        if isinstance(item, PredictionItem):
+            imageId=item.id
+            if encode_y:
+                o=item.y
+            else:    
+                o=item.prediction
+            if (o.dtype!=np.bool):
+                    o=o>treshold    
+            o=np.flipud(o)
+            o=np.rot90(o, -1)
+            return { self.imColumn:imageId,self.rleColumn:self.rle_encode(o)}        
+        if isinstance(item, DataSet):
+            res=[]            
+            for i in tqdm.tqdm(range(len(item)),"Encoding dataset"):
+                q=item[i]
+                res.append(self.encode(q,encode_y,treshold))                
+            return pd.DataFrame(res,columns=[self.imColumn,self.rleColumn])     
 
 class MultiClassSegmentationDataSet(BinarySegmentationDataSet):    
     

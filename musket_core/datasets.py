@@ -75,6 +75,10 @@ class WriteableDataSet(DataSet):
 
     def commit(self):
         raise ValueError("Not implemented")
+    
+    def dump(self,path,treshold=0.5):
+        res=self.root().encode(self,treshold=treshold)
+        res.to_csv(path,index=False)                 
 
 def get_id(d:DataSet)->str:
     if hasattr(d,"id"):
@@ -167,11 +171,11 @@ class DataSetLoader:
 
     def createBatch(self, bx, by, ids):
         if len(by[0].shape)>1:
-            return imgaug.imgaug.Batch(data=ids, images=bx,
+            return imgaug.augmentables.Batch(data=ids, images=bx,
                                        segmentation_maps=[imgaug.SegmentationMapOnImage(x, shape=x.shape) for x
                                                           in by])
         else:
-            r=imgaug.imgaug.Batch(data=[ids,by], images=bx)
+            r=imgaug.augmentables.Batch(data=[ids,by], images=bx)
             return r
 
     def load(self):
@@ -1065,6 +1069,8 @@ class CompressibleWriteableDS(WriteableDataSet):
 
     def saveItem(self, path:str, item):
         dire = os.path.dirname(path)
+        if item is None:
+            print("AAA")
         if self.asUints:
             if self.scale<=255:
                 item=(item*self.scale).astype(np.uint8)

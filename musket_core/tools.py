@@ -162,6 +162,11 @@ class Introspect(yaml.YAMLObject):
     def perform(self, server, reporter: ProgressMonitor):
         project = server.project(self.path)
         r=project.introspect()
+        try:
+            import segmentation_models
+            
+        except:
+            pass    
         if self.outPath is not None:
             save_yaml(self.outPath,r)
         return r

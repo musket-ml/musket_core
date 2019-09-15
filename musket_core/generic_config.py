@@ -1040,6 +1040,12 @@ class GenericImageTaskConfig(GenericTaskConfig):
             if self.flipPred:
                 res1 = imgaug.augmenters.Fliplr(1.0).augment_images(res1)
             res = (res + res1) / 2.0
+        if ttflips == "Horizontal_and_vertical":
+            s=imgaug.augmenters.Sequential([imgaug.augmenters.Flipud(1.0),imgaug.augmenters.Flipud(1.0)])
+            r0 = self.predict_there_and_back(mdl, imgaug.augmenters.Fliplr(1.0), imgaug.augmenters.Fliplr(1.0), batch.images_aug)
+            r1 = self.predict_there_and_back(mdl, imgaug.augmenters.Flipud(1.0), imgaug.augmenters.Flipud(1.0), batch.images_aug)
+            r2 = self.predict_there_and_back(mdl, s, s, batch.images_aug)    
+            res = (res + r0+r1+r2) / 4.0    
         elif ttflips:
             res = self.predict_with_all_augs(mdl, ttflips, batch)
         return res
@@ -1069,7 +1075,7 @@ class GenericImageTaskConfig(GenericTaskConfig):
         res_270 = 0;
         res_90 = 0
 
-        if ttflips == "Horizontal_and_vertical":
+        if ttflips:
             count = 4.0
 
             res_270 = self.predict_there_and_back(mdl, rot_270, rot_90, input)
