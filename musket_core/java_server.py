@@ -7,8 +7,11 @@ import shutil
 import zipfile
 import os
 
-from kaggle.api.kaggle_api_extended import KaggleApi
-from kaggle.api_client import ApiClient
+try:
+    from kaggle.api.kaggle_api_extended import KaggleApi
+    from kaggle.api_client import ApiClient
+except:
+    print("can't import kaggle")
 
 import json
 

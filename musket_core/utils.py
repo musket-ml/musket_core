@@ -6,12 +6,13 @@ from threading import Lock
 
 _l=Lock()
 
-
 def load_yaml(path):
     _l.acquire()
     try:
+        yaml_load = lambda x: yaml.load(x, Loader=yaml.Loader)
+
         with open(path, "r") as f:
-            return yaml.load(f);
+            return yaml_load(f);
     finally:
         _l.release()
 
