@@ -552,9 +552,17 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         return result
 
 
+
+    def _folds(self):
+        res=[]
+        for i in range(self.folds_count):
+            if os.path.exists(os.path.join(os.path.dirname(self.path),ExecutionConfig(i).weightsPath())):
+                res.append(i)
+        return res        
+
     def predictions(self,name,fold=None,stage=None)->DataSet:
         if fold is None:
-            fold=list(range(self.folds_count))
+            fold=self._folds()
         if stage is None:
             stage=list(range(len(self.stages)))    
         return musket_core.predictions.get_predictions(self,name,fold,stage)
@@ -577,17 +585,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             tresh.append(tr.treshold)
         tr = np.mean(np.array(tresh))
         return tr
-
-    def find_optimal_treshold_by_validation2(self,func,stages=None,ds=None,):
-        all=[]
-        for fold in range(self.folds_count):
-            val = self.validation(ds, fold)
-            predsDS=predictions.get_validation_prediction(self,fold,stages)
-            all.append(predsDS)
-
-        resultPredsDS = all[0] if len(all) == 1 else datasets.CompositeDataSet(all)
-        tr = threshold_search(resultPredsDS,func, self.get_eval_batch())
-        return tr.treshold
+    
 
     def find_optimal_treshold_by_holdout(self,func,stages=None):
         predsDS=predictions.get_holdout_prediction(self,None,stages)
@@ -804,29 +802,18 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             ms={}
             if self._reporter is not None and self._reporter.isCanceled():
                 return {"canceled": True }
-            #tr=self.find_optimal_treshold_by_validation2(metric, [stage])
-            #tr0 = self.find_optimal_treshold_by_validation(metric, [stage])
             for m in all_metrics:
-               ms[m]=predictions.cross_validation_stat(self,m,[stage], folds=foldsToExecute)
-
-               if self.testSplit > 0:
-                   ms[m + "_holdout"] = predictions.holdout_stat(self, m, [stage])
-                   #if self.testSplit > 0:
-                   #ms[m + "_holdout"] = predictions.holdout_stat(self, m)
-                   #ms[m + "_holdout_with_optimal_treshold"] = predictions.holdout_stat(self, m, [stage],tr)
-                   #ms[m + "_holdout_with_optimal_treshold_mean"] = predictions.holdout_stat(self, m, [stage], tr0)
+                ms[m]=predictions.cross_validation_stat(self,m,[stage], folds=foldsToExecute)
+                if self.testSplit > 0:
+                    ms[m + "_holdout"] = predictions.holdout_stat(self, m, [stage])                   
             stagesStat.append(ms)
         all={}
-        #tr = self.find_optimal_treshold_by_validation2(metric)
-        #tr0 = self.find_optimal_treshold_by_validation(metric)
         for m in all_metrics:
             if self._reporter is not None and self._reporter.isCanceled():
                 return {"canceled": True }
             all[m] = predictions.cross_validation_stat(self, m, folds=foldsToExecute)
             if self.testSplit > 0 or self.holdoutArr is not None:
                 all[m + "_holdout"] = predictions.holdout_stat(self, m)
-                #all[m + "_holdout_with_optimal_treshold"] = predictions.holdout_stat(self, m, None, tr)
-                #all[m + "_holdout_with_optimal_treshold_mean"] = predictions.holdout_stat(self, m, None, tr0)
         return {"stages":stagesStat,"allStages":all}
 
     def _adapt_before_fit(self, dataset):
@@ -1034,6 +1021,10 @@ class GenericImageTaskConfig(GenericTaskConfig):
     def predict_on_batch(self, mdl, ttflips, batch):
         o1 = np.array(batch.images_aug)
         res = mdl.predict(o1)
+        if isinstance(ttflips, int):
+            for i in range(ttflips):
+               print(i)
+               #pass      
         if ttflips == "Horizontal":
             another = imgaug.augmenters.Fliplr(1.0).augment_images(batch.images_aug)
             res1 = mdl.predict(np.array(another))

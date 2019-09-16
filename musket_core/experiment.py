@@ -150,8 +150,8 @@ class Experiment:
                     mv = pm
                     if pm + "_holdout" in m["allStages"]:
                         mv = m["allStages"][pm + "_holdout"]
-                    if "aggregation_metric" in i.config():
-                        mv = m["allStages"][i.config()["aggregation_metric"]]
+                    if "experiment_result" in i.config():
+                        mv = m["allStages"][i.config()["experiment_result"]]
                     vals.append(mv)
             m = np.mean(vals)
             save_yaml(self.getSummaryYamlPath(),
@@ -167,8 +167,8 @@ class Experiment:
                 mv=pm
                 if pm + "_holdout" in m["allStages"]:
                     mv = m["allStages"][pm + "_holdout"]
-                if "aggregation_metric" in self.config():
-                    am=self.config()["aggregation_metric"]
+                if "experiment_result" in self.config():
+                    am=self.config()["experiment_result"]
                     if am in m["allStages"]:
                        mv = m["allStages"][am]
                 elif use_primary_metric:

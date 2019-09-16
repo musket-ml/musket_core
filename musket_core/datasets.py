@@ -1069,7 +1069,7 @@ class CompressibleWriteableDS(WriteableDataSet):
     def saveItem(self, path:str, item):
         dire = os.path.dirname(path)
         if item is None:
-            print("AAA")
+            raise ValueError("Should never happen")
         if self.asUints:
             if self.scale<=255:
                 item=(item*self.scale).astype(np.uint8)

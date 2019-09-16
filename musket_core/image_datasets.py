@@ -818,7 +818,26 @@ class MultiClassSegmentationDataSet(BinarySegmentationDataSet):
         num=0
         for c in self.classes:
             self.class2Num[c]=num
-            num=num+1    
+            num=num+1
+            
+    def encode(self,item:PredictionItem,encode_y=False,treshold=0.5):
+        if isinstance(item, PredictionItem):
+            imageId=item.id
+            if encode_y:
+                o=item.y
+            else:    
+                o=item.prediction
+            if (o.dtype!=np.bool):
+                    o=o>treshold    
+            o=np.flipud(o)
+            o=np.rot90(o, -1)
+            return { self.imColumn:imageId,self.rleColumn:self.rle_encode(o)}        
+        if isinstance(item, DataSet):
+            res=[]            
+            for i in tqdm.tqdm(range(len(item)),"Encoding dataset"):
+                q=item[i]
+                res.append(self.encode(q,encode_y,treshold))                
+            return pd.DataFrame(res,columns=[self.imColumn,self.rleColumn])            
         
     def get_target(self,item):    
         imageId=self.imageIds[item]
@@ -872,10 +891,12 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
         super().__init__(imagePath,csvPath,imColumn)
         self.clazzColumn=clazzColumn    
         self.classes=self.initClasses(clazzColumn)
-        self.class2Num={}        
+        self.class2Num={}
+        self.num2Class={}        
         num=0
         for c in self.classes:
             self.class2Num[c]=num
+            self.num2Class[num]=c
             num=num+1            
             
     def get_target(self,item):    
@@ -893,6 +914,29 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
         image=self.get_image(imageId)
         prediction = self.get_target(item)
         return PredictionItem(imageId,image,prediction)
+    
+    def _encode_class(self,o):
+        res=[]
+        for i in range(len(o)):
+            if o[i]==True:
+                res.append(self.num2Class[i])
+        return " ".join(res)
+    
+    def encode(self,item:PredictionItem,encode_y=False,treshold=0.5):
+        if isinstance(item, PredictionItem):
+            imageId=item.id
+            if encode_y:
+                o=item.y
+            else:    
+                o=item.prediction
+            o=o>treshold
+            return { self.imColumn:imageId,self.clazzColumn:self._encode_class(o)}        
+        if isinstance(item, DataSet):
+            res=[]            
+            for i in tqdm.tqdm(range(len(item)),"Encoding dataset"):
+                q=item[i]
+                res.append(self.encode(q,encode_y,treshold))                
+            return pd.DataFrame(res,columns=[self.imColumn,self.rleColumn])  
     
 class CategoryClassificationDataSet(BinaryClassificationDataSet): 
     
