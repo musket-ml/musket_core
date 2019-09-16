@@ -145,11 +145,18 @@ def dice_numpy(labels, outputs):
     return 2.0 * intersection / (im_sum + SMOOTH)    
 
 def dice_numpy_zero_is_one( outputs,labels):
+    
+    cs=labels.shape[-1]
+    if cs>1:
+        rr=[]
+        for i in range(cs):
+            rr.append(dice_numpy_zero_is_one(outputs[:,:,i:i+1], labels[:,:,i:i+1]))
+        return np.mean(rr, axis=0)
     outputs = outputs.squeeze()
     labels = labels.squeeze()
     true = (outputs>0.5)
     pred = (labels>0.5)
-    zzz=dice_numpy(labels,outputs)
+    
     if labels.max()==0:
         if (outputs>0.5).max()==0:
             return 1

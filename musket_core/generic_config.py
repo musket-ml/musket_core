@@ -560,9 +560,11 @@ class GenericTaskConfig(model.IGenericTaskConfig):
                 res.append(i)
         return res        
 
-    def predictions(self,name,fold=None,stage=None)->DataSet:
+    def predictions(self,name,fold=None,stage=None)->WriteableDataSet:
         if fold is None:
             fold=self._folds()
+            if name.index("validation")==0:
+                return self.predictions("validation", int(name[-1:]), stage)
         if stage is None:
             stage=list(range(len(self.stages)))    
         return musket_core.predictions.get_predictions(self,name,fold,stage)

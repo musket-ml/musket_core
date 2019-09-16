@@ -39,6 +39,8 @@ def map10_binary_numpy(outputs: np.array, labels: np.array,emptyIsOne=False):
 def map10_binary_empty_is_1_numpy(outputs: np.array, labels: np.array):
     return map10_binary_numpy(outputs,labels,True)
 
+
+
 def byOne(predictions,func):
     vals=[]
     for v in tqdm.tqdm(predictions):
@@ -68,7 +70,10 @@ def dice1(*args):
 
 @final_metric
 def dice_true_negative_is_1(*args):
-    predictions=args[1]
+    if len(args)>1:
+        predictions=args[1]
+    else:
+        predictions=args[0]    
     return byOne(predictions, dice_numpy_zero_is_one)
 
 @final_metric

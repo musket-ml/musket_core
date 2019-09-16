@@ -75,9 +75,18 @@ class WriteableDataSet(DataSet):
     def commit(self):
         raise ValueError("Not implemented")
     
-    def dump(self,path,treshold=0.5):
-        res=self.root().encode(self,treshold=treshold)
-        res.to_csv(path,index=False)                 
+    def blend(self,ds,w=0.5):
+        if isinstance(ds, str):
+            from musket_core import generic
+            return self.blend(generic.parse(ds).predictions(self.parent.name))
+        return self._inner_blend(ds, w)
+    
+    def dump(self,path,treshold=0.5,encode_y=False):
+        res=self.root().encode(self,treshold=treshold,encode_y=encode_y)
+        res.to_csv(path,index=False) 
+        
+    def _inner_blend(self,ds,w=0.5):
+        raise NotImplementedError("Not supported")                    
 
 def get_id(d:DataSet)->str:
     if hasattr(d,"id"):
@@ -964,6 +973,10 @@ class BufferedWriteableDS(WriteableDataSet):
 
     def __len__(self):
         return len(self.parent)
+    
+    def _inner_blend(self,ds,w=0.5):
+        pr=self.predictions*w+ds.predictions*(1-w)
+        return BufferedWriteableDS(self.parent,self.name,None,pr)
 
     def __getitem__(self, item):
         it = self.parent[item]
@@ -996,6 +1009,9 @@ class DirectWriteableDS(WriteableDataSet):
 
     def __len__(self):
         return len(self.parent)
+    
+    def _inner_blend(self,ds,w=0.5):
+        return WeightedBlend([self,ds],[w,1-w])
 
     def __getitem__(self, item):
         it = self.parent[item]
@@ -1043,6 +1059,9 @@ class CompressibleWriteableDS(WriteableDataSet):
 
     def commit(self):
         pass
+    
+    def _inner_blend(self,ds,w=0.5):
+        return WeightedBlend([self,ds],[w,1-w])
 
     def __len__(self):
         return len(self.parent)

@@ -634,6 +634,7 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
         super().__init__(imagePath)
         self.imColumn=imColumn
         self.data=pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath))
+        self.splitColumns={}
         for m in self.data.columns:
             parts=m.split("_")
             ind=0
@@ -642,6 +643,7 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
                     try:
                         vl=[x[ind] for x in self.data[m].str.split("_")]
                         self.data.insert(0,col,value=vl)
+                        self.splitColumns[col]=m
                     except:
                         pass    
                 ind=ind+1
@@ -658,6 +660,28 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
     
     def __getitem__(self, item)->PredictionItem:
         raise ValueError()
+    
+    def _encode_template(self,template_id,template,val):
+        rs=[]
+        for q in template:
+            v=val[q]
+            rs.append(v)
+            del val[q]
+        val[template_id]="_".join(rs)
+        return val    
+    
+    def _recode(self,seq):
+        
+        templates={}
+        for q in self.splitColumns:
+            r=self.splitColumns[q]
+            templates[r]=r.split("_")
+            
+        for item in seq:            
+            for t in templates:
+                self._encode_template(t,templates[t],item)
+        return seq        
+                    
 
 def mask2rle_relative(img, width, height):
     rle = []
@@ -789,6 +813,13 @@ class BinarySegmentationDataSet(CSVReferencedDataSet):
         prediction = self.get_mask(imageId,image.shape)
         return PredictionItem(imageId,image,prediction)
     
+
+    def _to_rle(self, o):
+        o = np.flipud(o)
+        o = np.rot90(o, -1)
+        rle = self.rle_encode(o)
+        return rle
+
     def encode(self,item:PredictionItem,encode_y=False,treshold=0.5):
         if isinstance(item, PredictionItem):
             imageId=item.id
@@ -798,9 +829,8 @@ class BinarySegmentationDataSet(CSVReferencedDataSet):
                 o=item.prediction
             if (o.dtype!=np.bool):
                     o=o>treshold    
-            o=np.flipud(o)
-            o=np.rot90(o, -1)
-            return { self.imColumn:imageId,self.rleColumn:self.rle_encode(o)}        
+            rle = self._to_rle(o)
+            return { self.imColumn:imageId,self.rleColumn:rle}        
         if isinstance(item, DataSet):
             res=[]            
             for i in tqdm.tqdm(range(len(item)),"Encoding dataset"):
@@ -815,29 +845,39 @@ class MultiClassSegmentationDataSet(BinarySegmentationDataSet):
         self.clazzColumn=clazzColumn    
         self.classes=sorted(list(set(self.data[clazzColumn].values)))
         self.class2Num={}
+        self.num2class={}
         num=0
         for c in self.classes:
             self.class2Num[c]=num
+            self.num2class[num]=c
             num=num+1
             
     def encode(self,item:PredictionItem,encode_y=False,treshold=0.5):
         if isinstance(item, PredictionItem):
-            imageId=item.id
-            if encode_y:
-                o=item.y
-            else:    
-                o=item.prediction
-            if (o.dtype!=np.bool):
-                    o=o>treshold    
-            o=np.flipud(o)
-            o=np.rot90(o, -1)
-            return { self.imColumn:imageId,self.rleColumn:self.rle_encode(o)}        
+            raise NotImplementedError("Multiclass segmentation is only capable to encode datasets")       
         if isinstance(item, DataSet):
             res=[]            
             for i in tqdm.tqdm(range(len(item)),"Encoding dataset"):
                 q=item[i]
-                res.append(self.encode(q,encode_y,treshold))                
-            return pd.DataFrame(res,columns=[self.imColumn,self.rleColumn])            
+                imageId=q.id
+                for j in range(len(self.classes)):
+                    if encode_y:
+                        vl=q.y[:,:,j:j+1]>treshold
+                    else:
+                        vl=q.prediction[:,:,j:j+1]>treshold
+                    rle=self._to_rle(vl)
+                    res.append({ self.imColumn:imageId,self.rleColumn:rle,self.clazzColumn:self.num2class[j]})
+            res=self._recode(res)
+                    
+            clns=[]
+            for c in self.splitColumns:
+                if not self.splitColumns[c] in clns:
+                    clns.append(self.splitColumns[c])
+            r=[self.imColumn,self.clazzColumn,self.rleColumn]
+            for c in r:
+                if not c in self.splitColumns:
+                    clns.append(c)
+            return pd.DataFrame(res,columns=clns)            
         
     def get_target(self,item):    
         imageId=self.imageIds[item]
@@ -915,7 +955,8 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
         prediction = self.get_target(item)
         return PredictionItem(imageId,image,prediction)
     
-    def _encode_class(self,o):
+    def _encode_class(self,o,treshold):
+        o=o>treshold
         res=[]
         for i in range(len(o)):
             if o[i]==True:
@@ -929,19 +970,22 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
                 o=item.y
             else:    
                 o=item.prediction
-            o=o>treshold
-            return { self.imColumn:imageId,self.clazzColumn:self._encode_class(o)}        
+            
+            return { self.imColumn:imageId,self.clazzColumn:self._encode_class(o,treshold)}        
         if isinstance(item, DataSet):
             res=[]            
             for i in tqdm.tqdm(range(len(item)),"Encoding dataset"):
                 q=item[i]
                 res.append(self.encode(q,encode_y,treshold))                
-            return pd.DataFrame(res,columns=[self.imColumn,self.rleColumn])  
+            return pd.DataFrame(res,columns=[self.imColumn,self.clazzColumn])  
     
 class CategoryClassificationDataSet(BinaryClassificationDataSet): 
     
     def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
-        super().__init__(imagePath,csvPath,imColumn)        
+        super().__init__(imagePath,csvPath,imColumn)
+        
+    def _encode_class(self,o):
+        return self.num2Class[(np.where(o==o.max()))[0][0]]           
             
     def get_target(self,item):    
         imageId=self.imageIds[item]

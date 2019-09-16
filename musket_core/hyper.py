@@ -15,7 +15,7 @@ def expand(value):
     if isinstance(value, list):
         res = {}
 
-        res["range"] = v
+        res["range"] = value
         res["type"] = "float"
 
         return  res
