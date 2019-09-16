@@ -1152,6 +1152,14 @@ class WeightedBlend(DataSet):
     def __len__(self):
         return len(self.predictions[0])
     
+    def blend(self,ds,w=0.5):
+        if isinstance(ds, str):
+            from musket_core import generic
+            return self.blend(generic.parse(ds).predictions(self.parent.name))
+        return self._inner_blend(ds, w)
+    
+    def _inner_blend(self,ds,w=0.5):
+        return WeightedBlend([self,ds],[w,1-w])
     
     def __getitem__(self, item)->PredictionItem:
         

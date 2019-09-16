@@ -772,9 +772,12 @@ class BinarySegmentationDataSet(CSVReferencedDataSet):
         vl = self.get_all_about(imageId)
         rleString = vl[self.rleColumn].values[0]
         if isinstance(rleString, str):
-            if rleString.strip() != "-1":
+            if rleString.strip() != "-1" and len(rleString.strip())>0:
                 return 1
-        return 0    
+        return 0   
+    
+    def isPositive(self,item):
+        return self.get_target(item)==True 
     
     def get_rleString(self, item):
         imageId=item.id

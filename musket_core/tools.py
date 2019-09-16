@@ -428,6 +428,13 @@ class Launch(yaml.YAMLObject):
 
 
     def perform(self,server,reporter:ProgressMonitor):
+        if self.folds is not None:
+            if isinstance(self.folds, str):
+                if len(self.folds)==0:
+                    self.folds=None
+                else:
+                    self.folds=[int (x.strip()) for x in self.folds.split(",")]    
+        #print(self.fold_numbers)
         workPerProject={}
         for e in self.experiments:
             inde=e.index("experiments")
