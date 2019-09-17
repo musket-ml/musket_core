@@ -7,11 +7,13 @@ import shutil
 import zipfile
 import os
 
+from musket_core.kaggle_train_runner import loop, kernel
+
 try:
     from kaggle.api.kaggle_api_extended import KaggleApi
     from kaggle.api_client import ApiClient
 except:
-    print("can't import kaggle")
+    print("can't import kaggle!")
 
 import json
 
@@ -138,6 +140,9 @@ class Server(projects.Workspace):
                 os.remove(path)
 
         print("download complete")
+
+    def runOnKaggle(self, projectPath):
+        loop.MainLoop(kernel.Project(projectPath)).start()
 
     class Java:
         implements = ["com.onpositive.musket_core.IServer"]

@@ -105,3 +105,8 @@ def dumpArray(_arr, pathPrefix:str, ext:str, message,blockSize =1024 * 1024 * 51
             end = min(i + bufLength, l)
             save(pathPrefix + str(ind) + ext,arr[i:end])
             ind = ind + 1
+
+def templates_folder():
+    root = os.path.dirname(__file__)
+
+    return os.path.join(root, "templates")
