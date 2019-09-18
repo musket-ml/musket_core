@@ -259,10 +259,16 @@ class PythonFunction(AbstractType):
                         i=None
                 if i is not None:
                     mm[inpP]=i
-                res=clazz(**mm)
-                if res is None:
+
+                try:
+                    result=clazz(**mm)
+                except:
+                    result = None
+                
+                if result is None:
                     print(f"{clazz} returned None")    
-                return res 
+
+                return result
             return res
         self.clazz=create
 
