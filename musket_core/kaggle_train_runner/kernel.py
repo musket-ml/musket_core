@@ -114,6 +114,8 @@ class Kernel:
 
         self.load()
 
+        self.run_count = 0
+
     def load(self):
         self.meta = utils.kernel_meta(self.get_path(), self.id, self.project.meta["username"], self.project.meta["server"], self.get_title(), self.project.meta["dataset_sources"], self.project.meta["competition_sources"], self.project.meta["kernel_sources"], self.fold, self.project.meta["time"])
 
@@ -160,13 +162,15 @@ class Kernel:
         utils.log(os.path.join(self.get_path(), "kernel.log"), bytes)
 
     def is_complete(self):
+        if self.run_count > 2:
+            return True
+
         return utils.is_complete(self.get_path())
 
     def push(self):
         response = utils.run_kernel(self.get_path())
 
-        if len(response) > 0:
-            print(response)
+        return response
 
     def assemble(self):
         original_experiment = self.project.experiment_folder()
@@ -224,6 +228,8 @@ class Kernel:
         utils.remove(project_path)
 
         utils.download(self.meta["id"], self.get_path())
+
+        #self.run_count += 1
 
 
 

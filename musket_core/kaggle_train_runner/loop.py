@@ -46,7 +46,17 @@ def kernel_status_request_task(kernel: Kernel, on_complete, wait=300, after_run=
 
 def kernel_run_request_task(kernel: Kernel, on_complete, wait=300):
     def task():
-        kernel.push()
+        result = kernel.push()
+
+        if len(result) > 0:
+            print(result);
+
+            if("Maximum batch GPU session count") in result:
+                print("retry will be started after " + str(wait) + " seconds")
+
+                time.sleep(wait)
+
+                task()
 
     print("shedule kernel_run_request_task...")
 
