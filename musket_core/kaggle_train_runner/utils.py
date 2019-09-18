@@ -200,6 +200,12 @@ def log(path, bytes):
 def copy(src, dst):
     return shutil.copytree(src, dst, True)
 
+def copy_file(src, dst):
+    return shutil.copy(src, dst)
+
 def remove(path):
     if os.path.exists(path):
         shutil.rmtree(path)
+
+def listdir(path):
+    return [item for item in os.listdir(path) if not path == ".DS_Store"]

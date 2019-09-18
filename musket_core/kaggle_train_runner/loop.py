@@ -82,6 +82,9 @@ class MainLoop:
         self.project.server.shutdown()
         self.project.server.server_close()
 
+        for item in self.project.kernels:
+            item.assemble()
+
     def start(self):
         self.run_server()
 

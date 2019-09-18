@@ -79,6 +79,9 @@ class Project:
 
                 f.write(dataset_id)
 
+    def experiment_folder(self):
+        return os.path.join(self.root, "experiments", self.meta["experiment"])
+
     def load(self):
         utils.ensure(os.path.join(self.metadataFolder(), "kaggle"))
 
@@ -88,6 +91,8 @@ class Project:
         if self.meta["split_by_folds"]:
             for item in range(self.folds):
                 self.kernels.append(Kernel(item, self, item))
+
+            return
 
         for item in range(self.meta["kernels"]):
             self.kernels.append(Kernel(item, self))
@@ -114,6 +119,9 @@ class Kernel:
 
     def get_path(self):
         return os.path.join(self.project.metadataFolder(), "kaggle", "kernels", "kernel_" + str(self.id))
+
+    def downloaded_experiment(self):
+        return os.path.join(self.get_path(), "project", "experiments", "experiment")
 
     def get_title(self):
         return self.project.meta["project_id"] + "-" + str(self.id)
@@ -159,6 +167,56 @@ class Kernel:
 
         if len(response) > 0:
             print(response)
+
+    def assemble(self):
+        original_experiment = self.project.experiment_folder()
+
+        original_metrics = os.path.join(original_experiment, "metrics")
+        original_weights = os.path.join(original_experiment, "weights")
+
+        downloaded_experiment = self.downloaded_experiment()
+
+        downloaded_metrics = os.path.join(downloaded_experiment, "metrics")
+        downloaded_weights = os.path.join(downloaded_experiment, "weights")
+
+        if not os.path.exists(downloaded_metrics):
+            return
+
+        if not os.path.exists(downloaded_weights):
+            return
+
+        metrics = utils.listdir(downloaded_metrics)
+        weights = utils.listdir(downloaded_weights)
+
+        utils.ensure(original_metrics)
+        utils.ensure(original_weights)
+
+        for item in metrics:
+            src = os.path.join(downloaded_metrics, item)
+            dst = os.path.join(original_metrics, item)
+
+            if os.path.exists(dst):
+                continue
+
+            utils.copy_file(src, dst)
+
+        for item in weights:
+            src = os.path.join(downloaded_weights, item)
+            dst = os.path.join(downloaded_weights, item)
+
+            if os.path.exists(dst):
+                continue
+
+            utils.copy_file(src, dst)
+
+        for item in utils.listdir(downloaded_experiment):
+            src = os.path.join(downloaded_experiment, item)
+            dst = os.path.join(original_experiment, item)
+
+            if os.path.exists(dst):
+                continue
+
+            utils.copy_file(src, dst)
 
     def download(self):
         project_path = os.path.join(self.get_path(), "project")
