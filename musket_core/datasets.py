@@ -335,9 +335,12 @@ class CompositeDataSet(DataSet):
     def __len__(self):
         return self.len
 
-def dataset_provider(func):
-    func.dataset=True
-    return func
+
+def dataset_provider(origin=None,kind=None): 
+    def inner(func): 
+        func.dataset=True
+        return func        
+    return inner #this is the fun_obj mentioned in the above content 
 
 class DirectoryDataSet:
 

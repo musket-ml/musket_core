@@ -123,10 +123,11 @@ def isFinal(metric:str)->bool:
 def cross_validation_stat(cfg:IGenericTaskConfig, metric, stage=None, treshold=0.5, folds=None):
     metrics=[]
     cfg.get_dataset()# this is actually needed
-
+    mDict={}
     if not folds:
         folds = list(range(cfg.folds_count))
-
+        if hasattr(cfg, "_folds"):
+            folds=cfg._folds()
     if isFinal(metric):
         fnc=configloader.load("layers").catalog[metric]
         if hasattr(fnc, "func"):
@@ -134,7 +135,19 @@ def cross_validation_stat(cfg:IGenericTaskConfig, metric, stage=None, treshold=0
         for i in folds:
             fa=FoldsAndStages(cfg,i,stage)
             val=cfg.predictions("validation",i,stage)
-            metrics.append(fnc(fa,val))
+            pv = fnc(fa, val)
+            if isinstance(pv, dict):
+                for k in pv:
+                    if k not in mDict:
+                        mDict[k]=[]
+                    mDict[k].append(pv[k])    
+            else:
+                metrics.append(pv)
+        if len(mDict)>0:
+            rs={}
+            for c in mDict:
+                rs[c]=stat(mDict[c])
+            return rs            
         return stat(metrics)
 
     for i in folds:
@@ -151,6 +164,7 @@ def cross_validation_stat(cfg:IGenericTaskConfig, metric, stage=None, treshold=0
 def holdout_stat(cfg:IGenericTaskConfig, metric,stage=None,treshold=0.5):
     if cfg._reporter is not None and cfg._reporter.isCanceled():
         return {"canceled": True}
+    
     if isFinal(metric):
         fnc=configloader.load("layers").catalog[metric]
         if hasattr(fnc, "func"):
@@ -158,7 +172,10 @@ def holdout_stat(cfg:IGenericTaskConfig, metric,stage=None,treshold=0.5):
         for i in range(cfg.folds_count):
             fa=FoldsAndStages(cfg,i,stage)
             val=cfg.predictions("holdout",i,stage)
-            return float(fnc(fa,val))
+            r = fnc(fa, val)
+            if isinstance(r, dict):
+                return r
+            return float(r)
     predictionDS = get_holdout_prediction(cfg, None, stage)
     val = considerThreshold(predictionDS, metric, treshold)
     eval_metric = generic_config.eval_metric(val, metric, cfg.get_eval_batch())

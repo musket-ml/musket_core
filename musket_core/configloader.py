@@ -19,6 +19,13 @@ builtIns = {
 def isBuiltIn(typeName:str)->bool:
     return typeName in builtIns
 
+def get_object(name):
+    vs=load("layers").catalog[name]
+    return vs 
+
+def has_object(name):
+    return name in load("layers").catalog
+
 class Module:
 
     def __init__(self,dict):

@@ -999,7 +999,9 @@ class CategoryClassificationDataSet(BinaryClassificationDataSet):
             result[self.class2Num[clazz]]=1            
         return result
 
-import math    
+import math
+
+    
 class MultiClassClassificationDataSet(BinaryClassificationDataSet): 
     
     

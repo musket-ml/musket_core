@@ -357,6 +357,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         self.path = None
         self.metrics = []
         self.final_metrics=[]
+        self.experiment_result=None
         self.resume = False
         self.weights = None
         self.transforms=[]
@@ -794,10 +795,36 @@ class GenericTaskConfig(model.IGenericTaskConfig):
                 initial,
                 f)
 
+
+    def _append_metric(self, foldsToExecute, ms, m, s):
+        def isStat(d):
+            return "min" in d and "max" in d and "std" in d and "mean" in d
+        mv = predictions.cross_validation_stat(self, m, s, folds=foldsToExecute)
+        if isinstance(mv, dict) and not isStat(mv):
+            
+            for k in mv:
+                ms[k] = mv[k]
+        else:
+            
+            ms[m] = mv
+        if self.testSplit > 0:
+            mv = predictions.holdout_stat(self, m, s)
+            if isinstance(mv, dict) and not isStat(mv):
+                for k in mv:
+                    ms[k + "_holdout"] = mv[k]
+            
+            else:
+                ms[m + "_holdout"] = mv
+        
+
     def createSummary(self,foldsToExecute, subsample):
         stagesStat=[]
         all_metrics=self.metrics+self.final_metrics
-        metric = self.primary_metric
+        if self.experiment_result is not None:
+            if not self.experiment_result in all_metrics:
+                all_metrics.append(self.experiment_result)
+        
+        metric = self.primary_metric        
         if "val_" in metric:
             metric=metric[4:]
         for stage in range(len(self.stages)):
@@ -805,17 +832,18 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             if self._reporter is not None and self._reporter.isCanceled():
                 return {"canceled": True }
             for m in all_metrics:
-                ms[m]=predictions.cross_validation_stat(self,m,[stage], folds=foldsToExecute)
-                if self.testSplit > 0:
-                    ms[m + "_holdout"] = predictions.holdout_stat(self, m, [stage])                   
+                s = [stage]
+                self._append_metric(foldsToExecute, ms, m, s)
+                        
+                                       
             stagesStat.append(ms)
         all={}
+        s=None;
         for m in all_metrics:
             if self._reporter is not None and self._reporter.isCanceled():
                 return {"canceled": True }
-            all[m] = predictions.cross_validation_stat(self, m, folds=foldsToExecute)
-            if self.testSplit > 0 or self.holdoutArr is not None:
-                all[m + "_holdout"] = predictions.holdout_stat(self, m)
+            self._append_metric(foldsToExecute, all, m, s)
+            
         return {"stages":stagesStat,"allStages":all}
 
     def _adapt_before_fit(self, dataset):

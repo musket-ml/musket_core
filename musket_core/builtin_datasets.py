@@ -1,7 +1,9 @@
 from musket_core.datasets import DataSet,PredictionItem,dataset_provider
 import pandas as pd
 import numpy as np
-from musket_core.context import get_current_project_path
+import os
+from musket_core.context import get_current_project_path,\
+    get_current_project_data_path
 
 class CSVDataSet(DataSet):
     
@@ -31,7 +33,7 @@ class CSVDataSet(DataSet):
 @dataset_provider    
 def from_csv(path,targetColumn:str,featureColumn:str,idColumn:str=None,sep=",",absPath=False):
     if not absPath:
-        path=get_current_project_path()+"/data/"+path 
+        path=os.path.join(get_current_project_data_path(),path) 
     return CSVDataSet(path,targetColumn,featureColumn,idColumn,sep)
 
 

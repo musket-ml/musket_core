@@ -320,11 +320,12 @@ class Project:
         res.append(metrics)
         if os.path.exists(self.commonPath()):
             
-                mods=utils.load_yaml(self.commonPath())                
-                if "imports" in mods:
-                    if isinstance(mods["imports"],list):
-                        for m in mods["imports"]:
-                            res.append(self.module(m))
+                mods=utils.load_yaml(self.commonPath())
+                if mods is not None:                
+                    if "imports" in mods:
+                        if isinstance(mods["imports"],list):
+                            for m in mods["imports"]:
+                                res.append(self.module(m))
                  
         return res
 

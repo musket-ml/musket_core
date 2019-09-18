@@ -120,37 +120,35 @@ def binary_accuracy_numpy(x,y):
 
 
 
-def iou_coef_numpy(outputs, labels, smooth=1):
+def iou_numpy(outputs, labels, smooth=1,negativesValue=1):
     """
     IoU = (|X & Y|)/ (|X or Y|)
     """
+    cs=labels.shape[-1]
+    if cs>1:
+        rr=[]
+        for i in range(cs):
+            rr.append(iou_numpy(outputs[:,:,i:i+1], labels[:,:,i:i+1],negativesValue))
+        return np.mean(rr, axis=0)
     outputs = outputs.squeeze()>0.5
     labels = labels.squeeze()>0.5
-    
+    if labels.max()==0:
+        if (outputs>0.5).max()==0:
+            return negativesValue
     intersection = (outputs & labels).sum()
     union = (outputs | labels).sum()
     
     iou = (intersection + SMOOTH) / (union + SMOOTH)
     return iou
 
-def dice_numpy(labels, outputs):
-    outputs = outputs.squeeze()
-    labels = labels.squeeze()
-    true = (outputs>0.5)
-    pred = (labels>0.5)
 
-    intersection =np.sum (true & pred)
-    im_sum = np.sum(true) + np.sum(pred)
-
-    return 2.0 * intersection / (im_sum + SMOOTH)    
-
-def dice_numpy_zero_is_one( outputs,labels):
+def dice_numpy( outputs,labels,negativesValue=1):
     
     cs=labels.shape[-1]
     if cs>1:
         rr=[]
         for i in range(cs):
-            rr.append(dice_numpy_zero_is_one(outputs[:,:,i:i+1], labels[:,:,i:i+1]))
+            rr.append(dice_numpy(outputs[:,:,i:i+1], labels[:,:,i:i+1],negativesValue))
         return np.mean(rr, axis=0)
     outputs = outputs.squeeze()
     labels = labels.squeeze()
@@ -159,12 +157,31 @@ def dice_numpy_zero_is_one( outputs,labels):
     
     if labels.max()==0:
         if (outputs>0.5).max()==0:
-            return 1
+            return negativesValue
           
     intersection =np.sum (true & pred)
     im_sum = np.sum(true) + np.sum(pred)
 
-    return 2.0 * intersection / (im_sum + SMOOTH)
+    return 2.0 * intersection / (im_sum + SMOOTH)    
+
+def dice_numpy_true_negative_is_one( outputs,labels):    
+    return dice_numpy(outputs,labels,1)
+
+def dice_numpy_skip_true_negative( outputs,labels):
+    return dice_numpy(outputs,labels,None)
+
+def dice_numpy_true_negative_is_zero( outputs,labels):
+    return dice_numpy(outputs,labels,0)
+
+def iou_numpy_true_negative_is_one( outputs,labels):    
+    return iou_numpy(outputs,labels,1)
+
+def iou_numpy_skip_true_negative( outputs,labels):
+    return iou_numpy(outputs,labels,None)
+
+def iou_numpy_true_negative_is_zero( outputs,labels):
+    return iou_numpy(outputs,labels,0)
+    
 
 def dice(true, pred):
     true = tf.to_float(true>0.5)
@@ -197,8 +214,6 @@ def jaccard_distance_loss(y_true, y_pred, smooth=100):
     jac = (intersection + smooth) / (sum_ - intersection + smooth)
     return (1 - jac) * smooth
 EPS = 1e-10
-
-
 
 
 
