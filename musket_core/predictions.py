@@ -7,9 +7,11 @@ from musket_core.datasets import DataSet, PredictionItem,PredictionBlend
 from musket_core.preprocessing import PreprocessedDataSet
 from typing import Union
 import keras
-from musket_core import configloader
+from musket_core import configloader,metrics
 from musket_core.model import IGenericTaskConfig,FoldsAndStages
 from tqdm import tqdm
+import tensorflow as tf
+
 import keras.backend as K
 class Prediction:
     def __init__(self,cfg,fold,stage,name:str,srcDataset=None):
@@ -63,13 +65,22 @@ class Prediction:
             
             pass
         if self.cfg.needsSessionForPrediction:            
-            K.clear_session()
-            value=self.cfg.predict_all_to_dataset(ds,self.fold,self.stage,-1,None,False,path)
-                    
+            #K.clear_session()
+            try:
+                with self.create_session().as_default():
+                    value=self.cfg.predict_all_to_dataset(ds,self.fold,self.stage,-1,None,False,path)
+            finally:        
+                K.clear_session()
         else:    
             value=self.cfg.predict_all_to_dataset(ds,self.fold,self.stage,-1,None,False,path)
         return value
-
+    def create_session(self):
+        config = tf.ConfigProto(
+            gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
+        )
+        config.gpu_options.allow_growth = True
+        sess = tf.Session(config=config)
+        return sess
 
 def get_validation_prediction(cfg,fold:int,stage=None)->DataSet:
     if stage is None:
@@ -112,18 +123,31 @@ def isFinal(metric:str)->bool:
 def cross_validation_stat(cfg:IGenericTaskConfig, metric, stage=None, treshold=0.5, folds=None):
     metrics=[]
     cfg.get_dataset()# this is actually needed
-
+    mDict={}
     if not folds:
         folds = list(range(cfg.folds_count))
-
+        if hasattr(cfg, "_folds"):
+            folds=cfg._folds()
     if isFinal(metric):
         fnc=configloader.load("layers").catalog[metric]
-        #if isinstance(fnc,configloader.PythonFunction):
-        fnc=fnc.func
+        if hasattr(fnc, "func"):
+            fnc=fnc.func    
         for i in folds:
             fa=FoldsAndStages(cfg,i,stage)
-            val=cfg.validation(None,i)
-            metrics.append(fnc(fa,val))
+            val=cfg.predictions("validation",i,stage)
+            pv = fnc(fa, val)
+            if isinstance(pv, dict):
+                for k in pv:
+                    if k not in mDict:
+                        mDict[k]=[]
+                    mDict[k].append(pv[k])    
+            else:
+                metrics.append(pv)
+        if len(mDict)>0:
+            rs={}
+            for c in mDict:
+                rs[c]=stat(mDict[c])
+            return rs            
         return stat(metrics)
 
     for i in folds:
@@ -140,14 +164,18 @@ def cross_validation_stat(cfg:IGenericTaskConfig, metric, stage=None, treshold=0
 def holdout_stat(cfg:IGenericTaskConfig, metric,stage=None,treshold=0.5):
     if cfg._reporter is not None and cfg._reporter.isCanceled():
         return {"canceled": True}
+    
     if isFinal(metric):
         fnc=configloader.load("layers").catalog[metric]
-        #if isinstance(fnc,configloader.PythonFunction):
-        fnc=fnc.func
+        if hasattr(fnc, "func"):
+            fnc=fnc.func    
         for i in range(cfg.folds_count):
             fa=FoldsAndStages(cfg,i,stage)
-            val=cfg.validation(None,i)
-            return fnc(fa,val)
+            val=cfg.predictions("holdout",i,stage)
+            r = fnc(fa, val)
+            if isinstance(r, dict):
+                return r
+            return float(r)
     predictionDS = get_holdout_prediction(cfg, None, stage)
     val = considerThreshold(predictionDS, metric, treshold)
     eval_metric = generic_config.eval_metric(val, metric, cfg.get_eval_batch())

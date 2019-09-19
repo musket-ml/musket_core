@@ -66,9 +66,12 @@ def instrospect(m,clazz):
         v=getattr(m,c)
 
         if inspect.isclass(v):
-            if issubclass(v,clazz):
+            try:
+                if issubclass(v, clazz):
+                    l.append(record(v,clazz.__name__))
+            except:
+                print(dir(clazz))
 
-                l.append(record(v,clazz.__name__))
         if inspect.isfunction(v) and isinstance(clazz,str):
             l.append(record(v, clazz))
     return l

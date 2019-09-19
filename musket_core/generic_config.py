@@ -53,7 +53,10 @@ from musket_core.parralel import  Task
 keras.utils.get_custom_objects().update({'matthews_correlation': musket_core.losses.matthews_correlation})
 keras.utils.get_custom_objects().update({'log_loss': musket_core.losses.log_loss})
 from musket_core import net_declaration as net
+def relu6(x):
+    return K.relu(x, max_value=6)
 
+keras.utils.get_custom_objects()["relu6"]=relu6
 from musket_core.datasets import DataSet, MeanDataSet, BufferedWriteableDS, WriteableDataSet
 
 dataset_augmenters={
@@ -354,6 +357,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         self.path = None
         self.metrics = []
         self.final_metrics=[]
+        self.experiment_result=None
         self.resume = False
         self.weights = None
         self.transforms=[]
@@ -549,9 +553,19 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         return result
 
 
-    def predictions(self,name,fold=None,stage=None)->DataSet:
+
+    def _folds(self):
+        res=[]
+        for i in range(self.folds_count):
+            if os.path.exists(os.path.join(os.path.dirname(self.path),ExecutionConfig(i).weightsPath())):
+                res.append(i)
+        return res        
+
+    def predictions(self,name,fold=None,stage=None)->WriteableDataSet:
         if fold is None:
-            fold=list(range(self.folds_count))
+            fold=self._folds()
+            if name.index("validation")==0:
+                return self.predictions("validation", int(name[-1:]), stage)
         if stage is None:
             stage=list(range(len(self.stages)))    
         return musket_core.predictions.get_predictions(self,name,fold,stage)
@@ -574,17 +588,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             tresh.append(tr.treshold)
         tr = np.mean(np.array(tresh))
         return tr
-
-    def find_optimal_treshold_by_validation2(self,func,stages=None,ds=None,):
-        all=[]
-        for fold in range(self.folds_count):
-            val = self.validation(ds, fold)
-            predsDS=predictions.get_validation_prediction(self,fold,stages)
-            all.append(predsDS)
-
-        resultPredsDS = all[0] if len(all) == 1 else datasets.CompositeDataSet(all)
-        tr = threshold_search(resultPredsDS,func, self.get_eval_batch())
-        return tr.treshold
+    
 
     def find_optimal_treshold_by_holdout(self,func,stages=None):
         predsDS=predictions.get_holdout_prediction(self,None,stages)
@@ -791,39 +795,55 @@ class GenericTaskConfig(model.IGenericTaskConfig):
                 initial,
                 f)
 
+
+    def _append_metric(self, foldsToExecute, ms, m, s):
+        def isStat(d):
+            return "min" in d and "max" in d and "std" in d and "mean" in d
+        mv = predictions.cross_validation_stat(self, m, s, folds=foldsToExecute)
+        if isinstance(mv, dict) and not isStat(mv):
+            
+            for k in mv:
+                ms[k] = mv[k]
+        else:
+            
+            ms[m] = mv
+        if self.testSplit > 0:
+            mv = predictions.holdout_stat(self, m, s)
+            if isinstance(mv, dict) and not isStat(mv):
+                for k in mv:
+                    ms[k + "_holdout"] = mv[k]
+            
+            else:
+                ms[m + "_holdout"] = mv
+        
+
     def createSummary(self,foldsToExecute, subsample):
         stagesStat=[]
         all_metrics=self.metrics+self.final_metrics
-        metric = self.primary_metric
+        if self.experiment_result is not None:
+            if not self.experiment_result in all_metrics:
+                all_metrics.append(self.experiment_result)
+        
+        metric = self.primary_metric        
         if "val_" in metric:
             metric=metric[4:]
         for stage in range(len(self.stages)):
             ms={}
             if self._reporter is not None and self._reporter.isCanceled():
                 return {"canceled": True }
-            #tr=self.find_optimal_treshold_by_validation2(metric, [stage])
-            #tr0 = self.find_optimal_treshold_by_validation(metric, [stage])
             for m in all_metrics:
-               ms[m]=predictions.cross_validation_stat(self,m,[stage], folds=foldsToExecute)
-
-               if self.testSplit > 0:
-                   ms[m + "_holdout"] = predictions.holdout_stat(self, m, [stage])
-                   #if self.testSplit > 0:
-                   #ms[m + "_holdout"] = predictions.holdout_stat(self, m)
-                   #ms[m + "_holdout_with_optimal_treshold"] = predictions.holdout_stat(self, m, [stage],tr)
-                   #ms[m + "_holdout_with_optimal_treshold_mean"] = predictions.holdout_stat(self, m, [stage], tr0)
+                s = [stage]
+                self._append_metric(foldsToExecute, ms, m, s)
+                        
+                                       
             stagesStat.append(ms)
         all={}
-        #tr = self.find_optimal_treshold_by_validation2(metric)
-        #tr0 = self.find_optimal_treshold_by_validation(metric)
+        s=None;
         for m in all_metrics:
             if self._reporter is not None and self._reporter.isCanceled():
                 return {"canceled": True }
-            all[m] = predictions.cross_validation_stat(self, m, folds=foldsToExecute)
-            if self.testSplit > 0 or self.holdoutArr is not None:
-                all[m + "_holdout"] = predictions.holdout_stat(self, m)
-                #all[m + "_holdout_with_optimal_treshold"] = predictions.holdout_stat(self, m, None, tr)
-                #all[m + "_holdout_with_optimal_treshold_mean"] = predictions.holdout_stat(self, m, None, tr0)
+            self._append_metric(foldsToExecute, all, m, s)
+            
         return {"stages":stagesStat,"allStages":all}
 
     def _adapt_before_fit(self, dataset):
@@ -1031,12 +1051,22 @@ class GenericImageTaskConfig(GenericTaskConfig):
     def predict_on_batch(self, mdl, ttflips, batch):
         o1 = np.array(batch.images_aug)
         res = mdl.predict(o1)
+        if isinstance(ttflips, int):
+            for i in range(ttflips):
+               print(i)
+               #pass      
         if ttflips == "Horizontal":
             another = imgaug.augmenters.Fliplr(1.0).augment_images(batch.images_aug)
             res1 = mdl.predict(np.array(another))
             if self.flipPred:
                 res1 = imgaug.augmenters.Fliplr(1.0).augment_images(res1)
             res = (res + res1) / 2.0
+        if ttflips == "Horizontal_and_vertical":
+            s=imgaug.augmenters.Sequential([imgaug.augmenters.Flipud(1.0),imgaug.augmenters.Flipud(1.0)])
+            r0 = self.predict_there_and_back(mdl, imgaug.augmenters.Fliplr(1.0), imgaug.augmenters.Fliplr(1.0), batch.images_aug)
+            r1 = self.predict_there_and_back(mdl, imgaug.augmenters.Flipud(1.0), imgaug.augmenters.Flipud(1.0), batch.images_aug)
+            r2 = self.predict_there_and_back(mdl, s, s, batch.images_aug)    
+            res = (res + r0+r1+r2) / 4.0    
         elif ttflips:
             res = self.predict_with_all_augs(mdl, ttflips, batch)
         return res
@@ -1066,7 +1096,7 @@ class GenericImageTaskConfig(GenericTaskConfig):
         res_270 = 0;
         res_90 = 0
 
-        if ttflips == "Horizontal_and_vertical":
+        if ttflips:
             count = 4.0
 
             res_270 = self.predict_there_and_back(mdl, rot_270, rot_90, input)

@@ -2,6 +2,7 @@ import tensorflow as tf
 from keras import backend as K
 import numpy as np
 import keras
+import tqdm
 # credits: https://www.kaggle.com/guglielmocamporese/macro-f1-score-keras
 
 
@@ -111,22 +112,76 @@ def binary_accuracy_numpy(x,y):
     vl=((x>0.5)==(y>0.5)).sum()
     return vl/y.size 
 
-def iou_coef_numpy(y_true, y_pred, smooth=1):
+
+
+
+# Numpy version
+# Well, it's the same function, so I'm going to omit the comments
+
+
+
+def iou_numpy(outputs, labels, smooth=1,negativesValue=1):
     """
     IoU = (|X & Y|)/ (|X or Y|)
     """
-    intersection = np.sum(y_true * y_pred, axis=(1, 2, 3))
-    union = np.sum(y_true, axis=(1, 2, 3)) + np.sum(y_pred, axis=(1, 2, 3))
-    return 2.0*np.mean((intersection + smooth) / (union + smooth), axis=0)    
+    cs=labels.shape[-1]
+    if cs>1:
+        rr=[]
+        for i in range(cs):
+            rr.append(iou_numpy(outputs[:,:,i:i+1], labels[:,:,i:i+1],negativesValue))
+        return np.mean(rr, axis=0)
+    outputs = outputs.squeeze()>0.5
+    labels = labels.squeeze()>0.5
+    if labels.max()==0:
+        if (outputs>0.5).max()==0:
+            return negativesValue
+    intersection = (outputs & labels).sum()
+    union = (outputs | labels).sum()
+    
+    iou = (intersection + SMOOTH) / (union + SMOOTH)
+    return iou
 
-def dice_numpy(true, pred):
-    true = (true>0.5).astype(np.float)
-    pred = (pred>0.5).astype(np.float)
 
-    intersection =np.sum (true * pred,axis=(1,2,3))
+def dice_numpy( outputs,labels,negativesValue=1):
+    
+    cs=labels.shape[-1]
+    if cs>1:
+        rr=[]
+        for i in range(cs):
+            rr.append(dice_numpy(outputs[:,:,i:i+1], labels[:,:,i:i+1],negativesValue))
+        return np.mean(rr, axis=0)
+    outputs = outputs.squeeze()
+    labels = labels.squeeze()
+    true = (outputs>0.5)
+    pred = (labels>0.5)
+    
+    if labels.max()==0:
+        if (outputs>0.5).max()==0:
+            return negativesValue
+          
+    intersection =np.sum (true & pred)
     im_sum = np.sum(true) + np.sum(pred)
 
-    return 2.0 * np.mean(intersection / (im_sum + EPS),axis=0)    
+    return 2.0 * intersection / (im_sum + SMOOTH)    
+
+def dice_numpy_true_negative_is_one( outputs,labels):    
+    return dice_numpy(outputs,labels,1)
+
+def dice_numpy_skip_true_negative( outputs,labels):
+    return dice_numpy(outputs,labels,None)
+
+def dice_numpy_true_negative_is_zero( outputs,labels):
+    return dice_numpy(outputs,labels,0)
+
+def iou_numpy_true_negative_is_one( outputs,labels):    
+    return iou_numpy(outputs,labels,1)
+
+def iou_numpy_skip_true_negative( outputs,labels):
+    return iou_numpy(outputs,labels,None)
+
+def iou_numpy_true_negative_is_zero( outputs,labels):
+    return iou_numpy(outputs,labels,0)
+    
 
 def dice(true, pred):
     true = tf.to_float(true>0.5)
@@ -159,8 +214,6 @@ def jaccard_distance_loss(y_true, y_pred, smooth=100):
     jac = (intersection + smooth) / (sum_ - intersection + smooth)
     return (1 - jac) * smooth
 EPS = 1e-10
-
-
 
 
 

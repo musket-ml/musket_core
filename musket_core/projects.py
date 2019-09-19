@@ -2,7 +2,7 @@ from musket_core import experiment,structure_constants, builtin_datasets
 from musket_core.context import context
 from musket_core import datasets,visualization,utils
 from musket_core import parralel
-from musket_core import dataset_analizers,dataset_visualizers
+from musket_core import dataset_analizers,dataset_visualizers,metrics
 import keras
 import  musket_core.model
 from typing import Collection
@@ -317,13 +317,15 @@ class Project:
         res.append(dataset_analizers)
         res.append(dataset_visualizers)
         res.append(builtin_datasets)
+        res.append(metrics)
         if os.path.exists(self.commonPath()):
             
-                mods=utils.load_yaml(self.commonPath())                
-                if "imports" in mods:
-                    if isinstance(mods["imports"],list):
-                        for m in mods["imports"]:
-                            res.append(self.module(m))
+                mods=utils.load_yaml(self.commonPath())
+                if mods is not None:                
+                    if "imports" in mods:
+                        if isinstance(mods["imports"],list):
+                            for m in mods["imports"]:
+                                res.append(self.module(m))
                  
         return res
 

@@ -1,12 +1,14 @@
 import imageio
 import cv2 as cv
-
+import pandas as pd
 from musket_core import datasources as datasources, dsconfig as dsconfig
-from musket_core.datasets import PredictionItem, ImageKFoldedDataSet, DataSetLoader, NullTerminatable
+from musket_core.datasets import PredictionItem, ImageKFoldedDataSet, DataSetLoader, NullTerminatable,DataSet
+from musket_core import context
 import os
 import  numpy as np
 import random
 import scipy
+import tqdm
 import imgaug
 
 class NegativeDataSet:
@@ -586,3 +588,462 @@ class NoChangeDataSetImageClassificationImage(ImageKFoldedDataSet):
                         yield x,y,r
                     else: yield x,y
         return NullTerminatable(),NullTerminatable(),r
+    
+    
+class AbstractImagePathDataSet(DataSet):
+    
+    def __init__(self,imagePath):
+        self.images={}
+        if isinstance(imagePath, list): 
+            for v in imagePath:
+                self.addPath(v)
+        else: 
+            self.addPath(imagePath)
+        self.dim=3 
+
+    def addPath(self, imagePath):
+        p0 = os.path.join(context.get_current_project_data_path(), imagePath)
+        if not os.path.exists(p0):
+            p0 = imagePath
+        ld0 = os.listdir(p0)
+        for x in ld0:
+            fp = os.path.join(p0, x)
+            self.images[x] = fp
+            self.images[x[:-4]] = fp
+        
+    
+    def get_image(self,im_id):
+        im=imageio.imread(self.images[im_id])
+        if len(im.shape)!=3:
+            im=np.expand_dims(im, -1)
+        if im.shape[2]!=self.dim:
+            if self.dim==3:
+                im=np.concatenate([im,im,im],axis=2)
+            elif self.dim==1:         
+                im=np.mean(im,axis=2)
+            else:
+                raise ValueError("Unsupported conversion")    
+        return im 
+        
+    def __getitem__(self, item)->PredictionItem:
+        raise ValueError()
+    
+class CSVReferencedDataSet(AbstractImagePathDataSet):        
+    
+    def __init__(self,imagePath,csvPath,imColumn):
+        super().__init__(imagePath)
+        self.imColumn=imColumn
+        self.data=pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath))
+        self.splitColumns={}
+        for m in self.data.columns:
+            parts=m.split("_")
+            ind=0
+            for col in parts:                
+                if not col in self.data.columns:
+                    try:
+                        vl=[x[ind] for x in self.data[m].str.split("_")]
+                        self.data.insert(0,col,value=vl)
+                        self.splitColumns[col]=m
+                    except:
+                        pass    
+                ind=ind+1
+        self.imageIds=sorted(list(set(self.get_values(imColumn))))                            
+    
+    def get_values(self,col):
+        return self.data[col]
+            
+    def __len__(self):
+        return len(self.imageIds)
+    
+    def get_all_about(self,item):
+        return self.data[self.data[self.imColumn]==item]
+    
+    def __getitem__(self, item)->PredictionItem:
+        raise ValueError()
+    
+    def _encode_template(self,template_id,template,val):
+        rs=[]
+        for q in template:
+            v=val[q]
+            rs.append(v)
+            del val[q]
+        val[template_id]="_".join(rs)
+        return val    
+    
+    def _recode(self,seq):
+        
+        templates={}
+        for q in self.splitColumns:
+            r=self.splitColumns[q]
+            templates[r]=r.split("_")
+            
+        for item in seq:            
+            for t in templates:
+                self._encode_template(t,templates[t],item)
+        return seq        
+                    
+
+def mask2rle_relative(img, width, height):
+    rle = []
+    lastColor = 0;
+    currentPixel = 0;
+    runStart = -1;
+    runLength = 0;
+
+    for x in range(width):
+        for y in range(height):
+            currentColor = img[x][y]
+            if currentColor != lastColor:
+                if currentColor == 255:
+                    runStart = currentPixel;
+                    runLength = 1;
+                else:
+                    rle.append(str(runStart));
+                    rle.append(str(runLength));
+                    runStart = -1;
+                    runLength = 0;
+                    currentPixel = 0;
+            elif runStart > -1:
+                runLength += 1
+            lastColor = currentColor;
+            currentPixel+=1;
+
+    return " ".join(rle)
+
+def rle2mask_relative(rle, shape):
+    width=shape[0]
+    height=shape[1]
+    mask= np.zeros(width* height)
+    array = np.asarray([int(x) for x in rle.split()])
+    starts = array[0::2]
+    lengths = array[1::2]
+
+    current_position = 0
+    for index, start in enumerate(starts):
+        current_position += start
+        mask[current_position:current_position+lengths[index]] = 255
+        current_position += lengths[index]
+
+    return mask.reshape(width, height)
+
+def rle_encode(img):
+    '''
+    img: numpy array, 1 - mask, 0 - background
+    Returns run length as string formated
+    '''
+    pixels = img.flatten()
+    pixels = np.concatenate([[0], pixels, [0]])
+    runs = np.where(pixels[1:] != pixels[:-1])[0] + 1
+    runs[1::2] -= runs[::2]
+    return ' '.join(str(x) for x in runs)
+ 
+def rle_decode(mask_rle, shape):
+    '''
+    mask_rle: run-length as string formated (start length)
+    shape: (height,width) of array to return 
+    Returns numpy array, 1 - mask, 0 - background
+
+    '''
+    s = mask_rle.split()
+    starts, lengths = [np.asarray(x, dtype=int) for x in (s[0:][::2], s[1:][::2])]
+    starts -= 1
+    ends = starts + lengths
+    img = np.zeros(shape[0]*shape[1], dtype=np.uint8)
+    for lo, hi in zip(starts, ends):
+        img[lo:hi] = 1
+    return img.reshape(shape)
+    
+
+class BinarySegmentationDataSet(CSVReferencedDataSet):    
+    
+    def __init__(self,imagePath,csvPath,imColumn,rleColumn=None,maskShape=None,rMask=True,isRel=False):   
+        super().__init__(imagePath,csvPath,imColumn)
+        self.rleColumn=rleColumn
+        self.maskShape=maskShape
+        self.rMask=rMask
+        self.rle_decode=rle_decode
+        self.rle_encode=rle_encode
+        if isRel:
+            self.rle_decode=rle2mask_relative
+            self.rle_encode=mask2rle_relative
+        
+    def get_target(self,item):    
+        imageId=self.imageIds[item]
+        vl = self.get_all_about(imageId)
+        rleString = vl[self.rleColumn].values[0]
+        if isinstance(rleString, str):
+            if rleString.strip() != "-1" and len(rleString.strip())>0:
+                return 1
+        return 0   
+    
+    def isPositive(self,item):
+        return self.get_target(item)==True 
+    
+    def get_rleString(self, item):
+        imageId=item.id
+        vl = self.get_all_about(imageId)
+        rleString = vl[self.rleColumn].values[0]
+        if isinstance(rleString,float):
+            if math.isnan(rleString):
+                return ""
+        return rleString
+        
+    def get_mask(self, image,imShape):
+        prediction = None
+        vl = self.get_all_about(image)
+        rleString = vl[self.rleColumn].values[0]
+        if isinstance(rleString, str):
+            if rleString.strip() != "-1":
+                shape = (imShape[0], imShape[1])
+                if self.maskShape is not None:
+                    shape = self.maskShape
+                if self.rMask:
+                    prediction = self.rle_decode(rleString, (shape[1],shape[0]))
+                else:
+                    prediction = self.rle_decode(rleString, shape)
+                
+                prediction=np.rot90(prediction)
+                prediction=np.flipud(prediction)
+                prediction = np.expand_dims(prediction,2).astype(np.bool)
+                
+        if prediction is None:
+            prediction = np.zeros((imShape[0], imShape[1], 1), dtype=np.bool)
+        return prediction
+    
+    def __getitem__(self, item)->PredictionItem:
+        imageId=self.imageIds[item]
+        image=self.get_image(imageId)
+        prediction = self.get_mask(imageId,image.shape)
+        return PredictionItem(imageId,image,prediction)
+    
+
+    def _to_rle(self, o):
+        o = np.flipud(o)
+        o = np.rot90(o, -1)
+        rle = self.rle_encode(o)
+        return rle
+
+    def encode(self,item:PredictionItem,encode_y=False,treshold=0.5):
+        if isinstance(item, PredictionItem):
+            imageId=item.id
+            if encode_y:
+                o=item.y
+            else:    
+                o=item.prediction
+            if (o.dtype!=np.bool):
+                    o=o>treshold    
+            rle = self._to_rle(o)
+            return { self.imColumn:imageId,self.rleColumn:rle}        
+        if isinstance(item, DataSet):
+            res=[]            
+            for i in tqdm.tqdm(range(len(item)),"Encoding dataset"):
+                q=item[i]
+                res.append(self.encode(q,encode_y,treshold))                
+            return pd.DataFrame(res,columns=[self.imColumn,self.rleColumn])     
+
+class MultiClassSegmentationDataSet(BinarySegmentationDataSet):    
+    
+    def __init__(self,imagePath,csvPath,imColumn,rleColumn,clazzColumn,maskShape=None,rMask=True,isRel=False):   
+        super().__init__(imagePath,csvPath,imColumn,rleColumn,maskShape,rMask,isRel)
+        self.clazzColumn=clazzColumn    
+        self.classes=sorted(list(set(self.data[clazzColumn].values)))
+        self.class2Num={}
+        self.num2class={}
+        num=0
+        for c in self.classes:
+            self.class2Num[c]=num
+            self.num2class[num]=c
+            num=num+1
+            
+    def encode(self,item:PredictionItem,encode_y=False,treshold=0.5):
+        if isinstance(item, PredictionItem):
+            raise NotImplementedError("Multiclass segmentation is only capable to encode datasets")       
+        if isinstance(item, DataSet):
+            res=[]            
+            for i in tqdm.tqdm(range(len(item)),"Encoding dataset"):
+                q=item[i]
+                imageId=q.id
+                for j in range(len(self.classes)):
+                    if encode_y:
+                        vl=q.y[:,:,j:j+1]>treshold
+                    else:
+                        vl=q.prediction[:,:,j:j+1]>treshold
+                    rle=self._to_rle(vl)
+                    res.append({ self.imColumn:imageId,self.rleColumn:rle,self.clazzColumn:self.num2class[j]})
+            res=self._recode(res)
+                    
+            clns=[]
+            for c in self.splitColumns:
+                if not self.splitColumns[c] in clns:
+                    clns.append(self.splitColumns[c])
+            r=[self.imColumn,self.clazzColumn,self.rleColumn]
+            for c in r:
+                if not c in self.splitColumns:
+                    clns.append(c)
+            return pd.DataFrame(res,columns=clns)            
+        
+    def get_target(self,item):    
+        imageId=self.imageIds[item]
+        vl = self.get_all_about(imageId)
+        for i in range(len(vl)):
+            rleString = vl[self.rleColumn].values[i]
+            if isinstance(rleString, str):
+                if rleString.strip() != "-1":
+                    return 1
+        return 0    
+    
+    
+    def get_mask(self, image,imShape):
+        prediction = np.zeros((imShape[0], imShape[1], len(self.classes)), dtype=np.bool)
+        vl = self.get_all_about(image)
+        rle=vl[self.rleColumn].values
+        classes=vl[self.clazzColumn].values
+        for i in range(len(vl)):
+            rleString = rle[i]
+            clazz=classes[i]
+            if isinstance(rleString, str):
+                if rleString.strip() != "-1":
+                    shape = (imShape[0], imShape[1])
+                    if self.maskShape is not None:
+                        shape = self.maskShape
+                    if self.rMask:     
+                        lp = self.rle_decode(rleString, (shape[1],shape[0]))
+                        
+                    else:
+                        lp = self.rle_decode(rleString, shape)
+                    lp=np.rot90(lp)
+                    lp=np.flipud(lp)        
+                    prediction[:,:,self.class2Num[clazz]]=lp        
+        return prediction
+    
+    def __getitem__(self, item)->PredictionItem:
+        imageId=self.imageIds[item]
+        image=self.get_image(imageId)
+        prediction = self.get_mask(imageId,image.shape)
+        return PredictionItem(imageId,image,prediction)
+
+
+
+class BinaryClassificationDataSet(CSVReferencedDataSet): 
+    
+
+    def initClasses(self, clazzColumn):
+        return sorted(list(set(self.data[clazzColumn].values)))
+
+    def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
+        super().__init__(imagePath,csvPath,imColumn)
+        self.clazzColumn=clazzColumn    
+        self.classes=self.initClasses(clazzColumn)
+        self.class2Num={}
+        self.num2Class={}        
+        num=0
+        for c in self.classes:
+            self.class2Num[c]=num
+            self.num2Class[num]=c
+            num=num+1            
+            
+    def get_target(self,item):    
+        imageId=self.imageIds[item]
+        vl = self.get_all_about(imageId)        
+        result=np.zeros((1),dtype=np.bool)
+        for i in range(len(vl)):
+            clazz = vl[self.clazzColumn].values[i]
+            if self.class2Num[clazz]==1:
+                result[0]=1                
+        return result        
+            
+    def __getitem__(self, item)->PredictionItem:
+        imageId=self.imageIds[item]
+        image=self.get_image(imageId)
+        prediction = self.get_target(item)
+        return PredictionItem(imageId,image,prediction)
+    
+    def _encode_class(self,o,treshold):
+        o=o>treshold
+        res=[]
+        for i in range(len(o)):
+            if o[i]==True:
+                res.append(self.num2Class[i])
+        return " ".join(res)
+    
+    def encode(self,item:PredictionItem,encode_y=False,treshold=0.5):
+        if isinstance(item, PredictionItem):
+            imageId=item.id
+            if encode_y:
+                o=item.y
+            else:    
+                o=item.prediction
+            
+            return { self.imColumn:imageId,self.clazzColumn:self._encode_class(o,treshold)}        
+        if isinstance(item, DataSet):
+            res=[]            
+            for i in tqdm.tqdm(range(len(item)),"Encoding dataset"):
+                q=item[i]
+                res.append(self.encode(q,encode_y,treshold))                
+            return pd.DataFrame(res,columns=[self.imColumn,self.clazzColumn])  
+    
+class CategoryClassificationDataSet(BinaryClassificationDataSet): 
+    
+    def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
+        super().__init__(imagePath,csvPath,imColumn)
+        
+    def _encode_class(self,o):
+        return self.num2Class[(np.where(o==o.max()))[0][0]]           
+            
+    def get_target(self,item):    
+        imageId=self.imageIds[item]
+        vl = self.get_all_about(imageId)        
+        result=np.zeros((len(self.classes)),dtype=np.bool)                
+        for i in range(len(vl)):
+            clazz = vl[self.clazzColumn].values[i]
+            result[self.class2Num[clazz]]=1            
+        return result
+
+import math
+
+    
+class MultiClassClassificationDataSet(BinaryClassificationDataSet): 
+    
+    
+    def initClasses(self, clazzColumn):
+        realC=set()
+        tc=set(self.data[clazzColumn].values)
+        for v in tc:
+            if isinstance(v, float):
+                if math.isnan(v):
+                    continue
+            if len(v.strip())==0:
+                continue
+            if " " in v:
+                for w in v.split(" "):
+                    realC.add(w.strip())
+            if "|" in v:
+                for w in v.split("|"):
+                    realC.add(w.strip())
+        return sorted(list(realC))            
+    
+    def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
+        super().__init__(imagePath,csvPath,imColumn,clazzColumn)                
+            
+    def get_target(self,item):    
+        imageId=self.imageIds[item]
+        vl = self.get_all_about(imageId)        
+        result=np.zeros((len(self.classes)),dtype=np.bool)                
+        for i in range(len(vl)):
+            
+            clazz = vl[self.clazzColumn].values[i]
+            if isinstance(clazz, float):
+                if math.isnan(clazz):
+                    continue
+            if len(clazz.strip())==0:
+                continue
+            if " " in clazz:
+                for w in clazz.split(" "):
+                    result[self.class2Num[w]]=1
+            elif "|" in clazz:
+                for w in clazz.split("|"):
+                    result[self.class2Num[w]]=1
+            else:
+                result[self.class2Num[clazz.strip()]]=1        
+                        
+        return result    

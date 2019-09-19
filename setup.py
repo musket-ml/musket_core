@@ -14,5 +14,5 @@ setup(name='musket_core',
 "opencv-python",
 "h5py",
 "tqdm",
-"segmentation_models", "lightgbm"],
+"segmentation_models", "lightgbm", "async_promises"],
       zip_safe=False)

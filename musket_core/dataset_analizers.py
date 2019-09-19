@@ -350,7 +350,13 @@ def ground_truth_vs_prediction(x,y):
         return "Correct"
     return "Incorrect"
 
+@visualization.prediction_analizer
+def void_analizer(x,y):
+    return "Ok"
 
+@visualization.dataset_analizer
+def void_data_analizer(*args):
+    return "Ok"
 
 class WordDS(datasets.DataSet):
     

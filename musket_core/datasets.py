@@ -19,7 +19,6 @@ from musket_core import utils
 AUGMENTER_QUEUE_LIMIT=10
 USE_MULTIPROCESSING=False
 
-
 class PredictionItem:
     def __init__(self, path, x, y, prediction = None):
         self.x=x
@@ -75,6 +74,19 @@ class WriteableDataSet(DataSet):
 
     def commit(self):
         raise ValueError("Not implemented")
+    
+    def blend(self,ds,w=0.5):
+        if isinstance(ds, str):
+            from musket_core import generic
+            return self.blend(generic.parse(ds).predictions(self.parent.name))
+        return self._inner_blend(ds, w)
+    
+    def dump(self,path,treshold=0.5,encode_y=False):
+        res=self.root().encode(self,treshold=treshold,encode_y=encode_y)
+        res.to_csv(path,index=False) 
+        
+    def _inner_blend(self,ds,w=0.5):
+        raise NotImplementedError("Not supported")                    
 
 def get_id(d:DataSet)->str:
     if hasattr(d,"id"):
@@ -167,11 +179,11 @@ class DataSetLoader:
 
     def createBatch(self, bx, by, ids):
         if len(by[0].shape)>1:
-            return imgaug.imgaug.Batch(data=ids, images=bx,
+            return imgaug.augmentables.Batch(data=ids, images=bx,
                                        segmentation_maps=[imgaug.SegmentationMapOnImage(x, shape=x.shape) for x
                                                           in by])
         else:
-            r=imgaug.imgaug.Batch(data=[ids,by], images=bx)
+            r=imgaug.augmentables.Batch(data=[ids,by], images=bx)
             return r
 
     def load(self):
@@ -323,9 +335,12 @@ class CompositeDataSet(DataSet):
     def __len__(self):
         return self.len
 
-def dataset_provider(func):
-    func.dataset=True
-    return func
+
+def dataset_provider(origin=None,kind=None): 
+    def inner(func): 
+        func.dataset=True
+        return func        
+    return inner #this is the fun_obj mentioned in the above content 
 
 class DirectoryDataSet:
 
@@ -961,6 +976,10 @@ class BufferedWriteableDS(WriteableDataSet):
 
     def __len__(self):
         return len(self.parent)
+    
+    def _inner_blend(self,ds,w=0.5):
+        pr=self.predictions*w+ds.predictions*(1-w)
+        return BufferedWriteableDS(self.parent,self.name,None,pr)
 
     def __getitem__(self, item):
         it = self.parent[item]
@@ -993,6 +1012,9 @@ class DirectWriteableDS(WriteableDataSet):
 
     def __len__(self):
         return len(self.parent)
+    
+    def _inner_blend(self,ds,w=0.5):
+        return WeightedBlend([self,ds],[w,1-w])
 
     def __getitem__(self, item):
         it = self.parent[item]
@@ -1040,6 +1062,9 @@ class CompressibleWriteableDS(WriteableDataSet):
 
     def commit(self):
         pass
+    
+    def _inner_blend(self,ds,w=0.5):
+        return WeightedBlend([self,ds],[w,1-w])
 
     def __len__(self):
         return len(self.parent)
@@ -1065,6 +1090,8 @@ class CompressibleWriteableDS(WriteableDataSet):
 
     def saveItem(self, path:str, item):
         dire = os.path.dirname(path)
+        if item is None:
+            raise ValueError("Should never happen")
         if self.asUints:
             if self.scale<=255:
                 item=(item*self.scale).astype(np.uint8)
@@ -1128,6 +1155,14 @@ class WeightedBlend(DataSet):
     def __len__(self):
         return len(self.predictions[0])
     
+    def blend(self,ds,w=0.5):
+        if isinstance(ds, str):
+            from musket_core import generic
+            return self.blend(generic.parse(ds).predictions(self.parent.name))
+        return self._inner_blend(ds, w)
+    
+    def _inner_blend(self,ds,w=0.5):
+        return WeightedBlend([self,ds],[w,1-w])
     
     def __getitem__(self, item)->PredictionItem:
         
@@ -1164,4 +1199,4 @@ class TransformPrediction(DataSet):
     def __getitem__(self, item)->PredictionItem:        
         z=self.parent[item]
         r= PredictionItem(z.id,z.x,z.y,self.func(z.prediction))
-        return r      
+        return r

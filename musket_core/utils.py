@@ -6,12 +6,13 @@ from threading import Lock
 
 _l=Lock()
 
-
 def load_yaml(path):
     _l.acquire()
     try:
+        yaml_load = lambda x: yaml.load(x, Loader=yaml.Loader)
+
         with open(path, "r") as f:
-            return yaml.load(f);
+            return yaml_load(f);
     finally:
         _l.release()
 
@@ -104,3 +105,8 @@ def dumpArray(_arr, pathPrefix:str, ext:str, message,blockSize =1024 * 1024 * 51
             end = min(i + bufLength, l)
             save(pathPrefix + str(ind) + ext,arr[i:end])
             ind = ind + 1
+
+def templates_folder():
+    root = os.path.dirname(__file__)
+
+    return os.path.join(root, "templates")
