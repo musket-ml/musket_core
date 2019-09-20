@@ -259,10 +259,16 @@ class PythonFunction(AbstractType):
                         i=None
                 if i is not None:
                     mm[inpP]=i
-                res=clazz(**mm)
-                if res is None:
+
+                try:
+                    result=clazz(**mm)
+                except:
+                    result = None
+                
+                if result is None:
                     print(f"{clazz} returned None")    
-                return res 
+
+                return result
             return res
         self.clazz=create
 
@@ -383,13 +389,16 @@ class Property:
 
 loaded={}
 
+def yaml_load(f):
+    return yaml.load(f, Loader=yaml.Loader)
+
 def load(name: str)  -> Module:
     if name in loaded:
         return loaded[name]
     pth = os.path.dirname(os.path.abspath(__file__))
     fName = name if name.endswith('.raml') else name + ".raml"
     with open(os.path.join(pth,"schemas", fName), "r") as f:
-        cfg = yaml.load(f);
+        cfg = yaml_load(f);
     result = Module(cfg)
     loaded[name]= result;
     if 'uses' in cfg:
@@ -415,7 +424,8 @@ def parse(name:str,p,extra=None):
                 m=load(dialect.lower())
                 #dialect=
         with open(p, "r") as f:
-            base=yaml.load(f)
+            base=yaml_load(f)
+
             if extra is not None:
                 extrad=utils.load_yaml(extra)
                 for v in extrad:

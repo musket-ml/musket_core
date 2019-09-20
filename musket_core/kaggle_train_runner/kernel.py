@@ -79,6 +79,9 @@ class Project:
 
                 f.write(dataset_id)
 
+    def experiment_folder(self):
+        return os.path.join(self.root, "experiments", self.meta["experiment"])
+
     def load(self):
         utils.ensure(os.path.join(self.metadataFolder(), "kaggle"))
 
@@ -88,6 +91,8 @@ class Project:
         if self.meta["split_by_folds"]:
             for item in range(self.folds):
                 self.kernels.append(Kernel(item, self, item))
+
+            return
 
         for item in range(self.meta["kernels"]):
             self.kernels.append(Kernel(item, self))
@@ -109,11 +114,16 @@ class Kernel:
 
         self.load()
 
+        self.run_count = 0
+
     def load(self):
         self.meta = utils.kernel_meta(self.get_path(), self.id, self.project.meta["username"], self.project.meta["server"], self.get_title(), self.project.meta["dataset_sources"], self.project.meta["competition_sources"], self.project.meta["kernel_sources"], self.fold, self.project.meta["time"])
 
     def get_path(self):
         return os.path.join(self.project.metadataFolder(), "kaggle", "kernels", "kernel_" + str(self.id))
+
+    def downloaded_experiment(self):
+        return os.path.join(self.get_path(), "project", "experiments", "experiment")
 
     def get_title(self):
         return self.project.meta["project_id"] + "-" + str(self.id)
@@ -152,13 +162,65 @@ class Kernel:
         utils.log(os.path.join(self.get_path(), "kernel.log"), bytes)
 
     def is_complete(self):
+        if self.run_count > 2:
+            return True
+
         return utils.is_complete(self.get_path())
 
     def push(self):
         response = utils.run_kernel(self.get_path())
 
-        if len(response) > 0:
-            print(response)
+        return response
+
+    def assemble(self):
+        original_experiment = self.project.experiment_folder()
+
+        original_metrics = os.path.join(original_experiment, "metrics")
+        original_weights = os.path.join(original_experiment, "weights")
+
+        downloaded_experiment = self.downloaded_experiment()
+
+        downloaded_metrics = os.path.join(downloaded_experiment, "metrics")
+        downloaded_weights = os.path.join(downloaded_experiment, "weights")
+
+        if not os.path.exists(downloaded_metrics):
+            return
+
+        if not os.path.exists(downloaded_weights):
+            return
+
+        metrics = utils.listdir(downloaded_metrics)
+        weights = utils.listdir(downloaded_weights)
+
+        utils.ensure(original_metrics)
+        utils.ensure(original_weights)
+
+        for item in metrics:
+            src = os.path.join(downloaded_metrics, item)
+            dst = os.path.join(original_metrics, item)
+
+            if os.path.exists(dst):
+                continue
+
+            utils.copy_file(src, dst)
+
+        for item in weights:
+            src = os.path.join(downloaded_weights, item)
+            dst = os.path.join(original_weights, item)
+
+            if os.path.exists(dst):
+                continue
+
+            utils.copy_file(src, dst)
+
+        for item in utils.listdir(downloaded_experiment):
+            src = os.path.join(downloaded_experiment, item)
+            dst = os.path.join(original_experiment, item)
+
+            if os.path.exists(dst):
+                continue
+
+            utils.copy_file(src, dst)
 
     def download(self):
         project_path = os.path.join(self.get_path(), "project")
@@ -166,6 +228,8 @@ class Kernel:
         utils.remove(project_path)
 
         utils.download(self.meta["id"], self.get_path())
+
+        self.run_count += 1
 
 
 
