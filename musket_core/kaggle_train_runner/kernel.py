@@ -206,7 +206,7 @@ class Kernel:
 
         for item in weights:
             src = os.path.join(downloaded_weights, item)
-            dst = os.path.join(downloaded_weights, item)
+            dst = os.path.join(original_weights, item)
 
             if os.path.exists(dst):
                 continue
@@ -229,7 +229,7 @@ class Kernel:
 
         utils.download(self.meta["id"], self.get_path())
 
-        #self.run_count += 1
+        self.run_count += 1
 
 
 
