@@ -40,10 +40,20 @@ class ByOneMetric:
             predictions=args[0]   
         return self.eval(predictions)
 
-class SimpleMetric(ByOneMetric):    
+class FunctionalMetric(ByOneMetric):
+    
+    def __init__(self, function):
+        if not hasattr(function, "__name__"):
+            self.name=function.__class__.__name__
+        else:
+            self.name=function.__name__
+        pass
+
+
+class SimpleMetric(FunctionalMetric):    
 
     def __init__(self,function):
-        self.name=function.__name__
+        super().__init__(function)
         self.values=[]
         self.mfunc=function
         pass
@@ -56,10 +66,10 @@ class SimpleMetric(ByOneMetric):
         dict[self.name]=np.mean(self.values)        
 
 
-class WithTreshold(ByOneMetric):    
+class WithTreshold(FunctionalMetric):    
 
     def __init__(self,function,cnt=100.0):
-        self.name=function.__name__
+        super().__init__(function)
         self.vals=[[] for x in range(int(cnt))]
         self.cnt=cnt
         self.mfunc=function

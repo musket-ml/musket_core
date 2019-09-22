@@ -94,6 +94,7 @@ class Experiment:
 
         else:
             cfg = generic.parse(self.getConfigYamlConcretePath(),extra)
+        cfg.gpus = self.gpus
         if self.allowResume:
             cfg.setAllowResume(self.allowResume)
         if self.project is not None:
