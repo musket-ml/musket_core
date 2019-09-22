@@ -233,15 +233,16 @@ def eval_metric(predsDS:DataSet, func, batch_size:int = -1):
         if (func=="binary_accuracy"):
             func=losses.binary_accuracy_numpy
         elif (func=="iou_coef"):
-            func=losses.iou_coef_numpy
+            func=losses.iou_numpy_true_negative_is_one
         elif (func=="dice"):
             func=losses.dice_numpy
         else:    
             def wrapped(x,y):
-                with tf.device("/cpu:0"):
-                    v1= K.constant(x)
-                    v2 = K.constant(y)
-                    return K.eval(func_(v1,v2))
+                with tf.Session().as_default():
+                    with tf.device("/cpu:0"):
+                        v1= K.constant(x)
+                        v2 = K.constant(y)
+                        return K.eval(func_(v1,v2))
             func=wrapped
 
     result = applyFunctionToDS(predsDS, func, batch_size)

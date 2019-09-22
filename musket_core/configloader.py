@@ -160,6 +160,7 @@ class AbstractType:
 
     def constructArgs(self,dct,clearCustom=False):
         #for c in dct:
+        
         if type(dct)==str or type(dct)==int:
 
             return dct
@@ -173,6 +174,13 @@ class AbstractType:
                 argMap={}
                 for i in range(min(len(dct),len(pos))):
                     prop = pos[i]
+                    if isinstance(prop,str):
+                        try:
+                            v=self.property(prop)
+                            if v is not None:
+                                prop=v
+                        except:
+                            pass          
                     value = dct[i]
                     if self.module != None  and isinstance(prop,Property) and prop.propRange in self.module.catalog:
                         propRange = self.module.catalog[prop.propRange]

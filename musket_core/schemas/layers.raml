@@ -42,12 +42,12 @@ types:
       units:
         type: integer
         (meta.positional): true
-      recurrent_activation?:
-        (meta.positional): true
-        type: string
+      
       return_sequences?:
         (meta.positional): true
         type: boolean
+      recurrent_activation?:
+        type: string  
       activation?:
         type: string
       return_state?:
@@ -122,7 +122,7 @@ types:
     properties:
       units:
         type: integer
-        (meta.positional): true
+        (meta.positional): true     
       activation?:
         (meta.positional): true
         type: string

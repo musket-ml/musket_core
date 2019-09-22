@@ -594,6 +594,8 @@ class AbstractImagePathDataSet(DataSet):
     
     def __init__(self,imagePath):
         self.images={}
+        if imagePath is None:
+            return;
         if isinstance(imagePath, list): 
             for v in imagePath:
                 self.addPath(v)
@@ -612,7 +614,7 @@ class AbstractImagePathDataSet(DataSet):
             self.images[x[:-4]] = fp
         
     
-    def get_image(self,im_id):
+    def get_value(self,im_id):
         im=imageio.imread(self.images[im_id])
         if len(im.shape)!=3:
             im=np.expand_dims(im, -1)
@@ -630,10 +632,15 @@ class AbstractImagePathDataSet(DataSet):
     
 class CSVReferencedDataSet(AbstractImagePathDataSet):        
     
+    def readCSV(self,csvPath):
+        try:
+            self.data=pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath))
+        except:
+            self.data=pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath),encoding="cp1251")
     def __init__(self,imagePath,csvPath,imColumn):
         super().__init__(imagePath)
         self.imColumn=imColumn
-        self.data=pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath))
+        self.readCSV(csvPath)
         self.splitColumns={}
         for m in self.data.columns:
             parts=m.split("_")
@@ -812,7 +819,7 @@ class BinarySegmentationDataSet(CSVReferencedDataSet):
     
     def __getitem__(self, item)->PredictionItem:
         imageId=self.imageIds[item]
-        image=self.get_image(imageId)
+        image=self.get_value(imageId)
         prediction = self.get_mask(imageId,image.shape)
         return PredictionItem(imageId,image,prediction)
     
@@ -918,7 +925,7 @@ class MultiClassSegmentationDataSet(BinarySegmentationDataSet):
     
     def __getitem__(self, item)->PredictionItem:
         imageId=self.imageIds[item]
-        image=self.get_image(imageId)
+        image=self.get_value(imageId)
         prediction = self.get_mask(imageId,image.shape)
         return PredictionItem(imageId,image,prediction)
 
@@ -954,7 +961,7 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
             
     def __getitem__(self, item)->PredictionItem:
         imageId=self.imageIds[item]
-        image=self.get_image(imageId)
+        image=self.get_value(imageId)
         prediction = self.get_target(item)
         return PredictionItem(imageId,image,prediction)
     
@@ -963,7 +970,9 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
         res=[]
         for i in range(len(o)):
             if o[i]==True:
-                res.append(self.num2Class[i])
+                res.append(self.num2Class[i+1])
+            else:
+                res.append(self.num2Class[0])    
         return " ".join(res)
     
     def encode(self,item:PredictionItem,encode_y=False,treshold=0.5):
