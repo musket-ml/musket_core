@@ -130,6 +130,21 @@ class ExecutionConfig:
         self.dirName = dr
         self.drawingFunction = drawingFunction
         pass
+    
+    def predictions_dump(self,y=False):
+        ensure(os.path.join(self.dirName, "predictions"))
+        if y:
+            return os.path.join(self.dirName, "predictions","predictions-gt-" + str(self.fold) + "." + str(self.stage) + ".csv")
+        else:
+            return os.path.join(self.dirName, "predictions","predictions-p-" + str(self.fold) + "." + str(self.stage) + ".csv")
+        
+    def predictions_holdout(self,y=False):
+        ensure(os.path.join(self.dirName, "predictions"))
+        if y:
+            return os.path.join(self.dirName, "predictions","predictions-holdout-gt.csv")
+        else:
+            return os.path.join(self.dirName, "predictions","predictions-holdout-" + str(self.fold) + "." + str(self.stage) + ".csv")
+            
 
     def weightsPath(self):
         ensure(os.path.join(self.dirName, "weights"))
@@ -323,6 +338,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         self.imports=[]
         self.datasets_path=None
         self._dataset=None
+        self.dumpPredictionsToCSV=False
         self._reporter=None
         self.testTimeAugmentation=None
         self.stratified=False
@@ -844,7 +860,22 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             if self._reporter is not None and self._reporter.isCanceled():
                 return {"canceled": True }
             self._append_metric(foldsToExecute, all, m, s)
+        if self.dumpPredictionsToCSV:
             
+            for i in self._folds():
+                vl=self.predictions("validation", i, len(self.stages)-1)
+                c=ExecutionConfig(i,len(self.stages)-1,dr=os.path.dirname(self.path))
+                vl.dump(c.predictions_dump(True), 0.5, encode_y=True)
+                vl.dump(c.predictions_dump(False), 0.5, encode_y=False)
+                if self.testSplit > 0:
+                    vl=self.predictions("holdout", 0, len(self.stages)-1)
+                    if i==0:
+                        vl.dump(c.predictions_holdout(True), 0.5, True)
+                    vl.dump(c.predictions_holdout(False), 0.5, False)    
+            if self.testSplit > 0:
+                c=ExecutionConfig(self._folds(),len(self.stages)-1,dr=os.path.dirname(self.path))
+                vl=self.predictions("holdout", self._folds(), len(self.stages)-1)
+                vl.dump(c.predictions_holdout(False), 0.5, False)        
         return {"stages":stagesStat,"allStages":all}
 
     def _adapt_before_fit(self, dataset):

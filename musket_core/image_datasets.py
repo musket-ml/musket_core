@@ -817,11 +817,15 @@ class BinarySegmentationDataSet(CSVReferencedDataSet):
             prediction = np.zeros((imShape[0], imShape[1], 1), dtype=np.bool)
         return prediction
     
+    def _id(self,item):
+        imageId=self.imageIds[item]
+        return imageId
+    
     def __getitem__(self, item)->PredictionItem:
         imageId=self.imageIds[item]
         image=self.get_value(imageId)
         prediction = self.get_mask(imageId,image.shape)
-        return PredictionItem(imageId,image,prediction)
+        return PredictionItem(self._id(item),image,prediction)
     
 
     def _to_rle(self, o):
@@ -963,7 +967,7 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
         imageId=self.imageIds[item]
         image=self.get_value(imageId)
         prediction = self.get_target(item)
-        return PredictionItem(imageId,image,prediction)
+        return PredictionItem(self._id(item),image,prediction)
     
     def _encode_class(self,o,treshold):
         o=o>treshold
@@ -975,9 +979,13 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
                 res.append(self.num2Class[0])    
         return " ".join(res)
     
+
+    def _encode_x(self, item):
+        return item.id
+
     def encode(self,item:PredictionItem,encode_y=False,treshold=0.5):
         if isinstance(item, PredictionItem):
-            imageId=item.id
+            imageId=self._encode_x(item)
             if encode_y:
                 o=item.y
             else:    
