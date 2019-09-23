@@ -861,7 +861,8 @@ class SubDataSet(DataSet):
             raise ValueError("Dataset is expected")
         self.ds=orig
         self.parent=orig
-        
+        if hasattr(orig, "_preprocessed"):
+            self._preprocessed=True
         self.indexes=indexes
 
     def isPositive(self, item):
@@ -914,8 +915,13 @@ def get_targets_as_array(d):
 def inherit_dataset_params(ds_from,ds_to):
     if hasattr(ds_from, "folds"):
         ds_to.folds = getattr(ds_from, "folds")
+    else:
+        if hasattr(ds_to,"folds"):
+            del ds_to.folds;    
     if hasattr(ds_from, "holdoutArr"):
         ds_to.holdoutArr = getattr(ds_from, "holdoutArr")
+    if hasattr(ds_from, "_preprocessed"):
+        ds_to._preprocessed = getattr(ds_from, "_preprocessed")    
     if hasattr(ds_from, "contribution"):
         ds_to.contribution = getattr(ds_from, "contribution")    
 

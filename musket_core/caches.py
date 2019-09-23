@@ -363,7 +363,9 @@ def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
 
             name=get_cache_dir()+name
             if name in storage:
-                return storage[name]
+                r= storage[name]
+                inherit_dataset_params(input, r) 
+                return r     
 
             if isinstance(input, CompositeDataSet):
                 components = list(map(lambda x:ccc1(x), input.components))
@@ -443,7 +445,7 @@ def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
 
             result = DiskCache(input, data)
 
-            inherit_dataset_params(input, result)
+            inherit_dataset_params(input, result)            
             if hasattr(input, "name"):
                 result.origName = input.name
             storage[name] = result
