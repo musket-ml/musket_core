@@ -326,7 +326,11 @@ class Project:
                         if isinstance(mods["imports"],list):
                             for m in mods["imports"]:
                                 res.append(self.module(m))
-                 
+        try:
+            res.append(self.module("musket_text.preprocessors"))
+        except:
+            pass
+                                    
         return res
 
     def module(self,name):
