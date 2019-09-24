@@ -134,16 +134,16 @@ class ExecutionConfig:
     def predictions_dump(self,y=False):
         ensure(os.path.join(self.dirName, "predictions"))
         if y:
-            return os.path.join(self.dirName, "predictions","predictions-gt-" + str(self.fold) + "." + str(self.stage) + ".csv")
+            return os.path.join(self.dirName, "predictions","validation" + str(self.fold) + "." + str(self.stage) + "-gt.csv")
         else:
-            return os.path.join(self.dirName, "predictions","predictions-p-" + str(self.fold) + "." + str(self.stage) + ".csv")
+            return os.path.join(self.dirName, "predictions","validation" + str(self.fold) + "." + str(self.stage) + "-pr.csv")
         
     def predictions_holdout(self,y=False):
         ensure(os.path.join(self.dirName, "predictions"))
         if y:
-            return os.path.join(self.dirName, "predictions","predictions-holdout-gt.csv")
+            return os.path.join(self.dirName, "predictions","holdout-gt.csv")
         else:
-            return os.path.join(self.dirName, "predictions","predictions-holdout-" + str(self.fold) + "." + str(self.stage) + ".csv")
+            return os.path.join(self.dirName, "predictions","holdout-" + str(self.fold) + "." + str(self.stage) + "-pt.csv")
             
 
     def weightsPath(self):

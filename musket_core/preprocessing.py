@@ -90,8 +90,19 @@ class PreprocessedDataSet(AbstractPreprocessedDataSet):
 
 
 def dataset_transformer(func):
-    func.preprocessor = True
-    return func
+    def wrapper(input,*args,**kwargs):
+        f=func
+        res=func(input,*args,**kwargs)
+        if hasattr(input, "name"):
+            res.name = input.name + f.__name__ + str(_sorted_args(kwargs))
+            res.origName = res.name
+        return res
+        
+    wrapper.args=inspect.signature(func).parameters
+    wrapper.preprocessor=True
+    wrapper.original=func
+    wrapper.__name__=func.__name__
+    return wrapper
 
 
 
