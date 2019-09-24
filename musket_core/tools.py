@@ -3,7 +3,7 @@ from musket_core import hyper
 from musket_core import model
 from musket_core import datasets
 from musket_core.generic_config import GenericTaskConfig
-from musket_core.utils import save_yaml
+from musket_core.utils import save_yaml,ensure
 from musket_core import projects
 from musket_core.experiment import Experiment
 from musket_core import dataset_analizers
@@ -11,6 +11,7 @@ import numpy as np
 import tempfile
 from tqdm import tqdm
 import inspect
+import os
 from musket_core.datasets import DataSet, SubDataSet
 
 class ProgressMonitor:
@@ -240,6 +241,7 @@ class LastDataSetCache:
 
 _cache=LastDataSetCache()
 
+
 class AnalizeOptionsRequest(yaml.YAMLObject):
 
     yaml_tag = u'!com.onpositive.dside.dto.GetPossibleAnalisisInfo'
@@ -266,6 +268,34 @@ class AnalizeOptionsRequest(yaml.YAMLObject):
             "datasetFilters":[v.introspect() for v in project.get_data_filters()],
         }
         return yaml.dump(rs)
+    
+class ExportResultsRequest(yaml.YAMLObject):
+
+    yaml_tag = u'!com.onpositive.dside.dto.ExportDataSet'
+
+    def __init__(self,**kwargs):
+        self.spec=None
+        self.experimentPath=None
+        self.datasetName=None
+        self.metricFunction=_exactValue
+        pass
+
+    def perform(self, server, reporter: ProgressMonitor):
+        exp:Experiment=server.experiment(self.experimentPath)
+        ms=ModelSpec(**self.spec)
+        cf=exp.parse_config()
+        wrappedModel = ms.wrap(cf, exp)
+        predictions=wrappedModel.predictions(self.datasetName);
+        ps=str(wrappedModel.stages)+"."+str(wrappedModel.folds)
+        parentPath=os.path.join(os.path.dirname(cf.path),"predictions")
+        ensure(parentPath)
+        p1=os.path.join(parentPath,self.datasetName+ps+"-pr.csv")
+        predictions.dump(p1)
+        if self.exportGroundTruth:
+            p2=os.path.join(parentPath,self.datasetName+ps+"-gt.csv")
+            predictions.dump(p2,encode_y=True)
+            return p1+"::::"+p2
+        return p1
 
 
 

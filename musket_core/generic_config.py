@@ -971,7 +971,9 @@ class GenericTaskConfig(model.IGenericTaskConfig):
                 fw = self.datasets[datasetName]
             if self.dataset is not None:
                 dataset = net.create_dataset_from_config(self.declarations, fw, self.imports)
+                
                 if self.preprocessing is not None and self.preprocessing != "":
+                    dataset.cfg=self
                     dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing,
                                                                   self.imports)
                 return dataset
