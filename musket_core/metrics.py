@@ -76,7 +76,7 @@ class WithTreshold(FunctionalMetric):
         pass
   
     def onItem(self,outputs,labels):
-        for i in range(0,10):
+        for i in range(0,round(self.cnt)):
             val=self.mfunc(outputs>i*(1/self.cnt),labels)
             self.vals[i].append(val)
     
