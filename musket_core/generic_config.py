@@ -136,12 +136,12 @@ class ExecutionConfig:
         if y:
             return os.path.join(self.dirName, "predictions","validation" + str(self.fold) + "." + str(self.stage) + "-gt.csv")
         else:
-            return os.path.join(self.dirName, "predictions","validation" + str(self.fold) + "." + str(self.stage) + "-pr.csv")
+            return os.path.join(self.dirName, "predictions","validation" + str(self.fold) + "." + str(self.stage) + "-pt.csv")
         
     def predictions_holdout(self,y=False):
         ensure(os.path.join(self.dirName, "predictions"))
         if y:
-            return os.path.join(self.dirName, "predictions","holdout-gt.csv")
+            return os.path.join(self.dirName, "predictions","holdout-" + str(self.fold) + "." + str(self.stage) + "-gt.csv")
         else:
             return os.path.join(self.dirName, "predictions","holdout-" + str(self.fold) + "." + str(self.stage) + "-pt.csv")
             
@@ -470,7 +470,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         inputFolds = None
         if hasattr(ds,'folds'):
             inputFolds = getattr(ds,'folds')
-        if self.testSplit>0:
+        if self.testSplit>0 or hasattr(ds, "holdoutArr"):
             if os.path.exists(self.path + ".holdout_split"):
                 trI,hI = utils.load_yaml(self.path + ".holdout_split")
                 train=datasets.SubDataSet(ds,trI)
@@ -500,7 +500,21 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         if self.noTrain:
             kf.clear_train()
         if self.extra_train_data is not None:
-            kf.addToTrain(extra_train[self.extra_train_data])
+            if str(self.extra_train_data) in extra_train:
+                kf.addToTrain(extra_train[self.extra_train_data])
+            else:
+                if isinstance(self.extra_train_data, str):
+                    fw = self.datasets[self.extra_train_data]
+                else:
+                    fw=self.extra_train_data
+                dataset = net.create_dataset_from_config(self.declarations, fw, self.imports)
+                if self.preprocessing is not None and self.preprocessing != "":
+                    dataset.cfg=self
+                    dataset = net.create_preprocessor_from_config(self.declarations, dataset, self.preprocessing,
+                                                                  self.imports)
+                kf.addToTrain(dataset)
+                
+            
         if self.dataset_augmenter is not None:
             args = dict(self.dataset_augmenter)
             del args["name"]
@@ -824,7 +838,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         else:
             
             ms[m] = mv
-        if self.testSplit > 0:
+        if self.hasHoldout():
             mv = predictions.holdout_stat(self, m, s)
             if isinstance(mv, dict) and not isStat(mv):
                 for k in mv:
@@ -833,6 +847,10 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             else:
                 ms[m + "_holdout"] = mv
         
+
+
+    def hasHoldout(self):
+        return self.testSplit > 0 or hasattr(self._dataset, "holdoutArr")
 
     def createSummary(self,foldsToExecute, subsample):
         stagesStat=[]
@@ -861,20 +879,15 @@ class GenericTaskConfig(model.IGenericTaskConfig):
                 return {"canceled": True }
             self._append_metric(foldsToExecute, all, m, s)
         if self.dumpPredictionsToCSV:
-            
-            for i in self._folds():
-                vl=self.predictions("validation", i, len(self.stages)-1)
-                c=ExecutionConfig(i,len(self.stages)-1,dr=os.path.dirname(self.path))
-                vl.dump(c.predictions_dump(True), 0.5, encode_y=True)
-                vl.dump(c.predictions_dump(False), 0.5, encode_y=False)
-                if self.testSplit > 0:
-                    vl=self.predictions("holdout", 0, len(self.stages)-1)
-                    if i==0:
-                        vl.dump(c.predictions_holdout(True), 0.5, True)
-                    vl.dump(c.predictions_holdout(False), 0.5, False)    
-            if self.testSplit > 0:
+            for i in self._folds() :
+                    vl=self.predictions("validation", i, len(self.stages)-1)
+                    c=ExecutionConfig(i,len(self.stages)-1,dr=os.path.dirname(self.path))
+                    vl.dump(c.predictions_dump(True), 0.5, encode_y=True)
+                    vl.dump(c.predictions_dump(False), 0.5, encode_y=False)                        
+            if self.hasHoldout():
                 c=ExecutionConfig(self._folds(),len(self.stages)-1,dr=os.path.dirname(self.path))
                 vl=self.predictions("holdout", self._folds(), len(self.stages)-1)
+                vl.dump(c.predictions_holdout(True), 0.5, True)
                 vl.dump(c.predictions_holdout(False), 0.5, False)        
         return {"stages":stagesStat,"allStages":all}
 
@@ -1175,7 +1188,7 @@ class GenericImageTaskConfig(GenericTaskConfig):
     def transformAugmentor(self):
         transforms = [] + self.transforms
         if not self.manualResize:
-            transforms.append(imgaug.augmenters.Scale({"height": self.shape[0], "width": self.shape[1]}))
+            transforms.append(imgaug.augmenters.Resize({"height": self.shape[0], "width": self.shape[1]}))
         return imgaug.augmenters.Sequential(transforms)
 
     def adaptNet(self, model, model1, copy=False,sh=4):
