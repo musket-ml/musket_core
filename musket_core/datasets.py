@@ -56,6 +56,11 @@ class DataSet:
     def get_target(self,item):
         return self[item].y
     
+    def get_stratify_class(self,item):
+        if self.parent is not None:
+            return self.parent.get_stratify_class(item)
+        return self.get_target(item)
+    
     def root(self):
         if not hasattr(self,"parent"):
             return self
@@ -291,6 +296,16 @@ class CompositeDataSet(DataSet):
             shifts.append(sum)
         self.shifts = shifts
         self.len = sum
+        
+    def get_stratify_class(self, item):
+        i = item
+        for j in range(len(self.shifts)):
+            d = self.components[j]
+            if item < self.shifts[j]:
+                return d[i].get_stratify_class(item)
+            else:
+                i = item - self.shifts[j]
+        raise ValueError("Should not happen")    
         
     def _encode_dataset(self,item:PredictionItem,encode_y=False,treshold=0.5):
         res=[]
@@ -931,6 +946,11 @@ class SubDataSet(DataSet):
 
 
 def dataset_classes(ds, groupFunc):
+    preds=[]
+    if hasattr(ds,"get_stratify_class"):
+        for i in tqdm.tqdm(range(len(ds)),"reading stratification classes "+str(ds)):
+            preds.append(ds.get_stratify_class(i))
+        return np.array(preds)    
     if groupFunc != None:
         data_classes = groupFunc(ds)
     else:
@@ -948,6 +968,8 @@ def get_targets_as_array(d):
         for i in tqdm.tqdm(range(len(d)),"reading dataset targets "+str(d)):
             preds.append(d[i].y)
     return np.array(preds,dtype=np.float32)
+
+
 
 def inherit_dataset_params(ds_from,ds_to):
     if hasattr(ds_from, "folds"):
