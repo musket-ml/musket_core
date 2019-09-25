@@ -174,7 +174,10 @@ class Experiment:
                        mv = m["allStages"][am]
                 elif use_primary_metric:
                     am = self.config()["primary_metric"]
-                    mode = self.config()["primary_metric_mode"]
+                    if "primary_metric_mode" in self.config():
+                        mode = self.config()["primary_metric_mode"]
+                    else:
+                        mode="max"    
                     if am in m["allStages"]:
                         mv = {
                             "value": m["allStages"][am],

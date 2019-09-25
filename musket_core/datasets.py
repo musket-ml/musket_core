@@ -57,8 +57,9 @@ class DataSet:
         return self[item].y
     
     def get_stratify_class(self,item):
-        if self.parent is not None:
-            return self.parent.get_stratify_class(item)
+        if hasattr(self, "parent"):
+            if self.parent is not None:
+                return self.parent.get_stratify_class(item)
         return self.get_target(item)
     
     def root(self):
@@ -944,13 +945,29 @@ class SubDataSet(DataSet):
             return self.parent.get_target(self.indexes[item])
         return self.parent[self.indexes[item]].y
 
-
+def get_class_that_defined_method(method):
+    method_name = method.__name__
+    if method.__self__:    
+        classes = [method.__self__.__class__]
+    else:
+        #unbound method
+        classes = [method.im_class]
+    while classes:
+        c = classes.pop()
+        if method_name in c.__dict__:
+            return c
+        else:
+            classes = list(c.__bases__) + classes
+    return None
 def dataset_classes(ds, groupFunc):
     preds=[]
+    ds=ds.root()
     if hasattr(ds,"get_stratify_class"):
-        for i in tqdm.tqdm(range(len(ds)),"reading stratification classes "+str(ds)):
-            preds.append(ds.get_stratify_class(i))
-        return np.array(preds)    
+        d=get_class_that_defined_method(getattr(ds, "get_stratify_class"))
+        if (d!=DataSet):
+            for i in tqdm.tqdm(range(len(ds)),"reading stratification classes "+str(ds)):
+                preds.append(ds.get_stratify_class(i))
+            return np.array(preds)    
     if groupFunc != None:
         data_classes = groupFunc(ds)
     else:

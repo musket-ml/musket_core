@@ -44,7 +44,8 @@ def create_parameter(name, value):
     if val["type"] == "float":
         enum = enum.astype(np.float32)
     else:
-        enum = enum.astype(np.int32)
+        if val["type"] == "integer":
+            enum = enum.astype(np.int32)
 
     return hp.choice(name, [value.item() for value in enum])
 
@@ -70,25 +71,29 @@ def optimize(e:experiment.Experiment,ex:parralel.Executor,reporter):
     global num, scores
 
     num=0
-    scores={}
+    scores=[]
 
     space=create_search_space(e)
 
     dcopy=e.config().copy()
-
-    max_evals=e.config()["max_evals"]
+    if "max_evals" in e.config():
+        max_evals=e.config()["max_evals"]
+        del dcopy["max_evals"]
+    else: 
+        max_evals=200    
 
     trials = Trials()
 
     del dcopy["hyperparameters"]
-    del dcopy["max_evals"]
+    
+    
 
     if os.path.exists(e.path+"/hyperopt.trials") and e.allowResume:
         trials=load(e.path+"/hyperopt.trials")
 
     if os.path.exists(e.path+"/hyperopt.scores") and e.allowResume:
         scores=load_yaml(e.path+"/hyperopt.scores")
-        num=max(scores.keys()) + 1
+        num=len(scores)
 
     header = None
 
@@ -112,7 +117,7 @@ def optimize(e:experiment.Experiment,ex:parralel.Executor,reporter):
         save_yaml(num_ + "/config.yaml", resolved, header)
 
         experiment_experiment = experiment.Experiment(num_)
-
+        experiment_experiment.project=e.project
         tasks=experiment_experiment.fit(reporter)
 
         if reporter.isCanceled():
@@ -123,17 +128,25 @@ def optimize(e:experiment.Experiment,ex:parralel.Executor,reporter):
         num = num + 1
 
         ex_result = experiment_experiment.result(False, True)
-
-        score = get_score(ex_result["value"])
-
-        scores[num] = score
+        if isinstance(ex_result, dict):
+            rs=ex_result["value"];
+            score = get_score(rs)
+            mode = ex_result["mode"]
+        else:
+            score=float(ex_result)
+            if  "primary_metric_mode" in experiment_experiment.config():
+                mode=experiment_experiment.config()["primary_metric_mode"]
+            else: 
+                mode="max"    
+        scores.append( {"num":num,"score":score, "parameters":parameters})
 
         save_yaml(e.path + "/hyperopt.scores", scores)
 
         if reporter.isCanceled():
             raise OperationCanceled()
 
-        return score if ex_result["mode"] == "min" else -score
+        
+        return score if mode == "min" else -score
 
     try:
         best = fmin(doOptimize, space=space, trials=trials, algo=tpe.suggest, max_evals=max_evals)
@@ -141,10 +154,10 @@ def optimize(e:experiment.Experiment,ex:parralel.Executor,reporter):
         return
 
     save_yaml(e.path+"/best.params.yaml",best)
-
-    best["mean"]=float(np.mean(list(scores.values())))
-    best["max"] =float(np.max(list(scores.values())))
-    best["min"] = float(np.min(list(scores.values())))
+    sc=[s["score"] for s in scores]
+    best["mean"]=float(np.mean(sc))
+    best["max"] =float(np.max(sc))
+    best["min"] = float(np.min(sc))
 
     save_yaml(e.path+"/summary.yaml",best)
 
