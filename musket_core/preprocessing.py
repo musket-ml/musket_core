@@ -38,10 +38,16 @@ class AbstractPreprocessedDataSet(DataSet):
             return self.parent.get_target(item)
         return self[item].y
     
+    def encode(self,item,encode_y=False,treshold=0.5):
+        return self.parent.encode(item,encode_y,treshold)
+    
     def root(self):
         if hasattr(self.parent,"root"):
             return self.parent.root()
         return self.parent
+    
+    def _create_dataframe(self,items):
+        return self.parent._create_dataframe(items)
 
 def _sorted_args(args):
     rs={}

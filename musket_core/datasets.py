@@ -14,6 +14,7 @@ import numpy as np
 import traceback
 import random
 import tqdm
+import pandas as pd
 from musket_core import utils
 
 AUGMENTER_QUEUE_LIMIT=10
@@ -66,6 +67,25 @@ class DataSet:
 
     def meta(self, item):
         raise ValueError("Not implemented")
+    
+    def encode(self,item,encode_y=False,treshold=0.5):
+        if isinstance(item, PredictionItem):
+            return self._encode_item(item, encode_y, treshold)                
+        if isinstance(item, DataSet):
+            return self._encode_dataset(item, encode_y, treshold)
+
+    def _encode_item(self,item:PredictionItem,encode_y=False,treshold=0.5):    
+        raise NotImplementedError("This should be implemented in sub classes")
+    
+    def _encode_dataset(self,ds,encode_y=False,treshold=0.5):
+        res=[]            
+        for i in tqdm.tqdm(range(len(ds)),"Encoding dataset"):
+            q=ds[i]
+            res.append(self.encode(q,encode_y,treshold))
+        return self._create_dataframe(res)
+    
+    def _create_dataframe(self,items):
+        raise NotImplementedError("This should be implemented in sub classes") 
 
 class WriteableDataSet(DataSet):
 
@@ -271,6 +291,19 @@ class CompositeDataSet(DataSet):
             shifts.append(sum)
         self.shifts = shifts
         self.len = sum
+        
+    def _encode_dataset(self,item:PredictionItem,encode_y=False,treshold=0.5):
+        res=[]
+        orD=None
+        for i in tqdm.tqdm(range(len(item)),"Encoding dataset"):
+                q=item[i]
+                ti=q;
+                while not hasattr(ti, "originalDataSet") :ti=ti.original()
+                orD=ti.originalDataSet
+                res.append(orD.encode(q,encode_y,treshold))
+        res=orD._create_dataframe(res)                        
+        return res 
+                        
 
     def get_train_item(self, item)->PredictionItem:
         i = item
@@ -279,7 +312,9 @@ class CompositeDataSet(DataSet):
             if item < self.shifts[j]:
                 if hasattr(d, "get_train_item"):
                     return d.get_train_item(i)
-                return d[i]
+                res=d[i]
+                res.originalDataSet=d
+                return res 
             else:
                 i = item - self.shifts[j]
 
@@ -316,7 +351,9 @@ class CompositeDataSet(DataSet):
         for j in range(len(self.shifts)):
             d = self.components[j]
             if item < self.shifts[j]:
-                return d[i]
+                res=d[i]
+                res.originalDataSet=d                
+                return res 
             else:
                 i = item - self.shifts[j]
 

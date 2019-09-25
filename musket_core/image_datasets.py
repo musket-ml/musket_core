@@ -997,7 +997,11 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
             for i in tqdm.tqdm(range(len(item)),"Encoding dataset"):
                 q=item[i]
                 res.append(self.encode(q,encode_y,treshold))                
-            return pd.DataFrame(res,columns=[self.imColumn,self.clazzColumn])  
+            return self._create_dataframe(res)  
+        
+    def _create_dataframe(self, items):
+        return pd.DataFrame(items,columns=[self.imColumn,self.clazzColumn])
+            
     
 class CategoryClassificationDataSet(BinaryClassificationDataSet): 
     
