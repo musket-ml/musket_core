@@ -656,6 +656,10 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
                 ind=ind+1
         self.imageIds=sorted(list(set(self.get_values(imColumn))))                            
     
+    def _id(self,item):
+        imageId=self.imageIds[item]
+        return imageId
+    
     def get_values(self,col):
         return self.data[col]
             
@@ -817,9 +821,7 @@ class BinarySegmentationDataSet(CSVReferencedDataSet):
             prediction = np.zeros((imShape[0], imShape[1], 1), dtype=np.bool)
         return prediction
     
-    def _id(self,item):
-        imageId=self.imageIds[item]
-        return imageId
+    
     
     def __getitem__(self, item)->PredictionItem:
         imageId=self.imageIds[item]
