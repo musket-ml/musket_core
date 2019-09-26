@@ -87,7 +87,7 @@ class WithTreshold(FunctionalMetric):
         if len(ma)>0:
             ma=ma[0]
         tr= float(ma)*(1/self.cnt)
-        bestVal=np.max(ms)
+        bestVal=float(np.max(ms))
         dict[self.name+"_treshold"]=tr
         dict[self.name]=bestVal
         
@@ -129,7 +129,7 @@ class Dice:
         intersection =np.sum (true & pred)
         im_sum = np.sum(true) + np.sum(pred)
         
-        return 2.0 * intersection / (im_sum + SMOOTH)
+        return float(2.0 * intersection / (im_sum + SMOOTH))
     
 class IOU(Dice):    
     
@@ -138,7 +138,7 @@ class IOU(Dice):
         union = (outputs | labels).sum()
         
         iou = (intersection + SMOOTH) / (union + SMOOTH)
-        return iou
+        return float(iou)
         
 class MAP10(Dice):
     def innerCalc(self,labels,outputs):          
@@ -149,7 +149,7 @@ class MAP10(Dice):
         
         thresholded = np.ceil(np.clip(20 * (iou - 0.5), 0, 10)) / 10
         
-        return thresholded  # Or thresholded.mean()
+        return float(thresholded)  # Or thresholded.mean()
 
                 
 
