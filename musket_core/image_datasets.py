@@ -1043,7 +1043,15 @@ class MultiClassClassificationDataSet(BinaryClassificationDataSet):
             if "|" in v:
                 for w in v.split("|"):
                     realC.add(w.strip())
-        return sorted(list(realC))            
+        return sorted(list(realC))
+    
+    def _encode_class(self,o,treshold):
+        o=o>treshold
+        res=[]
+        for i in range(len(o)):
+            if o[i]==True:
+                res.append(self.num2Class[i])                
+        return " ".join(res)            
     
     def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
         super().__init__(imagePath,csvPath,imColumn,clazzColumn)                
