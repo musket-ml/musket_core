@@ -93,6 +93,10 @@ class DataSet:
     def _create_dataframe(self,items):
         raise NotImplementedError("This should be implemented in sub classes") 
 
+    def dump(self,path,treshold=0.5,encode_y=False):
+        res=self.root().encode(self,treshold=treshold,encode_y=encode_y)
+        res.to_csv(path,index=False) 
+
 class WriteableDataSet(DataSet):
 
     def append(self,item):
@@ -101,7 +105,7 @@ class WriteableDataSet(DataSet):
     def commit(self):
         raise ValueError("Not implemented")
     
-    def blend(self,ds,w=0.5):
+    def blend(self,ds,w=0.5)->DataSet:
         if isinstance(ds, str):
             from musket_core import generic
             return self.blend(generic.parse(ds).predictions(self.parent.name))
@@ -110,6 +114,10 @@ class WriteableDataSet(DataSet):
     def dump(self,path,treshold=0.5,encode_y=False):
         res=self.root().encode(self,treshold=treshold,encode_y=encode_y)
         res.to_csv(path,index=False) 
+        
+    def encode(self, item, encode_y=False, treshold=0.5):
+        res=self.root().encode(item,treshold=treshold,encode_y=encode_y)
+        return res;            
         
     def _inner_blend(self,ds,w=0.5):
         raise NotImplementedError("Not supported")                    
@@ -1237,7 +1245,7 @@ class WeightedBlend(DataSet):
     def __len__(self):
         return len(self.predictions[0])
     
-    def blend(self,ds,w=0.5):
+    def blend(self,ds,w=0.5)->DataSet:
         if isinstance(ds, str):
             from musket_core import generic
             return self.blend(generic.parse(ds).predictions(self.parent.name))
@@ -1245,6 +1253,10 @@ class WeightedBlend(DataSet):
     
     def _inner_blend(self,ds,w=0.5):
         return WeightedBlend([self,ds],[w,1-w])
+    
+    def dump(self,path,treshold=0.5,encode_y=False):
+        res=self.predictions[0].encode(self,treshold=treshold,encode_y=encode_y)
+        res.to_csv(path,index=False)
     
     def __getitem__(self, item)->PredictionItem:
         

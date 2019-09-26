@@ -595,7 +595,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
     def predictions(self,name,fold=None,stage=None)->WriteableDataSet:
         if fold is None:
             fold=self._folds()
-            if name.index("validation")==0:
+            if "validation" in name and name.index("validation")==0:
                 return self.predictions("validation", int(name[-1:]), stage)
         if stage is None:
             stage=list(range(len(self.stages)))    
