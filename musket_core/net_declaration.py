@@ -7,7 +7,7 @@ from musket_core.caches import *
 from musket_core import datasets
 from builtins import isinstance
 layers=configloader.load("layers")
-from  musket_core.preprocessing import SplitPreproccessor,SplitConcatPreprocessor, Augmentation
+from  musket_core.preprocessing import SplitPreproccessor,SplitConcatPreprocessor, Augmentation,take_nth
 import musket_core.builtin_datasets
 import musket_core.builtin_trainables
 import importlib
@@ -119,6 +119,34 @@ def transform_add(layers, declarations, config, outputs, linputs, pName, withArg
 
     return buildPreprocessor
 
+def transform_mult(layers, declarations, config, outputs, linputs, pName, withArgs):
+    m = [Layers([v], declarations, {}, outputs, linputs, withArgs) for v in config]
+
+    def buildPreprocessor(inputArg):
+        if isinstance(inputArg, dict):
+            inputArg = [inputArg[x] for x in inputArg]
+        rs = []
+        for i in range(len(m)):
+            rs.append(m[i].build(inputArg[i]))
+
+        return keras.layers.multiply(rs)
+
+    return buildPreprocessor
+
+def transform_dot(layers, declarations, config, outputs, linputs, pName, withArgs):
+    m = [Layers([v], declarations, {}, outputs, linputs, withArgs) for v in config]
+
+    def buildPreprocessor(inputArg):
+        if isinstance(inputArg, dict):
+            inputArg = [inputArg[x] for x in inputArg]
+        rs = []
+        for i in range(len(m)):
+            rs.append(m[i].build(inputArg[i]))
+
+        return keras.layers.dot(rs,normalize=True,axes=-1)
+
+    return buildPreprocessor
+
 def split_add(layers,declarations,config,outputs,linputs,pName,withArgs):
     m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
     return m,keras.layers.Add()
@@ -147,6 +175,18 @@ def split_dot_normalize(layers,declarations,config,outputs,linputs,pName,withArg
     m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
     return m,keras.layers.Dot(normalize=True)
 
+def transform_preprocessor(layers,declarations,config,outputs,linputs,pName,withArgs):
+    m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
+    
+    def buildPreprocessor(inputArg):
+        rs=[]
+        for i in range(len(m)):
+            nth=take_nth(i, inputArg)
+            x=m[i]
+            rs.append(x.build(nth))
+        return SplitPreproccessor(inputArg,rs)
+
+    return buildPreprocessor
 
 builtins={
     "split": split,
@@ -165,11 +205,14 @@ builtins={
     "disk-cache": diskcache,
     "split-preprocessor": split_preprocessor,
     "split-concat-preprocessor": split_concact_preprocessor,
+    "transform-preprocessor": transform_preprocessor,
     "seq-preprocessor": seq_preprocessor,
     "augmentation": augmentation,
     "pass": passPreprocessor,
     "transform-concat": transform_concat,
-    "transform-add": transform_add
+    "transform-add": transform_add,
+    "transform-mult": transform_mult,
+    "transform-dot": transform_dot,
 }
 for i in range(20):
     builtins["repeat("+str(i)+")"]=repeat(i)

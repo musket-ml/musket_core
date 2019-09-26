@@ -110,7 +110,10 @@ def dataset_transformer(func):
     wrapper.__name__=func.__name__
     return wrapper
 
-
+def take_nth(num,parent):
+    def n(item):
+        return item[num]
+    return PreprocessedDataSet(parent,n,False)
 
 def dataset_preprocessor(func):
     expectsItem = False
