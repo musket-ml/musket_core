@@ -2,6 +2,8 @@ from threading import local
 import inspect
 from musket_core import utils
 import os
+import pandas as pd
+import imageio
 
 context=local()
 
@@ -29,7 +31,13 @@ def _find_path():
         if os.path.basename(file)=="projects.py" and "musket_core" in dn:
             last=0
      
-    return None            
+    return None
+
+def csv_from_data(relative_path:str):
+    return pd.read_csv(os.path.join(get_current_project_data_path(),relative_path))            
+
+def image_from_data(relative_path:str):
+    return imageio.imread(os.path.join(get_current_project_data_path(),relative_path))
 
 def get_current_project_path():
     if not hasattr(context,"projectPath"):

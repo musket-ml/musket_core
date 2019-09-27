@@ -271,6 +271,8 @@ class PythonFunction(AbstractType):
                 try:
                     result=clazz(**mm)
                 except:
+                    import traceback
+                    traceback.print_exc()
                     result = None
                 
                 if result is None:
