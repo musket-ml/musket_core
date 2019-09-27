@@ -34,6 +34,8 @@ nav:
 - Classification:
     - 'User guide': 'classification/index.md'
     - 'Reference': 'classification/reference.md'
+- Musket IDE:
+    - 'Setup': 'ide/getting_started.md'
 #- Instance Segmentation:
 #    - 'User guide': 'instance_segmentation/index.md'
 #    - 'Reference': 'instance_segmentation/reference.md'
