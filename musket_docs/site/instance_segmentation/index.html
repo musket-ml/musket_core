@@ -5,11 +5,11 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta name="description" content="None">
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>User guide - Musket ML</title>
+  <title>Musket ML</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "User guide";
-    var mkdocs_page_input_path = "classification\\index.md";
+    var mkdocs_page_name = "Instance Segmentation Training Pipeline";
+    var mkdocs_page_input_path = "instance_segmentation\\index.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -684,270 +684,270 @@
                     </li>
                 </ul>
                 <p class="caption"><span class="caption-text">Classification</span></p>
-                <ul class="current">
-                    <li class="toctree-l1 current"><a class="reference internal current" href="./">User guide</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#reasons-to-use-classification-pipeline">Reasons to use Classification Pipeline</a>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../classification/">User guide</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../classification/#reasons-to-use-classification-pipeline">Reasons to use Classification Pipeline</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a>
+    <li class="toctree-l2"><a class="reference internal" href="../classification/#installation">Installation</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#launching">Launching</a>
+    <li class="toctree-l2"><a class="reference internal" href="../classification/#launching">Launching</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#launching-experiments">Launching experiments</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/#launching-experiments">Launching experiments</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#launching-tasks">Launching tasks</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/#launching-tasks">Launching tasks</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#launching-project-analysis">Launching project analysis</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/#launching-project-analysis">Launching project analysis</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#usage-guide">Usage guide</a>
+    <li class="toctree-l2"><a class="reference internal" href="../classification/#usage-guide">Usage guide</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#training-a-model">Training a model</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/#training-a-model">Training a model</a>
         <ul>
-    <li class="toctree-l4"><a class="reference internal" href="#general-train-properties">General train properties</a>
+    <li class="toctree-l4"><a class="reference internal" href="../classification/#general-train-properties">General train properties</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="#defining-architecture">Defining architecture</a>
+    <li class="toctree-l4"><a class="reference internal" href="../classification/#defining-architecture">Defining architecture</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="#image-augmentations">Image Augmentations</a>
+    <li class="toctree-l4"><a class="reference internal" href="../classification/#image-augmentations">Image Augmentations</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="#freezing-and-unfreezing-encoder">Freezing and Unfreezing encoder</a>
+    <li class="toctree-l4"><a class="reference internal" href="../classification/#freezing-and-unfreezing-encoder">Freezing and Unfreezing encoder</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="#custom-datasets">Custom datasets</a>
+    <li class="toctree-l4"><a class="reference internal" href="../classification/#custom-datasets">Custom datasets</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="#multistage-training">Multistage training</a>
+    <li class="toctree-l4"><a class="reference internal" href="../classification/#multistage-training">Multistage training</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="#balancing-your-data">Balancing your data</a>
+    <li class="toctree-l4"><a class="reference internal" href="../classification/#balancing-your-data">Balancing your data</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="#advanced-learning-rates">Advanced learning rates</a>
+    <li class="toctree-l4"><a class="reference internal" href="../classification/#advanced-learning-rates">Advanced learning rates</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="#training-on-crops">Training on crops</a>
+    <li class="toctree-l4"><a class="reference internal" href="../classification/#training-on-crops">Training on crops</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#using-trained-model">Using trained model</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/#using-trained-model">Using trained model</a>
         <ul>
-    <li class="toctree-l4"><a class="reference internal" href="#ensembling-predictions">Ensembling predictions</a>
+    <li class="toctree-l4"><a class="reference internal" href="../classification/#ensembling-predictions">Ensembling predictions</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#custom-evaluation-code">Custom evaluation code</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/#custom-evaluation-code">Custom evaluation code</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#accessing-model">Accessing model</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/#accessing-model">Accessing model</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#analyzing-experiments-results">Analyzing experiments results</a>
+    <li class="toctree-l2"><a class="reference internal" href="../classification/#analyzing-experiments-results">Analyzing experiments results</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#what-is-supported">What is supported?</a>
+    <li class="toctree-l2"><a class="reference internal" href="../classification/#what-is-supported">What is supported?</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#custom-architectures-callbacks-metrics">Custom architectures, callbacks, metrics</a>
+    <li class="toctree-l2"><a class="reference internal" href="../classification/#custom-architectures-callbacks-metrics">Custom architectures, callbacks, metrics</a>
     </li>
     </ul>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="reference/">Reference</a>
+                    <li class="toctree-l1"><a class="reference internal" href="../classification/reference/">Reference</a>
     <ul>
-    <li class="toctree-l2"><a class="reference internal" href="reference/#pipeline-root-properties">Pipeline root properties</a>
+    <li class="toctree-l2"><a class="reference internal" href="../classification/reference/#pipeline-root-properties">Pipeline root properties</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#activation">activation</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#activation">activation</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#aggregation_metric">aggregation_metric</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#aggregation_metric">aggregation_metric</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#architecture">architecture</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#architecture">architecture</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#augmentation">augmentation</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#augmentation">augmentation</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#batch">batch</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#batch">batch</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#classes">classes</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#classes">classes</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#callbacks">callbacks</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#callbacks">callbacks</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#copyweights">copyWeights</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#copyweights">copyWeights</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#clipnorm">clipnorm</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#clipnorm">clipnorm</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#clipvalue">clipvalue</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#clipvalue">clipvalue</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#crops">crops</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#crops">crops</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#dataset">dataset</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#dataset">dataset</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#datasets">datasets</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#datasets">datasets</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#dataset_augmenter">dataset_augmenter</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#dataset_augmenter">dataset_augmenter</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#dropout">dropout</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#dropout">dropout</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#extra_train_data">extra_train_data</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#extra_train_data">extra_train_data</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#folds_count">folds_count</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#folds_count">folds_count</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#freeze_encoder">freeze_encoder</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#freeze_encoder">freeze_encoder</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#final_metrics">final_metrics</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#final_metrics">final_metrics</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#holdout">holdout</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#holdout">holdout</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#imports">imports</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#imports">imports</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#inference_batch">inference_batch</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#inference_batch">inference_batch</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#loss">loss</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#loss">loss</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#lr">lr</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#lr">lr</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#manualresize">manualResize</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#manualresize">manualResize</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#metrics">metrics</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#metrics">metrics</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#num_seeds">num_seeds</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#num_seeds">num_seeds</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#optimizer">optimizer</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#optimizer">optimizer</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#primary_metric">primary_metric</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#primary_metric">primary_metric</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#primary_metric_mode">primary_metric_mode</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#primary_metric_mode">primary_metric_mode</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#preprocessing">preprocessing</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#preprocessing">preprocessing</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#random_state">random_state</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#random_state">random_state</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#shape">shape</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#shape">shape</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#stages">stages</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#stages">stages</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#stratified">stratified</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#stratified">stratified</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#testsplit">testSplit</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#testsplit">testSplit</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#testsplitseed">testSplitSeed</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#testsplitseed">testSplitSeed</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#testtimeaugmentation">testTimeAugmentation</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#testtimeaugmentation">testTimeAugmentation</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#transforms">transforms</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#transforms">transforms</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#validationsplit">validationSplit</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#validationsplit">validationSplit</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#weights">weights</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#weights">weights</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="reference/#callback-types">Callback types</a>
+    <li class="toctree-l2"><a class="reference internal" href="../classification/reference/#callback-types">Callback types</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#earlystopping">EarlyStopping</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#earlystopping">EarlyStopping</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#reducelronplateau">ReduceLROnPlateau</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#reducelronplateau">ReduceLROnPlateau</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#cycliclr">CyclicLR</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#cycliclr">CyclicLR</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#lrvariator">LRVariator</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#lrvariator">LRVariator</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#tensorboard">TensorBoard</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#tensorboard">TensorBoard</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="reference/#stage-properties">Stage properties</a>
+    <li class="toctree-l2"><a class="reference internal" href="../classification/reference/#stage-properties">Stage properties</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#callbacks_1">callbacks</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#callbacks_1">callbacks</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#epochs">epochs</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#epochs">epochs</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#extra_callbacks">extra_callbacks</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#extra_callbacks">extra_callbacks</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#freeze_encoder_1">freeze_encoder</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#freeze_encoder_1">freeze_encoder</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#initial_weights">initial_weights</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#initial_weights">initial_weights</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#negatives">negatives</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#negatives">negatives</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#loss_1">loss</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#loss_1">loss</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#lr_1">lr</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#lr_1">lr</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#unfreeze_encoder">unfreeze_encoder</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#unfreeze_encoder">unfreeze_encoder</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#validation_negatives">validation_negatives</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#validation_negatives">validation_negatives</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="reference/#preprocessors">Preprocessors</a>
+    <li class="toctree-l2"><a class="reference internal" href="../classification/reference/#preprocessors">Preprocessors</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#cache">cache</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#cache">cache</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#disk-cache">disk-cache</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#disk-cache">disk-cache</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#split-preprocessor">split-preprocessor</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#split-preprocessor">split-preprocessor</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#split-concat-preprocessor">split-concat-preprocessor</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#split-concat-preprocessor">split-concat-preprocessor</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#seq-preprocessor">seq-preprocessor</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#seq-preprocessor">seq-preprocessor</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#augmentation_1">augmentation</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#augmentation_1">augmentation</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="reference/#fit-script-arguments">fit script arguments</a>
+    <li class="toctree-l2"><a class="reference internal" href="../classification/reference/#fit-script-arguments">fit script arguments</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#fitpy-project">fit.py project</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#fitpy-project">fit.py project</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#fitpy-name">fit.py name</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#fitpy-name">fit.py name</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#fitpy-num_gpus">fit.py num_gpus</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#fitpy-num_gpus">fit.py num_gpus</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#fitpy-gpus_per_net">fit.py gpus_per_net</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#fitpy-gpus_per_net">fit.py gpus_per_net</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#fitpy-num_workers">fit.py num_workers</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#fitpy-num_workers">fit.py num_workers</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#fitpy-allow_resume">fit.py allow_resume</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#fitpy-allow_resume">fit.py allow_resume</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#fitpy-force_recalc">fit.py force_recalc</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#fitpy-force_recalc">fit.py force_recalc</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#fitpy-launch_tasks">fit.py launch_tasks</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#fitpy-launch_tasks">fit.py launch_tasks</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#fitpy-only_report">fit.py only_report</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#fitpy-only_report">fit.py only_report</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#fitpy-cache">fit.py cache</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#fitpy-cache">fit.py cache</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#fitpy-folds">fit.py folds</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#fitpy-folds">fit.py folds</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#fitpy-time">fit.py time</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#fitpy-time">fit.py time</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="reference/#task-script-arguments">task script arguments</a>
+    <li class="toctree-l2"><a class="reference internal" href="../classification/reference/#task-script-arguments">task script arguments</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#taskpy-project">task.py project</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#taskpy-project">task.py project</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#taskpy-name">task.py name</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#taskpy-name">task.py name</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#taskpy-task">task.py task</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#taskpy-task">task.py task</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#taskpy-num_gpus">task.py num_gpus</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#taskpy-num_gpus">task.py num_gpus</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#taskpy-gpus_per_net">task.py gpus_per_net</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#taskpy-gpus_per_net">task.py gpus_per_net</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#taskpy-num_workers">task.py num_workers</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#taskpy-num_workers">task.py num_workers</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#taskpy-allow_resume">task.py allow_resume</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#taskpy-allow_resume">task.py allow_resume</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#taskpy-force_recalc">task.py force_recalc</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#taskpy-force_recalc">task.py force_recalc</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#taskpy-launch_tasks">task.py launch_tasks</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#taskpy-launch_tasks">task.py launch_tasks</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#taskpy-cache">task.py cache</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#taskpy-cache">task.py cache</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="reference/#analyze-script-arguments">analyze script arguments</a>
+    <li class="toctree-l2"><a class="reference internal" href="../classification/reference/#analyze-script-arguments">analyze script arguments</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#analyzepy-inputfolder">analyze.py inputFolder</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#analyzepy-inputfolder">analyze.py inputFolder</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#analyzepy-output">analyze.py output</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#analyzepy-output">analyze.py output</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#analyzepy-onlymetric">analyze.py onlyMetric</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#analyzepy-onlymetric">analyze.py onlyMetric</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#analyzepy-sortby">analyze.py sortBy</a>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#analyzepy-sortby">analyze.py sortBy</a>
     </li>
         </ul>
     </li>
@@ -1001,12 +1001,8 @@
     <li><a href="..">Docs</a> &raquo;</li>
     
       
-        
-          <li>Classification &raquo;</li>
-        
-      
     
-    <li>User guide</li>
+    <li>Instance Segmentation Training Pipeline</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -1017,31 +1013,9 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="classification-training-pipeline">Classification training pipeline</h1>
-<h2 id="reasons-to-use-classification-pipeline">Reasons to use Classification Pipeline</h2>
-<p>Classification Pipeline was developed with a focus of enabling to make fast and 
-simply-declared experiments, which can be easily stored, 
-reproduced and compared to each other.</p>
-<p>Classification Pipeline has a lot of common parts with <a href="../generic/">Generic pipeline</a>, but it is easier to define an architecture of the network.
-Also there are a number of classification-specific features.</p>
-<p>The pipeline provides the following features:</p>
-<ul>
-<li>Allows to describe experiments in a compact and expressive way</li>
-<li>Provides a way to store and compare experiments in order to methodically find the best deap learning solution</li>
-<li>Easy to share experiments and their results to work in a team</li>
-<li>Experiment configurations are separated from model definitions</li>
-<li>It is easy to configure network architecture</li>
-<li>Provides great flexibility and extensibility via support of custom substances</li>
-<li>Common blocks like an architecture, callbacks, model metrics, predictions vizualizers and others should be written once and be a part of a common library</li>
-</ul>
-<h2 id="installation">Installation</h2>
-<p>At this moment library requires the latest version of imgaug which has not been published yet to pip, so installation requires
-execution of following two commands </p>
-<pre><code>pip install git+https://github.com/aleju/imgaug
-pip install classification_pipeline
-</code></pre>
-
-<p><em>Note: this package requires python 3.6</em></p>
+                <h1 id="instance-segmentation-training-pipeline">Instance Segmentation Training Pipeline</h1>
+<p>Instance Segmentation Pipeline was developed in order to enable using the <a href="https://github.com/open-mmlab/mmdetection">MMDetection</a>
+framework by means of Musket ML.</p>
 <h2 id="launching">Launching</h2>
 <h3 id="launching-experiments">Launching experiments</h3>
 <p><code>fit.py</code> script is designed to launch experiment training.
@@ -1057,476 +1031,59 @@ pip install classification_pipeline
 <p><a href="reference/#fitpy-num_workers">--num_workers</a> sets number of workers to use.</p>
 <p><a href="reference/#fitpy-cache">--cache</a> points to a cache folder to store the temporary data.</p>
 <p>Other parameters can be found in the <a href="reference/#fit-script-arguments">fit script reference</a></p>
-<h3 id="launching-tasks">Launching tasks</h3>
-<p><code>task.py</code> script is designed to launch experiment training.
- It is located in the <code>musket_core</code> root folder.</p>
-<p>Tasks must be defined in the project python scope and marked by an 
-annotation like this:</p>
-<pre><code class="python">from musket_core import tasks, model
-@tasks.task
-def measure2(m: model.ConnectedModel):
-    return result
-</code></pre>
-
-<p>Working directory <em>must</em> point to the <code>musket_core</code> root folder.</p>
-<p>In order to run the experiment or a number of experiments,   </p>
-<p>A typical command line may look like this:</p>
-<p><code>python ./task.py --project "path/to/project" --name "experiment_name" --task "task_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"</code></p>
-<p><a href="reference/#taskpy-project">--project</a> points to the root of the <a href="#project-structure">project</a></p>
-<p><a href="reference/#taskpy-name">--name</a> is the name of the project sub-folder containing experiment yaml file.</p>
-<p><a href="reference/#taskpy-name">--task</a> is the name of the task function.</p>
-<p><a href="reference/#taskpy-num_gpus">--num_gpus</a> sets number of GPUs to use during experiment launch.</p>
-<p><a href="reference/#taskpy-gpus_per_net">--gpus_per_net</a> is a maximum number of GPUs to use per single experiment.</p>
-<p><a href="reference/#taskpy-num_workers">--num_workers</a> sets number of workers to use.</p>
-<p><a href="reference/#taskpy-cache">--cache</a> points to a cache folder to store the temporary data.</p>
-<p>Other parameters can be found in the <a href="reference/#task-script-arguments">task script reference</a></p>
-<h3 id="launching-project-analysis">Launching project analysis</h3>
-<p><code>analize.py</code> script is designed to launch project-scope analysis.
-It is located in the <code>musket_core</code> root folder.</p>
-<p>Note that only experiments, which training is already finished will be covered.</p>
-<p><code>python ./analize.py --inputFolder "path/to/project"</code></p>
-<p><a href="reference/#analyzepy-inputfolder">--inputFolder</a> points to a folder to search for finished experiments in. Typically, project root.</p>
-<p>Other parameters can be found in the <a href="reference/#analyze-script-arguments">analyze script reference</a></p>
 <h2 id="usage-guide">Usage guide</h2>
+<h3 id="dataset-format">Dataset format</h3>
+<p>The pipline must be used with datasets which return prediction items of certain structure.
+Suppose that our prediction item represents a training example with some image and <code>N</code> objects on it.</p>
+<ul>
+<li><code>x</code> must contain image data represented by a numpy array of shape <code>(height, width, 3)</code>.</li>
+<li><code>y</code> must be a tuple <code>(labels, bboxes, masks)</code> where<ul>
+<li><code>labels</code> is a length <code>N</code> one dimansional numpy array of integers which contains object labels. Note that zero label is reserved for background. </li>
+<li><code>bboxes</code> is a float array of shape <code>(N, 4)</code> which contains object bounding boxes. Note that bounding box coordinates order must be <code>[minY, minX, maxY, maxX]</code>.</li>
+<li><code>masks</code> is an integer or boolean numpy array of shape <code>(N, height, width)</code> which contains object masks.
+Note that integer mask should contain <code>1</code> for object pixels and <code>0</code> for background.</li>
+</ul>
+</li>
+</ul>
 <h3 id="training-a-model">Training a model</h3>
-<p>Let's start from a simple example of classification. Suppose, your data are structured as follows: a .cvs file with images ids and their labels and a folder with all these images. For training a neural network to classify these images all you need are few lines of python code:</p>
-<pre><code class="python">import musket_core
-from classification_pipeline import classification
-class ProteinDataGenerator:
+<p>Let's start from the absolutely minimalistic example. Let's say that you have two folders, one of them contains
+jpeg images, and another one - png files with segmentation masks for these images. And you need to train a neural network
+that will do segmentation for you. In this extremely simple setup all that you need is to type following 5
+lines of python code:</p>
+<pre><code class="python">from musket_core import generic
+from get_some_gataset import getDataset
 
-    def __init__(self, paths, labels):
-        self.paths, self.labels = paths, labels
-
-
-    def __len__(self):
-        return len(self.paths)
-
-    def __getitem__(self, idx):
-        X,y = self.__load_image(self.paths[idx]),self.labels[idx]
-        return PredictionItem(self.paths[idx],X, y)
-
-    def __load_image(self, path):
-        R = Image.open(path + '_red.png')
-        G = Image.open(path + '_green.png')
-        B = Image.open(path + '_blue.png')
-
-
-        im = np.stack((
-            np.array(R),
-            np.array(G),
-            np.array(B),
-        ), -1)
-        return im
-dataset = ProteinDataGenerator(paths,labels)
-cfg = classification.parse(&quot;config.yaml&quot;)
-cfg.fit(dataset)
+ds = getDataset #some dataset which has the required format
+cfg = generic.parse(&quot;config.yaml&quot;)
+cfg.fit(ds)
 </code></pre>
 
 <p>Looks simple, but there is a <code>config.yaml</code> file in the code, and probably it is the place where everything actually happens.</p>
-<pre><code class="yaml">architecture: DenseNet201 #pre-trained model we are going to use
-pooling: avg
-augmentation: #define some minimal augmentations on images
- Fliplr: 0.5
- Flipud: 0.5
-classes: 28 #define the number of classes
-activation: sigmoid #as we have multilabel classification, the activation for last layer is sigmoid
-weights: imagenet #we would like to start from network pretrained on imagenet dataset
-shape: [224, 224, 3] #our desired input image size, everything will be resized to fit
-testSplit: 0.4
-optimizer: Adam #Adam optimizer is a good default choice
-batch: 16 #our batch size will be 16
-lr: 0.005
-copyWeights: true
-metrics: #we would like to track some metrics
-  - binary_accuracy
-  - macro_f1
-primary_metric: val_binary_accuracy #the most interesting metric is val_binary_accuracy
-primary_metric_mode: max
-callbacks: #configure some minimal callbacks
-  EarlyStopping:
-    patience: 3
-    monitor: val_macro_f1
-    mode: max
-    verbose: 1
-  ReduceLROnPlateau:
-    patience: 2
-    factor: 0.3
-    monitor: val_binary_accuracy
-    mode: max
-    cooldown: 1
-    verbose: 1
-loss: binary_crossentropy #we use binary_crossentropy loss
+<pre><code class="yaml">#%Musket MMDetection 1.0
+classes: 46
+shape: [800, 1333]
+
+imagesPerGpu: 1
+folds_count: 1
+testSplit: 0.1
+
 stages:
-  - epochs: 10 #let's go for 100 epochs
+  - epochs: 3
+
+dataset:
+  getTrain2:
+
+configPath: '../../data/configs/htc/htc_dconv_c3-c5_mstrain_400_1400_x101_64x4d_fpn_20e-1.py'
+weightsPath: '../../data/checkpoints/Hybrid-Task-Cascade-(HTC)/htc_dconv_c3-c5_mstrain_400_1400_x101_64x4d_fpn_20e_20190408-0e50669c-nohead.pth'
 </code></pre>
 
-<p>So as you see, we have decomposed our task in two parts, <em>code that actually trains the model</em> and <em>experiment configuration</em>,
-which determines the model and how it should be trained from the set of predefined building blocks.</p>
-<p>Moreover, the whole fitting and prediction process can be launched with built-in script, 
-the only really required python code is dataset definition to let the system know, which data to load.</p>
-<p>What does this code actually do behind the scenes?</p>
-<ul>
-<li>it splits your data into 5 folds, and trains one model per fold;</li>
-<li>it takes care of model checkpointing, generates example image/label tuples, collects training metrics. All this data will
-   be stored in the folders just near your <code>config.yaml</code>;</li>
-<li>All your folds are initialized from fixed default seed, so different experiments will use exactly the same train/validation splits.</li>
-</ul>
-<p>Also, datasets can be specified directly in your config file in more generic way, see examples ds_1, ds_2, ds_3 in "segmentation_training_pipeline/examples/people" folder. In this case you can just call cfg.fit() without providing dataset programmatically.</p>
-<p>Lets discover what's going on in more details:</p>
 <h4 id="general-train-properties">General train properties</h4>
-<p>Lets take our standard example and check the following set of instructions:</p>
-<pre><code class="yaml">testSplit: 0.4
-optimizer: Adam #Adam optimizer is a good default choice
-batch: 16 #Our batch size will be 16
-metrics: #We would like to track some metrics
-  - binary_accuracy 
-  - iou
-primary_metric: val_binary_accuracy #and the most interesting metric is val_binary_accuracy
-loss: binary_crossentropy #We use simple binary_crossentropy loss
-</code></pre>
-
-<p><a href="reference/#testsplit">testSplit</a> Splits the train set into two parts, using one part for train and leaving the other untouched for a later testing.
-The split is shuffled. </p>
-<p><a href="reference/#optimizer">optimizer</a> sets the optimizer.</p>
-<p><a href="reference/#batch">batch</a> sets the training batch size.</p>
-<p><a href="reference/#metrics">metrics</a> sets the metrics to track during the training process. Metric calculation results will be printed in the console and to <code>metrics</code> folder of the experiment.</p>
-<p><a href="reference/#primary_metric">primary_metric</a> Metric to track during the training process. Metric calculation results will be printed in the console and to <code>metrics</code> folder of the experiment.
-Besides tracking, this metric will be also used by default for metric-related activity, in example, for decision regarding which epoch results are better.</p>
-<p><a href="reference/#loss">loss</a> sets the loss function. if your network has multiple outputs, you also may pass a list of loss functions (one per output) </p>
-<p>Framework supports composing loss as a weighted sum of predefined loss functions. For example, following construction</p>
-<pre><code class="yaml">loss: binary_crossentropy+0.1*dice_loss
-</code></pre>
-
-<p>will result in loss function which is composed from <code>binary_crossentropy</code> and <code>dice_loss</code> functions.</p>
-<p>There are many more properties to check in <a href="reference/#pipeline-root-properties">Reference of root properties</a></p>
-<h4 id="defining-architecture">Defining architecture</h4>
-<p>Lets take a look at the following part of our example:</p>
-<pre><code class="yaml">architecture: DenseNet201 #let's select  architecture that we would like to use
-classes: 28 #we have just one class (mask or no mask)
-activation: sigmoid #one class means that our last layer should use sigmoid activation
-weights: imagenet
-shape: [224, 224, 3] #This is our desired input image and mask size, everything will be resized to fit.
-</code></pre>
-
-<p>The following three properties are required to set:</p>
-<p><a href="reference/#architecture">architecture</a> This property configures architecture that should be used. <code>net</code>, <code>Linknet</code>, <code>PSP</code>, <code>FPN</code> and more are supported.</p>
-<p><a href="reference/#classes">classes</a> sets the number of classes that should be used. </p>
+<p>The following property is required to set:</p>
+<p><a href="reference/#configpath">configPath</a> path to MMDetection config.</p>
 <p>The following ones are optional, but commonly used:</p>
-<p><a href="reference/#activation">activation</a> sets activation function that should be used in last layer.</p>
+<p><a href="reference/#classes">classes</a> sets the number of classes that should be used.</p>
 <p><a href="reference/#shape">shape</a> set the desired shape of the input picture and mask, in the form heigth, width, number of channels. Input will be resized to fit.</p>
-<p><a href="reference/#weights">weights</a> configures initial weights of the encoder.</p>
-<h4 id="image-augmentations">Image Augmentations</h4>
-<p>Framework uses awesome <a href="https://github.com/aleju/imgaug">imgaug</a> library for augmentation, so you only need to configure your augmentation process in declarative way like in the following example:</p>
-<pre><code class="yaml">augmentation:  
-  Fliplr: 0.5
-  Flipud: 0.5
-  Affine:
-    scale: [0.8, 1.5] #random scalings
-    translate_percent:
-      x: [-0.2,0.2] #random shifts
-      y: [-0.2,0.2]
-    rotate: [-16, 16] #random rotations on -16,16 degrees
-    shear: [-16, 16] #random shears on -16,16 degrees
-</code></pre>
-
-<p><a href="reference/#augmentation">augmentation</a> property defines <a href="https://imgaug.readthedocs.io">IMGAUG</a> transformations sequence.
-Each object is mapped on <a href="https://imgaug.readthedocs.io">IMGAUG</a> transformer by name, parameters are mapped too.</p>
-<p>In this example, <code>Fliplr</code> and <code>Flipud</code> keys are automatically mapped on <a href="https://imgaug.readthedocs.io/en/latest/source/api_augmenters_flip.html">Flip agugmenters</a>,
-their <code>0.5</code> parameter is mapped on the first <code>p</code> parameter of the augmenter.
-Named parameters are also mapped, in example <code>scale</code> key of <code>Affine</code> is mapped on <code>scale</code> parameter of <a href="https://imgaug.readthedocs.io/en/latest/source/augmenters.html?highlight=affine#affine">Affine augmenter</a>.</p>
-<p>One interesting augementation option when doing background removal task is replacing backgrounds with random 
-images. We support this with <code>BackgroundReplacer</code> augmenter:</p>
-<pre><code class="yaml">augmentation:
-  BackgroundReplacer:
-    path: ./bg #path to folder with backgrounds
-    rate: 0.5 #fraction of original backgrounds to preserve
-
-</code></pre>
-
-<h4 id="freezing-and-unfreezing-encoder">Freezing and Unfreezing encoder</h4>
-<p>Freezing encoder is often used with transfer learning. If you want to start with frozen encoder just add</p>
-<pre><code class="yaml">freeze_encoder: true
-stages:
-  - epochs: 10 #Let's go for 10 epochs with frozen encoder
-
-  - epochs: 100 #Now let's go for 100 epochs with trainable encoder
-    unfreeze_encoder: true  
-</code></pre>
-
-<p>in your experiments configuration, then on some stage configuration just add</p>
-<pre><code class="yaml">unfreeze_encoder: true
-</code></pre>
-
-<p>to stage settings.</p>
-<p>Both <a href="reference/#freeze_encoder">freeze_encoder</a> and <a href="reference/#unfreeze_encoder">unfreeze_encoder</a>
-can be put into the root section and inside the stage.</p>
-<p><em>Note: This option is not supported for DeeplabV3 architecture.</em></p>
-<h4 id="custom-datasets">Custom datasets</h4>
-<p>You can declare your own dataset class as in this example:</p>
-<pre><code class="python">from musket_core.datasets import PredictionItem
-import os
-import imageio
-import pandas as pd
-import numpy as np
-import cv2
-
-class ClassificationDS:
-
-    def __init__(self,imgPath):
-        self.species = ['Black-grass', 'Charlock', 'Cleavers', 'Common Chickweed', 'Common wheat',
-           'Fat Hen', 'Loose Silky-bent', 'Maize', 'Scentless Mayweed',
-           'Shepherds Purse', 'Small-flowered Cranesbill', 'Sugar beet']
-        self.data = []
-        self.targets = []
-        self.ids = []
-        for s_id, s in enumerate(self.species):
-            s_folder = os.path.join(imgPath,s)
-            for file in os.listdir(s_folder):
-                self.data.append(os.path.join(s_folder, file))
-                self.targets.append(s_id)
-                self.ids.append(file)
-
-
-    def __len__(self):
-        return len(self.data)
-
-
-    def __getitem__(self, item):
-        item_file = self.data[item]
-        target = self.targets[item]
-        t = np.zeros(len(self.species))
-        t[target] = 1.0
-        image = self.read_image(item_file, (224,224))
-        return PredictionItem(self.ids[item], image, t)
-
-    def read_image(self, filepath, target_size=None):
-        img = cv2.imread(filepath, cv2.IMREAD_COLOR)
-        img = cv2.resize(img.copy(), target_size, interpolation = cv2.INTER_AREA)
-        return img
-
-def getTrain()-&gt;datasets.DataSet:
-    return ClassificationDS(&quot;images/&quot;)    
-</code></pre>
-
-<p>Now, if this python code sits somewhere in python files located in <code>modules</code> folder of the project, and that file is referred by <a href="reference/#imports">imports</a> instruction, following YAML can refer it:</p>
-<pre><code class="yaml">dataset:
-  getTrain: []
-</code></pre>
-
-<p><a href="reference/#dataset">dataset</a> sets the main training dataset.</p>
-<p><a href="reference/#datasets">datasets</a> sets up a list of available data sets to be referred by other entities.</p>
-<h4 id="multistage-training">Multistage training</h4>
-<p>Sometimes you need to split your training into several stages. You can easily do it by adding several stage entries
-in your experiment configuration file.</p>
-<p><a href="reference/#stages">stages</a> instruction allows to set up stages of the train process, where for each stage it is possible to set some specific training options like the number of epochs, learning rate, loss, callbacks, etc.
-Full list of stage properties can be found <a href="reference/#stage-properties">here</a>.</p>
-<pre><code class="yaml">stages:
-  - epochs: 100 #Let's go for 100 epochs
-  - epochs: 100 #Let's go for 100 epochs
-  - epochs: 100 #Let's go for 100 epochs
-</code></pre>
-
-<pre><code class="yaml">stages:
-  - epochs: 6 #Train for 6 epochs
-    negatives: none #do not include negative examples in your training set 
-    validation_negatives: real #validation should contain all negative examples    
-
-  - lr: 0.0001 #let's use different starting learning rate
-    epochs: 6
-    negatives: real
-    validation_negatives: real
-
-  - loss: lovasz_loss #let's override loss function
-    lr: 0.00001
-    epochs: 6
-    initial_weights: ./fpn-resnext2/weights/best-0.1.weights #let's load weights from this file    
-</code></pre>
-
-<h4 id="balancing-your-data">Balancing your data</h4>
-<p>One common case is the situation when part of your images does not contain any objects of interest, like in 
-<a href="https://www.kaggle.com/c/airbus-ship-detection/overview">Airbus ship detection challenge</a>. More over your data may
-be to heavily inbalanced, so you may want to rebalance it. Alternatively you may want to inject some additional
-images that do not contain objects of interest to decrease amount of false positives that will be produced by the framework.</p>
-<p>These scenarios are supported by <a href="reference/#negatives">negatives</a> and 
-<a href="reference/#validation_negatives">validation_negatives</a> settings of training stage configuration,
-these settings accept following values:</p>
-<ul>
-<li>none - exclude negative examples from the data</li>
-<li>real - include all negative examples </li>
-<li>integer number(1 or 2 or anything), how many negative examples should be included per one positive example   </li>
-</ul>
-<pre><code class="yaml">stages:
-  - epochs: 6 #Train for 6 epochs
-    negatives: none #do not include negative examples in your training set 
-    validation_negatives: real #validation should contain all negative examples    
-
-  - lr: 0.0001 #let's use different starting learning rate
-    epochs: 6
-    negatives: real
-    validation_negatives: real
-
-  - loss: lovasz_loss #let's override loss function
-    lr: 0.00001
-    epochs: 6
-    initial_weights: ./fpn-resnext2/weights/best-0.1.weights #let's load weights from this file    
-</code></pre>
-
-<p>if you are using this setting your dataset class must support <code>isPositive</code> method which returns true for indexes
-which contain positive examples: </p>
-<pre><code class="python">    def isPositive(self, item):
-        pixels=self.ddd.get_group(self.ids[item])[&quot;EncodedPixels&quot;]
-        for mask in pixels:
-            if isinstance(mask, str):
-                return True;
-        return False
-</code></pre>
-
-<h4 id="advanced-learning-rates">Advanced learning rates</h4>
-<h5 id="dynamic-learning-rates">Dynamic learning rates</h5>
-<p><img alt="Example" src="https://github.com/bckenstler/CLR/blob/master/images/triangularDiag.png?raw=true" /></p>
-<p>As told in <a href="https://arxiv.org/abs/1506.01186">Cyclical learning rates for training neural networks</a> CLR policies can provide quicker converge for some neural network tasks and architectures. </p>
-<p><img alt="Example2" src="https://github.com/bckenstler/CLR/raw/master/images/cifar.png" /></p>
-<p>We support them by adopting Brad Kenstler <a href="https://github.com/bckenstler/CLR">CLR callback</a> for Keras.</p>
-<p>If you want to use them, just add <a href="reference/#cycliclr">CyclicLR</a> in your experiment configuration file as shown below: </p>
-<pre><code class="yaml">callbacks:
-  EarlyStopping:
-    patience: 40
-    monitor: val_binary_accuracy
-    verbose: 1
-  CyclicLR:
-     base_lr: 0.0001
-     max_lr: 0.01
-     mode: triangular2
-     step_size: 300
-</code></pre>
-
-<p>There are also <a href="reference/#reducelronplateau">ReduceLROnPlateau</a> and <a href="reference/#lrvariator">LRVariator</a> options to modify learning rate on the fly.</p>
-<h5 id="lr-finder">LR Finder</h5>
-<p><a href="https://arxiv.org/abs/1506.01186">Estimating optimal learning rate for your model</a> is an important thing, we support this by using slightly changed 
-version of <a href="https://github.com/surmenok/keras_lr_finder">Pavel Surmenok - Keras LR Finder</a></p>
-<pre><code class="python">cfg = classification.parse(config.yaml)
-ds = SimplePNGMaskDataSet(&quot;./train&quot;,&quot;./train_mask&quot;) - ???????????????????
-finder=cfg.lr_find(ds,start_lr=0.00001,end_lr=1,epochs=5)
-finder.plot_loss(n_skip_beginning=20, n_skip_end=5)
-plt.show()
-finder.plot_loss_change(sma=20, n_skip_beginning=20, n_skip_end=5, y_lim=(-0.01, 0.01))
-plt.show()
-</code></pre>
-
-<p>will result in this couple of helpful images: </p>
-<p><img alt="image" src="https://camo.githubusercontent.com/b41aeaff00fb7b214b5eb2e5c151e7e353a7263e/68747470733a2f2f63646e2d696d616765732d312e6d656469756d2e636f6d2f6d61782f313630302f312a48566a5f344c57656d6a764f57762d63514f397939672e706e67" /></p>
-<p><img alt="image" src="https://camo.githubusercontent.com/834996d32bbd2edf7435c5e105b53a6b447ef083/68747470733a2f2f63646e2d696d616765732d312e6d656469756d2e636f6d2f6d61782f313630302f312a38376d4b715f586f6d59794a4532396c39314b3064772e706e67" /></p>
-<h4 id="training-on-crops">Training on crops</h4>
-<p>Your images can be too large to train model on them. In this case you probably want to train model on crops. All
-that you need to do is to specify number of splits per axis. For example, following lines in config </p>
-<pre><code class="yaml">shape: [768, 768, 3]
-crops: 3
-</code></pre>
-
-<p>will lead to splitting each image/mask into 9 cells (3 horizontal splits and 3 vertical splits) and training model on these splits.
-Augmentations will be run separately on each cell. 
-<a href="reference/#crops">crops</a> property sets the number of single dimension cells.</p>
-<p>During prediction time, your images will be split into these cells, prediction will be executed on each cell, and then results
-will be assembled in single final mask. Thus the whole process of cropping will be invisible from a consumer perspective.   </p>
-<h3 id="using-trained-model">Using trained model</h3>
-<p>Okey, our model is trained, now we need to actually do image classification. Let's say, we need to run image classification on
-images in the directory and store results in csv file:</p>
-<pre><code class="python">
-predictions = []
-images = []
-
-#Now let's use best model from fold 0 to do image segmentation on images from images_to_segment
-preds = cfg.predict_all_to_array(dataset_test, 0, 0)
-for i, item in enumerate(dataset_test):
-    images.append(dataset_test.get_id(i))
-    p = np.argmax(preds[i])
-    predictions.append(dataset_test.get_label(p))
-
-#Let's store results in csv
-df = pd.DataFrame.from_dict({'file': images, 'species': predictions})
-df.to_csv('submission.csv', index=False)
-</code></pre>
-
-<h4 id="ensembling-predictions">Ensembling predictions</h4>
-<p>And what if you want to ensemble models from several folds? Just pass a list of fold numbers to
-<code>predict_all_to_array</code> like in the following example:</p>
-<pre><code class="python"> cfg.predict_all_to_array(dataset_test, [0,1,2,3,4], 0)
-</code></pre>
-
-<p>Another supported option is to ensemble results from extra test time augmentation (flips) by adding keyword arg <code>ttflips=True</code>.</p>
-<h3 id="custom-evaluation-code">Custom evaluation code</h3>
-<p>Sometimes you need to run custom evaluation code. In such case you may use: <code>evaluateAll</code> method, which provides an iterator
-on the batches containing original images, training masks and predicted masks</p>
-<pre><code class="python">for batch in cfg.evaluateAll(ds,2):
-    for i in range(len(batch.predicted_maps_aug)):
-        masks = ds.get_masks(batch.data[i])
-        for d in range(1,20):
-            cur_seg = binary_opening(batch.predicted_maps_aug[i].arr &gt; d/20, np.expand_dims(disk(2), -1))
-            cm = rle.masks_as_images(rle.multi_rle_encode(cur_seg))
-            pr = f2(masks, cm);
-            total[d]=total[d]+pr
-</code></pre>
-
-<h3 id="accessing-model">Accessing model</h3>
-<p>You may get trained keras model by calling: <code>cfg.load_model(fold, stage)</code>.</p>
-<h2 id="analyzing-experiments-results">Analyzing experiments results</h2>
-<p>Okey, we have done a lot of experiments and now we need to compare the results and understand what works better. This repository
-contains <a href="segmentation_pipeline/analize.py">script</a> which may be used to analyze folder containing sub folders
-with experiment configurations and results. This script gathers all configurations, diffs them by doing structural diff, then 
-for each configuration it averages metrics for all folds and  generates csv file containing metrics and parameters that
-was actually changed in your experiment like in the following <a href="report.csv">example</a></p>
-<p>This script accepts following arguments:</p>
-<ul>
-<li>inputFolder - root folder to search for experiments configurations and results</li>
-<li>output - file to store aggregated metrics</li>
-<li>onlyMetric - if you specify this option all other metrics will not be written in the report file</li>
-<li>sortBy - metric that should be used to sort results </li>
-</ul>
-<p>Example: </p>
-<pre><code class="commandline">python analize.py --inputFolder ./experiments --output ./result.py
-</code></pre>
-
-<h2 id="what-is-supported">What is supported?</h2>
-<p>At this moment classification pipeline supports following pre-trained models:
-  - <a href="https://arxiv.org/abs/1512.03385">Resnet</a>
-    - ResNet18
-    - ResNet34
-    - ResNet50
-    - ResNet101
-    - ResNet152
-    - ResNeXt50
-    - ResNeXt101
-  - <a href="https://arxiv.org/abs/1409.1556">VGG</a>:<br />
-     - VGG16
-     - VGG19
-  - <a href="https://arxiv.org/abs/1512.00567">InceptionV3</a>
-  - <a href="https://arxiv.org/abs/1602.07261">InceptionResNetV2</a>
-  - <a href="https://arxiv.org/abs/1610.02357">Xception</a>
-  - <a href="https://arxiv.org/pdf/1704.04861.pdf">MobileNet</a>
-  - <a href="https://arxiv.org/abs/1801.04381">MobileNetV2</a>
-  - <a href="https://arxiv.org/abs/1608.06993">DenseNet</a>:
-    - DenseNet121
-    - DenseNet169
-    - DenseNet201
-  - <a href="https://arxiv.org/abs/1707.07012">NasNet</a>:<br />
-    - NASNetMobile
-    - NASNetLarge</p>
-<p>Each architecture also supports some specific options, list of options is documented in <a href="segmentation_pipeline/schemas/segmentation.raml#L166">segmentation RAML library</a>.</p>
-<p>Supported augmentations are documented in <a href="segmentation_pipeline/schemas/augmenters.raml">augmentation RAML library</a>.</p>
-<p>Callbacks are documented in <a href="segmentation_pipeline/schemas/callbacks.raml">callbacks RAML library</a>.  </p>
-<h2 id="custom-architectures-callbacks-metrics">Custom architectures, callbacks, metrics</h2>
-<p>Classification pipeline uses keras custom objects registry to find entities, so if you need to use
-custom loss function, activation or metric all that you need to do is to register it in Keras as: </p>
-<pre><code class="python">keras.utils.get_custom_objects()[&quot;my_loss&quot;]= my_loss
-</code></pre>
-
-<p>If you want to inject new architecture, you should register it in <code>classification.custom_models</code> dictionary.</p>
-<p>For example:</p>
-<pre><code class="python">classification.custom.models['MyUnet']=MyUnet 
-</code></pre>
-
-<p>where <code>MyUnet</code> is a function that accepts architecture parameters as arguments and returns an instance
-of keras model.</p>
+<p><a href="reference/#weightspath">weightsPath</a> path to initial weights of the model.</p>
               
             </div>
           </div>
@@ -1554,10 +1111,6 @@ of keras model.</p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../segmentation/reference/" style="color: #fcfcfc;">&laquo; Previous</a></span>
-      
-      
-        <span style="margin-left: 15px"><a href="reference/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
@@ -1572,3 +1125,8 @@ of keras model.</p>
 
 </body>
 </html>
+
+<!--
+MkDocs version : 1.0.4
+Build Date UTC : 2019-09-27 23:50:27
+-->
