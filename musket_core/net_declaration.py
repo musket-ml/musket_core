@@ -178,11 +178,20 @@ def split_dot_normalize(layers,declarations,config,outputs,linputs,pName,withArg
 def transform_preprocessor(layers,declarations,config,outputs,linputs,pName,withArgs):
     m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
     
-    def buildPreprocessor(inputArg):
+    def buildPreprocessor(inputArg:DataSet):
         rs=[]
-        for i in range(len(m)):
+        repeat=False
+        ln=len(m)
+        if ln==1:
+            if inputArg.get_inputs_count()>1:
+                repeat=True
+                ln=inputArg.get_inputs_count()
+        for i in range(ln):
             nth=take_nth(i, inputArg)
-            x=m[i]
+            if repeat:
+                x=m[0]
+            else:    
+                x=m[i]
             rs.append(x.build(nth))
         return SplitPreproccessor(inputArg,rs)
 

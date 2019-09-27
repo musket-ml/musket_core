@@ -56,6 +56,26 @@ class DataSet:
     def get_target(self,item):
         return self[item].y
     
+    def get_inputs_count(self):
+        if hasattr(self, "_inputs_count"):
+            return self._inputs_count
+        it=self[0]
+        if isinstance(it.x, list) or isinstance(it.x, tuple):
+            self._inputs_count=len(it.x)
+        else:
+            self._inputs_count=1
+        return self._inputs_count;    
+    
+    def get_outputs_count(self):
+        if hasattr(self, "_outputs_count"):
+            return self._inputs_count
+        it=self[0]
+        if isinstance(it.y, list) or isinstance(it.y, tuple):
+            self._outputs_count=len(it.x)
+        else:
+            self._outputs_count=1 
+        return self._outputs_count;               
+    
     def get_stratify_class(self,item):
         if hasattr(self, "parent"):
             if self.parent is not None:
@@ -1004,6 +1024,8 @@ def inherit_dataset_params(ds_from,ds_to):
             del ds_to.folds;    
     if hasattr(ds_from, "holdoutArr"):
         ds_to.holdoutArr = getattr(ds_from, "holdoutArr")
+    if hasattr(ds_from, "contributions"):
+        ds_to.contributions = getattr(ds_from, "contributions")    
     if hasattr(ds_from, "_preprocessed"):
         ds_to._preprocessed = getattr(ds_from, "_preprocessed")    
     if hasattr(ds_from, "contribution"):
