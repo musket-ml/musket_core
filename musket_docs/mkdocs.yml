@@ -34,6 +34,6 @@ nav:
 - Classification:
     - 'User guide': 'classification/index.md'
     - 'Reference': 'classification/reference.md'
-- Instance Segmentation:
-    - 'User guide': 'instance_segmentation/index.md'
-    - 'Reference': 'instance_segmentation/reference.md'
+#- Instance Segmentation:
+#    - 'User guide': 'instance_segmentation/index.md'
+#    - 'Reference': 'instance_segmentation/reference.md'
