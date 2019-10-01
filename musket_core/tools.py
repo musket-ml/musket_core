@@ -458,7 +458,7 @@ class Launch(yaml.YAMLObject):
 
 
     def perform(self,server,reporter:ProgressMonitor):
-        if self.folds is not None:
+        if hasattr(self, 'folds') and self.folds is not None:
             if isinstance(self.folds, str):
                 if len(self.folds)==0:
                     self.folds=None
