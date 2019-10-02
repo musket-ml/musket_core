@@ -1,4 +1,10 @@
+import sys
 import os
+print("Adding " + os.path.dirname(sys.path[0]))
+#sys.path.append(os.path.dirname(sys.path[0]))
+sys.path[0] = os.path.dirname(sys.path[0])
+print("sys.path:")
+print(sys.path)
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0" #,1,2"
 import argparse
