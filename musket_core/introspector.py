@@ -44,6 +44,9 @@ def record(m,kind):
         if hasattr(m,"__init__"):
             constructor=getattr(m,"__init__")
             rs["parameters"]=parameters(constructor)
+            if kind=="Layer":
+                rs["parameters"].append({"name":"trainable","type":"bool","defaultValue":"true",
+                    })
     else:
         rs["parameters"]=parameters(m)     
     rs["kind"]=kind
