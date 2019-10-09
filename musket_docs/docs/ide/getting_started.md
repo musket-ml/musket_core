@@ -1,4 +1,4 @@
-# Setup
+# Getting started
 ### Download
 [Download Musket IDE for Windows](http://onpositive.club/public/dsideNew2.zip) 
 
@@ -10,6 +10,10 @@
 * Install [Classification Pipeline](../classification/index.md). Read installation instructions [here](../classification/index.md#installation).
 
 Unzip and launch executable (`ds-ide.exe` for Windows and `ds-ide` for MacOS).
+
+### Watch this in action
+
+Most of the following contents can be also checked in action in [this video](https://www.youtube.com/watch?v=Hck1CH49-YQ&list=PLyV40LHl22j5VOv2DgHoNDkpxkfueIQmn&index=5&t=0s).
 
 ### Setting up a project
 
@@ -66,13 +70,35 @@ Select `tgs-salt-identification-chellenge` and click `Finish`.
 
 This will start dataset download, check its progress in console.
 
-### Creating an experiment
+### Analysing dataset
 
 In project explorer, double-click on the newly downloaded `train.csv`
 
 ![train](images/TrainCSV.png)
 
-There is lots of stuff here, but we want to make an experiment from the dataset for now.
+Dataset editor displays CSV contents statistics, if the data is recognizable.
+
+![DatasetStatistics](images/DatasetStatistics.png)
+
+`Analyzers` combo allows to switch between dataset analysis modes.
+
+![Analyzers](images/Analyzers.png)
+
+In this simple binary segmentation there is an only suitable analyzer, 
+but in other uses cases there are more.
+
+So, the statistics on the screenshot is the output of the analyzer. 
+Besides that, analyzer also splits and sorts data, and we can see that on `data` tab.
+
+Visualizers are used to display that data, in our case, as we got raw images, there is an only visualizer.
+
+![DatasetData](images/DatasetData.png)
+
+Masks are also displayed.
+
+### Creating an experiment
+
+Following should be done to make an experiment from the dataset:
 
 Click the `Generate` button in the toolbar in the top-right corner of the viewer.
 
@@ -88,17 +114,44 @@ You now have `exp01` folder inside `experiments` folder and `config.yaml` file t
 
 `datasets.py` is also generated inside `modules` folder.
 
-### Running an experiment
+### Editing an experiment
 
-Open experiment file with double-click in project explorer ...
+We've got a default experiment for binary segmentation generated in the previous chapter.
 
+You can always find it in project explorer:
+
+![ProjectExplorerExperiment](images/ProjectExplorerExperiment.png)
+
+Its contents can be edited by double-clicking on the experiment.
 ![experiment](images/ExpFile.png)
 
-... and click on `Launch experiment` in the tool bar of the editor.
+Lets make some minor changes to experiment code.
+
+Change the shape to be well eaten by the network to:
+
+Change `shape` instruction for `shape: [224,224, 3]`
+
+Lets reduce the count of folds from default 5 to 3 to speed things up:
+
+Add `folds_count: 3` instruction to the root level.
+
+Add some holdout so we can track the effectiveness of the trained experiment:
+
+Add `testSplit: 0.2` instruction to the root level.
+
+And add an instructions to dump validation and holdout predictions to CSV right after the training.
+
+Add `dumpPredictionsToCSV: true` instruction to the root level.
+
+### Running an experiment
+
+Click on `Launch experiment` in the tool bar of the editor.
 
 ![Launch experiment](images/launch_experiment.png)
 
 This should launch an experiment, you can track what's going on in the console.
+
+### Checking results and logs
 
 When the experiment is finished, overal statistics should appear in the `Results and logs` tab:
 
@@ -108,8 +161,49 @@ It must also generate `summary.yaml` file in the experiment folder and `metrics*
 
 Check these files, they contain lots of useful statistics.
 
+`Logs` tab display logs in graphical form.
+
+![BinaryLogs](images/BinaryLogs.png)
+
+`Log` combo switches between different logs we got, in our case there is one per fold.
+
+
+![LogCombo](images/LogCombo.png)
+
+We've got following metrics declared in the experiment YAML code:
+
+```yaml
+metrics: #we would like to track some metrics
+  - binary_accuracy
+  - dice
+```
+
+So the `Metric` combo lists all of them (for the specific fold) and loss:
+
+![MetricsCombo](images/MetricsCombo.png)
+
+### Checking predictions
+
+As we dumped our validation and holdout predictions to CSV by adding 
+`dumpPredictionsToCSV: true` instruction to the root level of our YAML, 
+now we have a bunch of CSV files in the `predictions` folder of our experiment.
+
+You can use those files directly, our just click the links that appear on the `Results and logs`/`Results` tab:
+
+![PredictionLinks](images/PredictionLinks.png)
+
+This opens up the viewer with visualizers and analyzers that we already seen,
+this time for particular prediction.
+
+Statistics tab, as usual, displays some chart.
+![PredictionStatistics](images/PredictionStatistics.png)
+
+Check out `Analyzers` combo, this time there are more of them.
+![PredictionStatistics2](images/PredictionStatistics2.png)
+
+`Data` tab, which grouping is affected by the current analyzer displays samples with mask and prediction.
+![PredictionData](images/PredictionData.png)
+
 ### What is next
 
-Check the videos to find out what you can do with experiment results: [tutorials](https://www.youtube.com/playlist?list=PLyV40LHl22j5VOv2DgHoNDkpxkfueIQmn).
-
-Later on we will add main points here. 
+Check the videos to find out what else can be done using Musket IDE: [tutorials](https://www.youtube.com/playlist?list=PLyV40LHl22j5VOv2DgHoNDkpxkfueIQmn).
