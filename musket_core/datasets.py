@@ -232,6 +232,9 @@ class DataSetLoader:
                 ids= []
 
     def createBatch(self, bx, by, ids):
+        if isinstance(by[0],list):
+            r=imgaug.augmentables.Batch(data=[ids,by], images=bx)
+            return r
         if len(by[0].shape)>1:
             return imgaug.augmentables.Batch(data=ids, images=bx,
                                        segmentation_maps=[imgaug.SegmentationMapOnImage(x, shape=x.shape) for x
@@ -585,8 +588,8 @@ class GenericDataSetSequence(keras.utils.Sequence):
 
 class SimplePNGMaskDataSet:
     def __init__(self, path, mask, detect_exts=False, in_ext="jpg", out_ext="png", generate=False,list=None):
-        self.path = path;
-        self.mask = mask;
+        self.path = path
+        self.mask = mask
 
         if list is None:
             ldir = os.listdir(path)
@@ -670,7 +673,7 @@ class SimplePNGMaskDataSet:
             image = newImage
         
         image=image.astype(np.uint8)    
-        return PredictionItem(self.ids[item] + str(), image, out)
+        return PredictionItem(self.ids[item] + str(), image, out>0.5)
 
     def isPositive(self, item):
         return True
@@ -927,7 +930,16 @@ class ImageKFoldedDataSet(DefaultKFoldedDataSet):
 class KFoldedDataSet4ImageClassification(ImageKFoldedDataSet):
 
     def _prepare_vals_from_batch(self, r):
-        return np.array(r.images_aug), np.array([x for x in r.data[1]])
+        if isinstance(r.data[1][0],list):
+            arra=[[] for x in range(len(r.data[1][0]))]            
+            for x in range(len(r.data[1])):
+                rs=r.data[1][x]
+                for j in range(len(arra)):
+                    arra[j].append(rs[j])
+            arra=[np.array(a) for a in arra]        
+            return np.array(r.images_aug), arra
+        else:    
+            return np.array(r.images_aug), np.array([x for x in r.data[1]])
 
 
 class NullTerminatable:

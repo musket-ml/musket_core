@@ -104,6 +104,19 @@ def transform_concat(layers, declarations, config, outputs, linputs, pName, with
 
     return buildPreprocessor
 
+def transform(layers, declarations, config, outputs, linputs, pName, withArgs):
+    m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
+    def buildPreprocessor(inputArg):
+        if isinstance(inputArg,dict):
+            inputArg=[inputArg[x] for x in inputArg]
+        rs=[]    
+        for i in range(len(m)):
+            rs.append(m[i].build(inputArg[i]))
+            
+        return rs
+
+    return buildPreprocessor
+
 
 def transform_add(layers, declarations, config, outputs, linputs, pName, withArgs):
     m = [Layers([v], declarations, {}, outputs, linputs, withArgs) for v in config]
@@ -219,6 +232,7 @@ builtins={
     "augmentation": augmentation,
     "pass": passPreprocessor,
     "transform-concat": transform_concat,
+    "transform": transform,
     "transform-add": transform_add,
     "transform-mult": transform_mult,
     "transform-dot": transform_dot,

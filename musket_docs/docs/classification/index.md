@@ -1,5 +1,8 @@
 # Classification training pipeline
 
+Classification pipeline is a declarative pipeline for single and multi output image classification tasks.
+It can be also used for regression tasks
+
 ## Reasons to use Classification Pipeline
 
 Classification Pipeline was developed with a focus of enabling to make fast and 
@@ -389,6 +392,38 @@ dataset:
 [dataset](reference.md#dataset) sets the main training dataset.
 
 [datasets](reference.md#datasets) sets up a list of available data sets to be referred by other entities.
+
+
+### Multi output classification
+
+Sometimes you need to create network that performs several classification tasks at the same moment, in this situation
+you need to declare `classes` , `activation` and `loss` as the lists of class counts, activation functions and losses
+like in the following snippet:
+
+```yaml
+classes: [ 4, 4 ] #define the number of classes
+activation: [sigmoid,sigmoid]
+loss: 
+  - binary_crossentropy
+  - binary_crossentropy
+primary_metric: val_loss #the most interesting metric is val_binary_accuracy
+primary_metric_mode: min  
+```
+
+it is also very likely that you need to change primary metric to `val_loss`
+
+####  preparing dataset for multi output classification:
+
+When you use multi output classification your prediction item `y` should be a list of numpy arrays, like in
+the following sample:
+
+```python
+return PredictionItem(self.ids[item], image, [t0,t1,t2])
+````
+
+length of this list should be equal to the number of network outputs
+
+
 
 #### Multistage training
 

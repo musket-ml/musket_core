@@ -1078,3 +1078,53 @@ class MultiClassClassificationDataSet(BinaryClassificationDataSet):
                 result[self.class2Num[clazz.strip()]]=1        
                         
         return result    
+class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet): 
+    
+    def __init__(self,imagePath,csvPath,imColumn,clazzColumns):   
+        super().__init__(imagePath,csvPath,imColumn,clazzColumns[0])
+        self.classes=[]
+        self.class2Num=[]
+        self.num2Class=[]
+        self.clazzColumns=clazzColumns
+        for clazzColumn in clazzColumns:
+            cls=self.initClasses(clazzColumn)    
+            self.classes.append(cls)
+            class2Num={}
+            num2Class={}
+            num=0
+            for c in cls:
+                class2Num[c]=num
+                num2Class[num]=c
+                num=num+1
+            self.class2Num.append(class2Num)
+            self.num2Class.append(num2Class)        
+         
+    
+                    
+            
+    def get_target(self,item):    
+        imageId=self.imageIds[item]
+        vl = self.get_all_about(imageId)
+        num=0
+        results=[]
+        for clazzColumn in self.clazzColumns:        
+            result=np.zeros((len(self.classes[num])),dtype=np.bool)                
+            for i in range(len(vl)):
+                 
+                clazz = vl[clazzColumn].values[i]
+                if isinstance(clazz, float):
+                    if math.isnan(clazz):
+                        continue
+                if len(clazz.strip())==0:
+                    continue
+                if " " in clazz:
+                    for w in clazz.split(" "):
+                        result[self.class2Num[num][w]]=1
+                elif "|" in clazz:
+                    for w in clazz.split("|"):
+                        result[self.class2Num[num][w]]=1
+                else:
+                    result[self.class2Num[num][clazz.strip()]]=1
+            results.append(result)                
+            num=num+1            
+        return results    
