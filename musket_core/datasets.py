@@ -958,7 +958,10 @@ class SubDataSet(DataSet):
             return self.ds[self.indexes[item]]
 
     def get_train_item(self,item:int):
-        return self.ds.get_train_item(self.indexes[item])
+        if hasattr(self.ds, "get_train_item"):
+            return self.ds.get_train_item(self.indexes[item])
+        else:     
+            return self.ds[self.indexes[item]]
     
     def root(self):
         if hasattr(self.ds,"root"):
