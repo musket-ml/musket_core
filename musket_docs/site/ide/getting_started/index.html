@@ -962,6 +962,8 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#watch-this-in-action">Watch this in action</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#setting-up-a-project">Setting up a project</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#getting-dataset-from-kaggle">Getting dataset from Kaggle</a>
@@ -972,9 +974,17 @@
     </li>
         </ul>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#analysing-dataset">Analysing dataset</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#creating-an-experiment">Creating an experiment</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#editing-an-experiment">Editing an experiment</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#running-an-experiment">Running an experiment</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#checking-results-and-logs">Checking results and logs</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#checking-predictions">Checking predictions</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#what-is-next">What is next</a>
     </li>
@@ -1028,6 +1038,8 @@
 <li>Install <a href="../../classification/">Classification Pipeline</a>. Read installation instructions <a href="../../classification/#installation">here</a>.</li>
 </ul>
 <p>Unzip and launch executable (<code>ds-ide.exe</code> for Windows and <code>ds-ide</code> for MacOS).</p>
+<h3 id="watch-this-in-action">Watch this in action</h3>
+<p>Most of the following contents can be also checked in action in <a href="https://www.youtube.com/watch?v=Hck1CH49-YQ&amp;list=PLyV40LHl22j5VOv2DgHoNDkpxkfueIQmn&amp;index=5&amp;t=0s">this video</a>.</p>
 <h3 id="setting-up-a-project">Setting up a project</h3>
 <p>Launch <code>File-&gt;New...</code> from the main menu.</p>
 <p>Choose <code>Musket-&gt;Musket Project</code> in the <code>New</code> dialog.</p>
@@ -1059,10 +1071,22 @@ To create this folder from console, run <code>cmd</code> and launch the followin
 <p><img alt="salt" src="../images/SaltCompetition.png" /></p>
 <p>Select <code>tgs-salt-identification-chellenge</code> and click <code>Finish</code>.</p>
 <p>This will start dataset download, check its progress in console.</p>
-<h3 id="creating-an-experiment">Creating an experiment</h3>
+<h3 id="analysing-dataset">Analysing dataset</h3>
 <p>In project explorer, double-click on the newly downloaded <code>train.csv</code></p>
 <p><img alt="train" src="../images/TrainCSV.png" /></p>
-<p>There is lots of stuff here, but we want to make an experiment from the dataset for now.</p>
+<p>Dataset editor displays CSV contents statistics, if the data is recognizable.</p>
+<p><img alt="DatasetStatistics" src="../images/DatasetStatistics.png" /></p>
+<p><code>Analyzers</code> combo allows to switch between dataset analysis modes.</p>
+<p><img alt="Analyzers" src="../images/Analyzers.png" /></p>
+<p>In this simple binary segmentation there is an only suitable analyzer, 
+but in other uses cases there are more.</p>
+<p>So, the statistics on the screenshot is the output of the analyzer. 
+Besides that, analyzer also splits and sorts data, and we can see that on <code>data</code> tab.</p>
+<p>Visualizers are used to display that data, in our case, as we got raw images, there is an only visualizer.</p>
+<p><img alt="DatasetData" src="../images/DatasetData.png" /></p>
+<p>Masks are also displayed.</p>
+<h3 id="creating-an-experiment">Creating an experiment</h3>
+<p>Following should be done to make an experiment from the dataset:</p>
 <p>Click the <code>Generate</code> button in the toolbar in the top-right corner of the viewer.</p>
 <p><img alt="generate" src="../images/Generate.png" /></p>
 <p>Choose a name like <code>train_ds</code> and <code>Generate Musket Wrappers</code>, click <code>Ok</code>.</p>
@@ -1070,19 +1094,58 @@ To create this folder from console, run <code>cmd</code> and launch the followin
 <p>Accept to configure an experiment, enter any name like <code>exp01</code> and click <code>Finish</code>.</p>
 <p>You now have <code>exp01</code> folder inside <code>experiments</code> folder and <code>config.yaml</code> file there.</p>
 <p><code>datasets.py</code> is also generated inside <code>modules</code> folder.</p>
+<h3 id="editing-an-experiment">Editing an experiment</h3>
+<p>We've got a default experiment for binary segmentation generated in the previous chapter.</p>
+<p>You can always find it in project explorer:</p>
+<p><img alt="ProjectExplorerExperiment" src="../images/ProjectExplorerExperiment.png" /></p>
+<p>Its contents can be edited by double-clicking on the experiment.
+<img alt="experiment" src="../images/ExpFile.png" /></p>
+<p>Lets make some minor changes to experiment code.</p>
+<p>Change the shape to be well eaten by the network to:</p>
+<p>Change <code>shape</code> instruction for <code>shape: [224,224, 3]</code></p>
+<p>Lets reduce the count of folds from default 5 to 3 to speed things up:</p>
+<p>Add <code>folds_count: 3</code> instruction to the root level.</p>
+<p>Add some holdout so we can track the effectiveness of the trained experiment:</p>
+<p>Add <code>testSplit: 0.2</code> instruction to the root level.</p>
+<p>And add an instructions to dump validation and holdout predictions to CSV right after the training.</p>
+<p>Add <code>dumpPredictionsToCSV: true</code> instruction to the root level.</p>
 <h3 id="running-an-experiment">Running an experiment</h3>
-<p>Open experiment file with double-click in project explorer ...</p>
-<p><img alt="experiment" src="../images/ExpFile.png" /></p>
-<p>... and click on <code>Launch experiment</code> in the tool bar of the editor.</p>
+<p>Click on <code>Launch experiment</code> in the tool bar of the editor.</p>
 <p><img alt="Launch experiment" src="../images/launch_experiment.png" /></p>
 <p>This should launch an experiment, you can track what's going on in the console.</p>
+<h3 id="checking-results-and-logs">Checking results and logs</h3>
 <p>When the experiment is finished, overal statistics should appear in the <code>Results and logs</code> tab:</p>
 <p><img alt="Experiment results" src="../images/ExperimentResults.png" /></p>
 <p>It must also generate <code>summary.yaml</code> file in the experiment folder and <code>metrics*.csv</code> files in <code>metrics</code> subfolder.</p>
 <p>Check these files, they contain lots of useful statistics.</p>
+<p><code>Logs</code> tab display logs in graphical form.</p>
+<p><img alt="BinaryLogs" src="../images/BinaryLogs.png" /></p>
+<p><code>Log</code> combo switches between different logs we got, in our case there is one per fold.</p>
+<p><img alt="LogCombo" src="../images/LogCombo.png" /></p>
+<p>We've got following metrics declared in the experiment YAML code:</p>
+<pre><code class="yaml">metrics: #we would like to track some metrics
+  - binary_accuracy
+  - dice
+</code></pre>
+
+<p>So the <code>Metric</code> combo lists all of them (for the specific fold) and loss:</p>
+<p><img alt="MetricsCombo" src="../images/MetricsCombo.png" /></p>
+<h3 id="checking-predictions">Checking predictions</h3>
+<p>As we dumped our validation and holdout predictions to CSV by adding 
+<code>dumpPredictionsToCSV: true</code> instruction to the root level of our YAML, 
+now we have a bunch of CSV files in the <code>predictions</code> folder of our experiment.</p>
+<p>You can use those files directly, our just click the links that appear on the <code>Results and logs</code>/<code>Results</code> tab:</p>
+<p><img alt="PredictionLinks" src="../images/PredictionLinks.png" /></p>
+<p>This opens up the viewer with visualizers and analyzers that we already seen,
+this time for particular prediction.</p>
+<p>Statistics tab, as usual, displays some chart.
+<img alt="PredictionStatistics" src="../images/PredictionStatistics.png" /></p>
+<p>Check out <code>Analyzers</code> combo, this time there are more of them.
+<img alt="PredictionStatistics2" src="../images/PredictionStatistics2.png" /></p>
+<p><code>Data</code> tab, which grouping is affected by the current analyzer displays samples with mask and prediction.
+<img alt="PredictionData" src="../images/PredictionData.png" /></p>
 <h3 id="what-is-next">What is next</h3>
-<p>Check the videos to find out what you can do with experiment results: <a href="https://www.youtube.com/playlist?list=PLyV40LHl22j5VOv2DgHoNDkpxkfueIQmn">tutorials</a>.</p>
-<p>Later on we will add main points here. </p>
+<p>Check the videos to find out what else can be done using Musket IDE: <a href="https://www.youtube.com/playlist?list=PLyV40LHl22j5VOv2DgHoNDkpxkfueIQmn">tutorials</a>.</p>
               
             </div>
           </div>

@@ -68,7 +68,7 @@ class Project(projects.Project):
         return self.project.byFullPath(path)
 
     class Java:
-        implements = ["com.onpositive.musket_core.IProject"]
+        implements = ["com.onpositive.musket_core.IMusketProject"]
 
 def convert_ds(ds):
     return {"ref": ds.ref, "size": (ds.size if hasattr(ds, "size") else "unknown")}

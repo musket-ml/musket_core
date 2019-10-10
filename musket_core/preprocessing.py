@@ -177,7 +177,9 @@ class SplitPreproccessor(AbstractPreprocessedDataSet):
                 contributions.append(getattr(x, "contribution"))
             else: contributions.append(None)
         if hasContributions:
-            self.contributions=contributions             
+            self.contributions=contributions
+        self.name="-".join([x.name for x in branches])        
+                         
     def id(self):
         return "split("+str(self.num)+")"
 
