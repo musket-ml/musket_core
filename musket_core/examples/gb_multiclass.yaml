@@ -23,7 +23,7 @@ metrics:
 
 primary_metric: val_macro_f1
 primary_metric_mode: max
-aggregation_metric: macro_f1
+experiment_result: macro_f1
 
 loss: binary_crossentropy
 
