@@ -16,7 +16,7 @@ from musket_core.utils import ensure
 from keras.utils import multi_gpu_model
 from musket_core.quasymodels import AnsembleModel,BatchCrop
 import musket_core.datasets as datasets
-import musket_core.net_declaration as nd
+from  musket_core import net_declaration as nd
 from musket_core import losses, configloader
 import keras.optimizers as opt
 from musket_core.lr_finder import LRFinder

@@ -1,6 +1,5 @@
 from threading import local
 import inspect
-from musket_core import utils
 import os
 import pandas as pd
 import imageio
@@ -67,4 +66,3 @@ def get_kaggle_input_root():
                 return new_input_path
 
     return input_path
-
