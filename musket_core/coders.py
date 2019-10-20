@@ -32,12 +32,22 @@ def classes_from_vals(tc,sep=" |"):
     return realC 
 
 class NumCoder:
-    def __init__(self,vals,sep=" |",cat=False):
+    def __init__(self,vals):
         self.values=vals
     def __getitem__(self, item):
         return np.array([self.values[item]])
     def _decode_class(self,item):
-        return item[0]    
+        return item[0] 
+    
+class ConcatCoder:       
+    def __init__(self,coders):
+        self.coders=coders
+    def __getitem__(self, item):
+        c=[i[item] for i in self.coders]
+        return np.concatenate(c,axis=0)
+    
+    def _decode_class(self,item):
+        raise NotImplementedError("Does not implemented yet") 
         
 class ClassCoder:
     
