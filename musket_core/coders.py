@@ -50,6 +50,17 @@ class NumCoder:
     def _decode_class(self,item):
         return item[0]
     
+@coder("normalized_number")
+class NormalziedNumCoder:
+    def __init__(self,vals,ctx):
+        self.values=np.nan_to_num(vals)
+        self.values=(self.values-np.min(self.values))/np.max(self.values)-np.min(self.values)
+        self.ctx=ctx
+    def __getitem__(self, item):
+        return np.array([self.values[item]])
+    def _decode_class(self,item):
+        return item[0]    
+    
       
     
 class ConcatCoder:       
