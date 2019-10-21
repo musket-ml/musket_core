@@ -2,7 +2,6 @@ from musket_core import coders,datasets
 from musket_core.datasets import PredictionItem
 from musket_core import context
 
-
 class GenericCSVDataSet(datasets.DataSet):
     
 
@@ -26,9 +25,11 @@ class GenericCSVDataSet(datasets.DataSet):
         self.inputs=[]
         self.outputs=[]
         self.ctypes=ctypes
+        self.imagePath=image_path
         
         consumedInputs=set()
         consumedOutputs=set()
+        self.imageCoders=[]
         self.processGroups(ctypes, input_groups, consumedInputs, self.inputs)    
         self.processGroups(ctypes, output_groups, consumedOutputs, self.outputs)
             
@@ -51,13 +52,13 @@ class GenericCSVDataSet(datasets.DataSet):
             self.outputs.append(v)
             
     def transformType(self,values,tpe):
-        if tpe=="class":
-            return coders.ClassCoder(values)
-        if tpe=="number":
-            return coders.NumCoder(values)
-        if tpe=="str":
-            return values
-        return values        
+            if tpe=="as_is":
+                return values
+            cd= coders.get_coder(tpe, values,self)
+            if isinstance(cd, coders.ImageCoder):
+                self.imageCoders.append(cd)
+            return cd
+                
     
     def __len__(self):
         return len(self.data)

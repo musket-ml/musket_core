@@ -4,6 +4,15 @@ from musket_core import context
 import os
 import imageio
 
+coders={}
+
+def coder(name): 
+    def inner(func): 
+        func.coder=True
+        coders[name]=func
+        return func        
+    return inner #this is the fun_obj mentioned in the above content
+
 def classes_from_vals(tc,sep=" |"):
     realC=set()
     hasMulti=False
@@ -31,13 +40,17 @@ def classes_from_vals(tc,sep=" |"):
         realC.append(nan)                                      
     return realC 
 
+@coder("number")
 class NumCoder:
-    def __init__(self,vals):
+    def __init__(self,vals,ctx):
         self.values=vals
+        self.ctx=ctx
     def __getitem__(self, item):
         return np.array([self.values[item]])
     def _decode_class(self,item):
-        return item[0] 
+        return item[0]
+    
+      
     
 class ConcatCoder:       
     def __init__(self,coders):
@@ -49,10 +62,12 @@ class ConcatCoder:
     def _decode_class(self,item):
         raise NotImplementedError("Does not implemented yet") 
         
+@coder("one_hot")        
 class ClassCoder:
     
-    def __init__(self,vals,sep=" |",cat=False):
+    def __init__(self,vals,ctx,sep=" |",cat=False):
         self.class2Num={}
+        self.ctx=ctx
         self.num2Class={}
         self.values=vals
         cls=classes_from_vals(vals,sep);
@@ -80,7 +95,7 @@ class ClassCoder:
         
         if isinstance(clazz, str):
             if len(clazz.strip())==0:
-                return
+                return result
             bs=False
             for s in self.sep:
                 if s in clazz:
@@ -96,22 +111,129 @@ class ClassCoder:
             result[self.class2Num[clazz]]=1
                         
         return result
-    
+
+@coder("categorical_one_hot")    
 class CatClassCoder(ClassCoder):
     
     def _encode_class(self,o):
         return self.num2Class[(np.where(o==o.max()))[0][0]]
-    
+
+@coder("binary")    
 class BinaryClassCoder(ClassCoder):
     
-    def _encode_class(self,o):
-        return self.num2Class[(np.where(o==o.max()))[0][0]]    
+    
+    def encode(self,clazz):            
+        result=np.zeros(1,dtype=np.bool)
         
+        if isinstance(clazz, str):
+            if len(clazz.strip())==0:
+                return result
+            if self.class2Num[clazz.strip()]==1:
+                result[0]=1
+        else:
+            if math.isnan(clazz) and not clazz  in self.class2Num:
+                return result
+            if self.class2Num[clazz]==1:
+                result[0]=1
+                        
+        return result    
+
+def mask2rle_relative(img, width, height):
+    rle = []
+    lastColor = 0;
+    currentPixel = 0;
+    runStart = -1;
+    runLength = 0;
+
+    for x in range(width):
+        for y in range(height):
+            currentColor = img[x][y]
+            if currentColor != lastColor:
+                if currentColor == 255:
+                    runStart = currentPixel;
+                    runLength = 1;
+                else:
+                    rle.append(str(runStart));
+                    rle.append(str(runLength));
+                    runStart = -1;
+                    runLength = 0;
+                    currentPixel = 0;
+            elif runStart > -1:
+                runLength += 1
+            lastColor = currentColor;
+            currentPixel+=1;
+
+    return " ".join(rle)
+
+def rle2mask_relative(rle, shape):
+    width=shape[0]
+    height=shape[1]
+    mask= np.zeros(width* height)
+    array = np.asarray([int(x) for x in rle.split()])
+    starts = array[0::2]
+    lengths = array[1::2]
+
+    current_position = 0
+    for index, start in enumerate(starts):
+        current_position += start
+        mask[current_position:current_position+lengths[index]] = 255
+        current_position += lengths[index]
+
+    return mask.reshape(width, height)
+
+def rle_encode(img):
+    '''
+    img: numpy array, 1 - mask, 0 - background
+    Returns run length as string formated
+    '''
+    pixels = img.flatten()
+    pixels = np.concatenate([[0], pixels, [0]])
+    runs = np.where(pixels[1:] != pixels[:-1])[0] + 1
+    runs[1::2] -= runs[::2]
+    return ' '.join(str(x) for x in runs)
+ 
+def rle_decode(mask_rle, shape):
+    '''
+    mask_rle: run-length as string formated (start length)
+    shape: (height,width) of array to return 
+    Returns numpy array, 1 - mask, 0 - background
+
+    '''
+    if isinstance(mask_rle, float):
+        return np.zeros(shape,dtype=np.bool)
+    s = mask_rle.split()
+    starts, lengths = [np.asarray(x, dtype=int) for x in (s[0:][::2], s[1:][::2])]
+    starts -= 1
+    ends = starts + lengths
+    img = np.zeros(shape[0]*shape[1], dtype=np.uint8)
+    for lo, hi in zip(starts, ends):
+        img[lo:hi] = 1
+    return img.reshape(shape)
         
+@coder("rle")        
+class RLECoder:
+    
+    def __init__(self,values,ctx):
+        self.values=values
+        self.ctx=ctx
+        self.inited=False
+    
+    def __getitem__(self, item):
+        if not self.inited:
+            self.init()            
+        return rle_decode(self.values[item],self.shape)
+    
+    def init(self):
+        f=self.ctx.imageCoders[0]
+        fi=f[0]
+        self.shape=(fi.shape[0],fi.shape[1])    
+                
+@coder("image")        
 class ImageCoder:
     
-    def __init__(self,imagePath):
+    def __init__(self,values,ctx):
         self.images={}
+        imagePath=ctx.imagePath
         if imagePath is None:
             return;
         if isinstance(imagePath, list): 
@@ -119,7 +241,8 @@ class ImageCoder:
                 self.addPath(v)
         else: 
             self.addPath(imagePath)
-        self.dim=3 
+        self.dim=3
+        self.values=values 
 
     def addPath(self, imagePath):
         p0 = os.path.join(context.get_current_project_data_path(), imagePath)
@@ -130,7 +253,9 @@ class ImageCoder:
             fp = os.path.join(p0, x)
             self.images[x] = fp
             self.images[x[:-4]] = fp
-        
+    
+    def __getitem__(self, item):
+        return self.get_value(self.values[item])    
     
     def get_value(self,im_id):
         im=imageio.imread(self.images[im_id])
@@ -144,3 +269,10 @@ class ImageCoder:
             else:
                 raise ValueError("Unsupported conversion")    
         return im
+
+
+def get_coder(name:str,ctx,parent):
+    if name in coders:
+        return coders[name](ctx,parent)
+    raise ValueError("Unknown coder:"+name)
+
