@@ -914,9 +914,9 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
         res=[]
         for i in range(len(o)):
             if o[i]==True:
-                res.append(self.num2Class[i+1])
+                res.append(str(self.num2Class[i+1]))
             else:
-                res.append(self.num2Class[0])    
+                res.append(str(self.num2Class[0]))    
         return " ".join(res)
     
 
