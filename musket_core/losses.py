@@ -141,9 +141,8 @@ def iou_numpy(outputs, labels, smooth=1,negativesValue=1):
     iou = (intersection + SMOOTH) / (union + SMOOTH)
     return iou
 
+def dice_numpy( outputs,labels,negativesValue=1, threshold=0.5):
 
-def dice_numpy( outputs,labels,negativesValue=1):
-    
     cs=labels.shape[-1]
     if cs>1:
         rr=[]
@@ -152,17 +151,35 @@ def dice_numpy( outputs,labels,negativesValue=1):
         return np.mean(rr, axis=0)
     outputs = outputs.squeeze()
     labels = labels.squeeze()
-    true = (outputs>0.5)
-    pred = (labels>0.5)
+    true = (outputs>threshold)
+    pred = (labels>threshold)
     
     if labels.max()==0:
-        if (outputs>0.5).max()==0:
+        if (outputs>threshold).max()==0:
             return negativesValue
           
     intersection =np.sum (true & pred)
     im_sum = np.sum(true) + np.sum(pred)
 
-    return 2.0 * intersection / (im_sum + SMOOTH)    
+    return 2.0 * intersection / (im_sum + SMOOTH)
+    
+def dice_numpy_mask( outputs,labels,negativesValue=1, threshold=0.5):
+
+    if len(labels.shape) > 2:
+        raise ValueError("Max 2 dimensions supported");
+    outputs = outputs.squeeze()
+    labels = labels.squeeze()
+    true = (outputs>threshold)
+    pred = (labels>threshold)
+    
+    if labels.max()==0:
+        if (outputs>threshold).max()==0:
+            return negativesValue
+          
+    intersection =np.sum (true & pred)
+    im_sum = np.sum(true) + np.sum(pred)
+
+    return 2.0 * intersection / (im_sum + SMOOTH)        
 
 def dice_numpy_true_negative_is_one( outputs,labels):    
     return dice_numpy(outputs,labels,1)
