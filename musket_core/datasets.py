@@ -1100,6 +1100,7 @@ class BufferedWriteableDS(WriteableDataSet):
                 utils.save(self.dsPath, self.predictions)
             else:
                 np.save(self.dsPath,self.predictions)
+        self.predictions=np.array(self.predictions)        
 
     def __len__(self):
         return len(self.parent)

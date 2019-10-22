@@ -24,10 +24,7 @@ The pipeline provides the following features:
 
 ## Installation
 
-At this moment library requires the latest version of imgaug which has not been published yet to pip, so installation requires
-execution of following two commands 
 ```
-pip install git+https://github.com/aleju/imgaug
 pip install classification_pipeline
 ```
 *Note: this package requires python 3.6*

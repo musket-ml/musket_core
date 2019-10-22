@@ -345,10 +345,36 @@ class MultiClassFrequenceyAnalizer:
 
 @visualization.prediction_analizer
 def ground_truth_vs_prediction(x,y):
+    
     allCorrect=np.equal(x>0.5,y>0.5).sum()==len(x)
     if allCorrect:
         return "Correct"
     return "Incorrect"
+
+@visualization.prediction_analizer
+class MultiOutputCategoricalAnalizer(MultiClassMetricsAnalizer):
+    
+
+    def results(self):
+        preds=np.array(self.predictions)
+        gt=np.array(self.ground_truth)
+        scores=[]
+        
+        for i in range(preds.shape[1]):
+            pri=preds[:,i]
+            gti=gt[:,i]
+            
+            pri=np.argmax(pri,axis=1)
+            gti=np.argmax(gti,axis=1)
+            
+            f1=metrics.accuracy_score(gti,pri)
+            scores.append(float(f1))
+        self.scores=scores;
+        return []    
+    
+    def visualizationHints(self):
+        return {"type": "hist", "values": self.scores,"x_axis":"Output","y_axis":"Categorical Accuracy"}
+    
 
 @visualization.prediction_analizer
 def void_analizer(x,y):
