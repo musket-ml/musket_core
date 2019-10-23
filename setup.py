@@ -11,7 +11,7 @@ setup(name='musket_core',
       include_package_data=True,
       dependency_links=['https://github.com/aleju/imgaug'],
       install_requires=["numpy", "scipy","Pillow", "cython","pandas","matplotlib", "scikit-image","keras>=2.2.4","imageio",
-"opencv-python",
+"opencv-python","imgaug:0.3.0","tensorflow:1.15"
 "h5py",
 "tqdm",
 "segmentation_models", "lightgbm", "async_promises"],
