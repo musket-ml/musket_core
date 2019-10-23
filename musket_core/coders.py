@@ -13,7 +13,7 @@ def coder(name):
         return func        
     return inner #this is the fun_obj mentioned in the above content
 
-def classes_from_vals(tc,sep=" |"):
+def classes_from_vals(tc,sep=" |_",emptyIs=None):
     realC=set()
     hasMulti=False
     nan=None
@@ -26,7 +26,11 @@ def classes_from_vals(tc,sep=" |"):
             if isinstance(v, str):
                 v=v.strip()    
                 if len(v)==0:
-                    continue
+                    if emptyIs is None:
+                        continue
+                    else:
+                        realC.add(v)
+                        continue 
                 for s in sep:
                     if s in v:
                         bs=True
@@ -37,7 +41,7 @@ def classes_from_vals(tc,sep=" |"):
                 realC.add(v)
     realC=sorted(list(realC))            
     if nan is not None and not hasMulti:
-        realC.append(nan)                                      
+        realC.append("nan")                                      
     return realC 
 
 @coder("number")
@@ -76,18 +80,25 @@ class ConcatCoder:
 @coder("one_hot")        
 class ClassCoder:
     
+
+    def initClasses(self, vals, sep):
+        return classes_from_vals(vals, sep)
+
     def __init__(self,vals,ctx,sep=" |",cat=False):
         self.class2Num={}
         self.ctx=ctx
         self.num2Class={}
         self.values=vals
-        cls=classes_from_vals(vals,sep);
+        cls=self.initClasses(vals, sep)
         self.classes=cls
         num=0
         self.sep=sep
         for c in cls:
             self.class2Num[c]=num
-            self.num2Class[num]=c
+            if c=="nan":
+                self.num2Class[num]=math.nan
+            else:    
+                self.num2Class[num]=c
             num=num+1
     
     def __getitem__(self, item):
@@ -107,7 +118,10 @@ class ClassCoder:
         result=np.zeros((len(self.classes)),dtype=np.bool)
         
         if isinstance(clazz, str):
-            if len(clazz.strip())==0:
+            clazz=clazz.strip()
+            if len(clazz)==0:
+                if clazz in self.class2Num:
+                    result[self.class2Num[clazz]]=1
                 return result
             bs=False
             for s in self.sep:
@@ -116,7 +130,7 @@ class ClassCoder:
                     for w in clazz.split(s):
                         result[self.class2Num[w]]=1                        
             if not bs:
-                result[self.class2Num[clazz.strip()]]=1
+                result[self.class2Num[clazz]]=1
         else:
             if math.isnan(clazz) and not clazz  in self.class2Num:
                 return result
@@ -128,8 +142,24 @@ class ClassCoder:
 @coder("categorical_one_hot")    
 class CatClassCoder(ClassCoder):
     
+    def initClasses(self, vals, sep):
+        return classes_from_vals(vals, "",emptyIs=True)
+    
     def _decode(self,o,tr=0.5): 
         return self.num2Class[(np.where(o==o.max()))[0][0]]
+    
+    def encode(self,clazz):            
+        result=np.zeros((len(self.classes)),dtype=np.bool)
+        
+        if isinstance(clazz, str):
+            clazz=clazz.strip()
+        if isinstance(clazz, float):
+            if math.isnan(clazz):
+                clazz="nan"    
+            
+        result[self.class2Num[clazz]]=1
+                        
+        return result
 
 @coder("binary")    
 class BinaryClassCoder(ClassCoder):
@@ -139,6 +169,9 @@ class BinaryClassCoder(ClassCoder):
         if o[0]:
             return self.num2Class[1]
         return self.num2Class[0] 
+    
+    def initClasses(self, vals, sep):
+        return classes_from_vals(vals, "",emptyIs=True)
     
     def encode(self,clazz):            
         result=np.zeros(1,dtype=np.bool)
