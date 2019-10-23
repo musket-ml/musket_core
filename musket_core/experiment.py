@@ -161,7 +161,7 @@ class Experiment:
             return float(m)
         else:
             m = self.metrics()
-            if isinstance(m,dict):
+            if isinstance(m,dict) and "primary_metric" in self.config():
                 pm = self.config()["primary_metric"]
                 if "val_" in pm:
                     pm = pm[4:]

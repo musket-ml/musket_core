@@ -426,10 +426,10 @@ def dataset_provider(origin=None,kind=None):
         return func        
     return inner #this is the fun_obj mentioned in the above content 
 
-class DirectoryDataSet:
+class DirectoryDataSet(DataSet):
 
     def __init__(self,imgPath):
-
+        super().__init__()
         if isinstance(imgPath,ConstrainedDirectory):
             self.imgPath=imgPath.path
             self.ids = imgPath.filters
@@ -931,14 +931,14 @@ class KFoldedDataSet4ImageClassification(ImageKFoldedDataSet):
 
     def _prepare_vals_from_batch(self, r):
         if isinstance(r.data[1][0],list):
-            arra=[[] for x in range(len(r.data[1][0]))]            
+            arra=[[] for x in range(len(r.data[1][0]))]
             for x in range(len(r.data[1])):
                 rs=r.data[1][x]
                 for j in range(len(arra)):
                     arra[j].append(rs[j])
-            arra=[np.array(a) for a in arra]        
+            arra=[np.array(a) for a in arra]
             return np.array(r.images_aug), arra
-        else:    
+        else:
             return np.array(r.images_aug), np.array([x for x in r.data[1]])
 
 
@@ -972,7 +972,7 @@ class SubDataSet(DataSet):
     def get_train_item(self,item:int):
         if hasattr(self.ds, "get_train_item"):
             return self.ds.get_train_item(self.indexes[item])
-        else:     
+        else:
             return self.ds[self.indexes[item]]
     
     def root(self):
@@ -1100,7 +1100,7 @@ class BufferedWriteableDS(WriteableDataSet):
                 utils.save(self.dsPath, self.predictions)
             else:
                 np.save(self.dsPath,self.predictions)
-        self.predictions=np.array(self.predictions)        
+        self.predictions=np.array(self.predictions)
 
     def __len__(self):
         return len(self.parent)

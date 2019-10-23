@@ -11,6 +11,7 @@ import scipy
 import tqdm
 import imgaug
 from musket_core.coders import classes_from_vals,rle2mask_relative,mask2rle_relative,rle_decode,rle_encode
+import math
 
 class NegativeDataSet:
     def __init__(self, path):
@@ -592,12 +593,12 @@ class NoChangeDataSetImageClassificationImage(ImageKFoldedDataSet):
     
     
 
-    
-        
-                    
 
 
-    
+
+
+
+
 
 
 class AbstractImagePathDataSet(DataSet):
@@ -701,7 +702,7 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
         for item in seq:            
             for t in templates:
                 self._encode_template(t,templates[t],item)
-        return seq    
+        return seq
 
 
 class BinarySegmentationDataSet(CSVReferencedDataSet):    
@@ -874,9 +875,81 @@ class MultiClassSegmentationDataSet(BinarySegmentationDataSet):
         prediction = self.get_mask(imageId,image.shape)
         return PredictionItem(imageId,image,prediction)
 
-import math
 
-class BinaryClassificationDataSet(CSVReferencedDataSet): 
+class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
+
+    def __init__(self, imagePath, csvPath, imColumn, rleColumn, clazzColumn, maskShape=None, rMask=True, isRel=False):
+        super().__init__(imagePath,csvPath,imColumn,rleColumn,clazzColumn,maskShape,rMask,isRel)
+
+        rawClasses = self.data[clazzColumn].values
+        def refineClass(x):
+            if "_" in str(x):
+                return x[:x.index("_")]
+            else:
+                return x
+
+        self.classes = sorted(list(set([ refineClass(x) for x in rawClasses ])))
+        self.class2Num = {}
+        self.num2class = {}
+        num = 0
+        for c in self.classes:
+            self.class2Num[c] = num
+            self.num2class[num] = c
+            num = num + 1
+
+    def meta(self):
+        return { 'CLASSES': self.classes }
+
+    def get_mask(self, image, imShape):
+        prediction = []
+        vl = self.get_all_about(image)
+        rle = vl[self.rleColumn].values
+        classes = vl[self.clazzColumn].values
+        for i in range(len(vl)):
+            rleString = rle[i]
+            clazz = classes[i]
+            if "_" in str(clazz):
+                clazz = clazz[:clazz.index("_")]
+            if isinstance(rleString, str):
+                if rleString.strip() != "-1":
+                    shape = (imShape[0], imShape[1])
+                    if self.maskShape is not None:
+                        shape = self.maskShape
+                    if self.rMask:
+                        lp = self.rle_decode(rleString, (shape[1], shape[0]))
+
+                    else:
+                        lp = self.rle_decode(rleString, shape)
+                    lp = np.rot90(lp)
+                    lp = np.flipud(lp)
+                    prediction.append((lp, int(clazz)))
+        return prediction
+
+    def __getitem__(self, item)->PredictionItem:
+        imageId=self.imageIds[item]
+        image=self.get_value(imageId)
+        gt = self.get_mask(imageId,image.shape)
+
+        labels = []
+        masks = []
+        bboxes = []
+        for m in gt:
+            mask = m[0]
+            if np.max(mask) == 0:
+                continue
+            label = m[1]
+            labels.append(label)
+            masks.append(mask > 0)
+            bboxes.append(getBB(mask, True))
+
+        labelsArr = np.array(labels, dtype=np.int64) + 1
+        bboxesArr = np.array(bboxes, dtype=np.float32)
+        masksArr = np.array(masks, dtype=np.int16)
+
+        y = (labelsArr, bboxesArr, masksArr)
+        return PredictionItem(imageId,image,y)
+
+class BinaryClassificationDataSet(CSVReferencedDataSet):
 
     def initClasses(self, clazzColumn):
         return sorted(list(set(self.data[clazzColumn].values)))
@@ -916,7 +989,7 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
             if o[i]==True:
                 res.append(str(self.num2Class[i+1]))
             else:
-                res.append(str(self.num2Class[0]))    
+                res.append(str(self.num2Class[0]))
         return " ".join(res)
     
 
@@ -960,6 +1033,8 @@ class CategoryClassificationDataSet(BinaryClassificationDataSet):
             result[self.class2Num[clazz]]=1            
         return result
 
+import math
+
     
 class MultiClassClassificationDataSet(BinaryClassificationDataSet): 
     
@@ -1001,19 +1076,19 @@ class MultiClassClassificationDataSet(BinaryClassificationDataSet):
                 result[self.class2Num[clazz.strip()]]=1        
                         
         return result
-    
-    
-        
-class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet): 
-    
-    def __init__(self,imagePath,csvPath,imColumn,clazzColumns):   
+
+
+
+class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet):
+
+    def __init__(self,imagePath,csvPath,imColumn,clazzColumns):
         super().__init__(imagePath,csvPath,imColumn,clazzColumns[0])
         self.classes=[]
         self.class2Num=[]
         self.num2Class=[]
         self.clazzColumns=clazzColumns
         for clazzColumn in clazzColumns:
-            cls=self.initClasses(clazzColumn)    
+            cls=self.initClasses(clazzColumn)
             self.classes.append(cls)
             class2Num={}
             num2Class={}
@@ -1023,17 +1098,17 @@ class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet):
                 num2Class[num]=c
                 num=num+1
             self.class2Num.append(class2Num)
-            self.num2Class.append(num2Class)        
-            
-    def get_target(self,item):    
+            self.num2Class.append(num2Class)
+
+    def get_target(self,item):
         imageId=self.imageIds[item]
         vl = self.get_all_about(imageId)
         num=0
         results=[]
-        for clazzColumn in self.clazzColumns:        
-            result=np.zeros((len(self.classes[num])),dtype=np.bool)                
+        for clazzColumn in self.clazzColumns:
+            result=np.zeros((len(self.classes[num])),dtype=np.bool)
             for i in range(len(vl)):
-                 
+
                 clazz = vl[clazzColumn].values[i]
                 if isinstance(clazz, float):
                     if math.isnan(clazz):
@@ -1048,6 +1123,18 @@ class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet):
                         result[self.class2Num[num][w]]=1
                 else:
                     result[self.class2Num[num][clazz.strip()]]=1
-            results.append(result)                
-            num=num+1            
-        return results    
+            results.append(result)
+            num=num+1
+        return results
+
+def getBB(mask,reverse=False):
+    a = np.where(mask != 0)
+    bbox = np.min(a[0]), np.max(a[0]), np.min(a[1]), np.max(a[1])
+    minX = max(0, bbox[0] - 10)
+    maxX = min(mask.shape[0], bbox[1] + 1 + 10)
+    minY = max(0, bbox[2] - 10)
+    maxY = min(mask.shape[1], bbox[3] + 1 + 10)
+    if reverse:
+        return np.array([minY, minX, maxY, maxX])
+    else:
+        return np.array([minX, minY, maxX, maxY])
