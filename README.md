@@ -1,5 +1,7 @@
 # You have just found Musket
 
+![Build status](https://api.travis-ci.com/musket-ml/musket_core.svg?branch=master)
+
 Here is the [Framework Documentation](https://musket-ml.github.io/webdocs/).
 
 Musket is a family of high-level frameworks written in Python and capable of running on top of [Keras](https://keras.io/).
