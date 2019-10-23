@@ -47,7 +47,7 @@ class NumCoder:
         self.ctx=ctx
     def __getitem__(self, item):
         return np.array([self.values[item]])
-    def _decode_class(self,item):
+    def _decode(self,item,tr=0.5):
         return item[0]
     
 @coder("normalized_number")
@@ -58,7 +58,7 @@ class NormalziedNumCoder:
         self.ctx=ctx
     def __getitem__(self, item):
         return np.array([self.values[item]])
-    def _decode_class(self,item):
+    def _decode(self,item,tr=0.5):
         return item[0]    
     
       
@@ -70,7 +70,7 @@ class ConcatCoder:
         c=[i[item] for i in self.coders]
         return np.concatenate(c,axis=0)
     
-    def _decode_class(self,item):
+    def _decode(self,item,tr=0.5):
         raise NotImplementedError("Does not implemented yet") 
         
 @coder("one_hot")        
@@ -93,12 +93,14 @@ class ClassCoder:
     def __getitem__(self, item):
         return self.encode(self.values[item])        
     
-    def _decode_class(self,o,treshold=0.5):
+    def _decode(self,o,treshold=0.5):
         o=o>treshold
         res=[]
         for i in range(len(o)):
             if o[i]==True:
-                res.append(self.num2Class[i])                
+                res.append(self.num2Class[i])
+        if len(res)==1:
+            return res[0]                        
         return self.sep[0].join(res)         
             
     def encode(self,clazz):            
@@ -126,12 +128,17 @@ class ClassCoder:
 @coder("categorical_one_hot")    
 class CatClassCoder(ClassCoder):
     
-    def _encode_class(self,o):
+    def _decode(self,o,tr=0.5): 
         return self.num2Class[(np.where(o==o.max()))[0][0]]
 
 @coder("binary")    
 class BinaryClassCoder(ClassCoder):
     
+    def _decode(self,o,treshold=0.5):
+        o=o>treshold
+        if o[0]:
+            return self.num2Class[1]
+        return self.num2Class[0] 
     
     def encode(self,clazz):            
         result=np.zeros(1,dtype=np.bool)
@@ -233,6 +240,9 @@ class RLECoder:
         if not self.inited:
             self.init()            
         return rle_decode(self.values[item],self.shape)
+    
+    def _decode(self,item,tr):
+        return rle_encode(item>tr)
     
     def init(self):
         f=self.ctx.imageCoders[0]

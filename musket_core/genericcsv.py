@@ -1,6 +1,7 @@
 from musket_core import coders,datasets
 from musket_core.datasets import PredictionItem
 from musket_core import context
+import pandas as pd
 
 class GenericCSVDataSet(datasets.DataSet):
     
@@ -17,7 +18,30 @@ class GenericCSVDataSet(datasets.DataSet):
             
             r = coders.ConcatCoder(vls)
             rs.append(r)
-                
+            
+    def _encode_dataset(self,ds,encode_y=False,treshold=0.5):
+        if len(self.output_groups)>0:
+            raise NotImplementedError("Output groups support is not implemented yet")
+        return super()._encode_dataset(ds, encode_y, treshold);
+    
+    def _create_dataframe(self,items):
+        return pd.DataFrame(items,columns=self.data.columns)
+            
+    def _encode_item(self,item:PredictionItem,encode_y=False,treshold=0.5):
+        res={}        
+        data=self.data.values[item.id]
+        pr=item.prediction
+        if len(self.outputs)==1:
+            pr=[pr]
+        for i in range(len(self.data.columns)):
+            cln=self.data.columns[i]
+            if cln in self.output_columns_set and not encode_y:
+                nm=self.output_columns.index(cln)
+                res[cln]=self.outputs[nm]._decode(pr[nm],treshold)                
+            else:
+                res[cln]=data[i]
+        return res
+              
 
     def __init__(self,path,input_columns,output_columns,image_path=[],ctypes={},input_groups={},output_groups={}):
         super().__init__()
@@ -25,8 +49,10 @@ class GenericCSVDataSet(datasets.DataSet):
         self.inputs=[]
         self.outputs=[]
         self.ctypes=ctypes
+        self.output_columns=output_columns
+        self.output_columns_set=set(output_columns)
         self.imagePath=image_path
-        
+        self.output_groups=output_groups
         consumedInputs=set()
         consumedOutputs=set()
         self.imageCoders=[]
@@ -66,4 +92,8 @@ class GenericCSVDataSet(datasets.DataSet):
     def __getitem__(self, item)->datasets.PredictionItem:
         inputs=[i[item] for i in self.inputs]
         outputs=[i[item] for i in self.outputs]
+        if isinstance(inputs, list) and len(inputs)==1:
+            inputs=inputs[0]
+        if isinstance(outputs, list) and len(outputs)==1:
+            outputs=outputs[0]    
         return PredictionItem(item,inputs,outputs)
