@@ -1,3 +1,4 @@
 include *.txt
 recursive-include musket_core/schemas *.raml
 recursive-include musket_core/templates *.json
+recursive-include musket_core/examples *.yaml
