@@ -11,6 +11,9 @@ install:
   - pip install git+https://github.com/musket-ml/segmentation_training_pipeline.git
   - pip install git+https://github.com/musket-ml/musket_text.git
   - pip install git+https://github.com/musket-ml/musket_all.git
+  - git clone https://github.com/musket-ml/musket_all.git
 # command to run tests
 script:
+  - pytest
+  - cd musket_all
   - pytest
