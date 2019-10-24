@@ -218,7 +218,7 @@ class DataSetLoader:
             try:
                 id, x, y = self.proceed(i)
             except:
-                #traceback.print_exc()
+                traceback.print_exc()
                 i = i + 1
                 continue
             i = i + 1

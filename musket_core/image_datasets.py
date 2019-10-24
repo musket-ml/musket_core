@@ -647,7 +647,10 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
         try:
             self.data=pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath))
         except:
-            self.data=pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath),encoding="cp1251")
+            try:
+                self.data=pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath),encoding="cp1251")
+            except:    
+                self.data=pd.read_csv(csvPath)
     def __init__(self,imagePath,csvPath,imColumn):
         super().__init__(imagePath)
         self.imColumn=imColumn

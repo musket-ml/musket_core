@@ -168,22 +168,15 @@ class Experiment:
                 mv=pm
                 if pm + "_holdout" in m["allStages"]:
                     mv = m["allStages"][pm + "_holdout"]
-                if "experiment_result" in self.config():
+                    return mv
+                elif "experiment_result" in self.config():
                     am=self.config()["experiment_result"]
                     if am in m["allStages"]:
-                       mv = m["allStages"][am]
-                elif use_primary_metric:
-                    am = self.config()["primary_metric"]
-                    if "primary_metric_mode" in self.config():
-                        mode = self.config()["primary_metric_mode"]
-                    else:
-                        mode="max"    
-                    if am in m["allStages"]:
-                        mv = {
-                            "value": m["allStages"][am],
-                            "name": am,
-                            "mode": mode
-                        }
+                        return ["allStages"][am]
+                elif True:
+                      
+                    if pm in m["allStages"]:
+                        return m["allStages"][pm]["mean"]
 
 
 
