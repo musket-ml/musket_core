@@ -1347,7 +1347,10 @@ class Stage:
         if 'unfreeze_encoder' in self.dict and not self.dict['unfreeze_encoder']:
             self.freeze(model)
         if callbacks is None:
-            cb = [] + self.cfg.callbacks
+            if self.cfg.callbacks is not None:
+                cb = [] + self.cfg.callbacks
+            else:
+                cb = []    
         else:
             cb=callbacks
         if self.cfg._reporter is not None:
