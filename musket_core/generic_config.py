@@ -16,7 +16,7 @@ from musket_core.utils import ensure
 from keras.utils import multi_gpu_model
 from musket_core.quasymodels import AnsembleModel,BatchCrop
 import musket_core.datasets as datasets
-import musket_core.net_declaration as nd
+from  musket_core import net_declaration as nd
 from musket_core import losses, configloader
 import keras.optimizers as opt
 from musket_core.lr_finder import LRFinder
@@ -557,6 +557,9 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         resName = (dataset.name if hasattr(dataset, "name") else "") + "_predictions"
         result = BufferedWriteableDS(dataset, resName, dsPath)
         return result
+    
+    def isMultiOutput(self):
+        return isinstance(self.classes,list);
 
     def predict_all_to_dataset(self, dataset, fold=None, stage=None, limit=-1, batch_size=None, ttflips=False, dsPath = None, cacheModel=False)->DataSet:
 
@@ -1075,8 +1078,9 @@ class GenericImageTaskConfig(GenericTaskConfig):
                 for ind in range(len(resList)):
                     img = resList[ind]
                     # FIXME
-                    unaug = original_batch.images[ind]
+                    
                     if not self.manualResize and self.flipPred:
+                        unaug = original_batch.images[ind]
                         restored = imgaug.imresize_single_image(img,(unaug.shape[0],unaug.shape[1]),cv2.INTER_AREA)
                     else:
                         restored=img    
@@ -1095,28 +1099,43 @@ class GenericImageTaskConfig(GenericTaskConfig):
     def update(self,batch,res):
         pass
 
+
+    def _tr_multioutput_if_needed(self, res):
+        if self.isMultiOutput():
+            result = []
+            for i in range(len(res[0])):
+                elementOutputs = []
+                for x in res:
+                    elementOutputs.append(x[i])
+                
+                result.append(elementOutputs)
+            
+            res = result
+        return  res
+
     def predict_on_batch(self, mdl, ttflips, batch):
         o1 = np.array(batch.images_aug)
-        res = mdl.predict(o1)
-        if isinstance(ttflips, int):
-            for i in range(ttflips):
-               print(i)
-               #pass      
+        res = self._tr_multioutput_if_needed(mdl.predict(o1))
+          
         if ttflips == "Horizontal":
             another = imgaug.augmenters.Fliplr(1.0).augment_images(batch.images_aug)
-            res1 = mdl.predict(np.array(another))
+            res1 = self._tr_multioutput_if_needed(mdl.predict(np.array(another)))
             if self.flipPred:
                 res1 = imgaug.augmenters.Fliplr(1.0).augment_images(res1)
-            res = (res + res1) / 2.0
-        if ttflips == "Horizontal_and_vertical":
+            res = self._ave([res,res1])
+        elif ttflips == "Horizontal_and_vertical":
             s=imgaug.augmenters.Sequential([imgaug.augmenters.Flipud(1.0),imgaug.augmenters.Flipud(1.0)])
             r0 = self.predict_there_and_back(mdl, imgaug.augmenters.Fliplr(1.0), imgaug.augmenters.Fliplr(1.0), batch.images_aug)
             r1 = self.predict_there_and_back(mdl, imgaug.augmenters.Flipud(1.0), imgaug.augmenters.Flipud(1.0), batch.images_aug)
             r2 = self.predict_there_and_back(mdl, s, s, batch.images_aug)    
-            res = (res + r0+r1+r2) / 4.0    
+            res = self._ave([res, r0,r1,r2])    
         elif ttflips:
             res = self.predict_with_all_augs(mdl, ttflips, batch)
+            
         return res
+    
+    def _ave(self,res):
+        return np.sum(res,axis=0)/len(res) 
 
     def predict_with_all_augs(self, mdl, ttflips, batch):
         input_left = batch.images_aug
@@ -1128,32 +1147,32 @@ class GenericImageTaskConfig(GenericTaskConfig):
         if self.flipPred:
             out_right = imgaug.augmenters.Fliplr(1.0).augment_images(out_right)
 
-        return (out_left + out_right) / 2.0
+        return self._ave([out_left, out_right])
 
-    def predict_with_all_rot_augs(self, mdl, ttflips,  input):
+    def predict_with_all_rot_augs(self, mdl, ttflips,  inp):
         rot_90 = imgaug.augmenters.Affine(rotate=90.0)
         rot_180 = imgaug.augmenters.Affine(rotate=180.0)
         rot_270 = imgaug.augmenters.Affine(rotate=270.0)
-        count = 2.0
+        
 
-        res_0 = mdl.predict(np.array(input))
+        res_0 = mdl.predict(np.array(inp))
+ 
+        res_180 = self.predict_there_and_back(mdl, rot_180, rot_180, inp)
 
-        res_180 = self.predict_there_and_back(mdl, rot_180, rot_180, input)
-
-        res_270 = 0;
-        res_90 = 0
+        res_270 = res_0;
+        res_90 = res_180;
 
         if ttflips:
-            count = 4.0
+            
 
-            res_270 = self.predict_there_and_back(mdl, rot_270, rot_90, input)
-            res_90 = self.predict_there_and_back(mdl, rot_90, rot_270, input)
+            res_270 = self.predict_there_and_back(mdl, rot_270, rot_90, inp)
+            res_90 = self.predict_there_and_back(mdl, rot_90, rot_270, inp)
 
-        return (res_0 + res_90 + res_180 + res_270) / count
+        return self._ave([res_0 ,res_90 ,res_180 , res_270])
 
-    def predict_there_and_back(self, mdl, there, back, input):
-        augmented_input = there.augment_images(input)
-        there_res = mdl.predict(np.array(augmented_input))
+    def predict_there_and_back(self, mdl, there, back, inp):
+        augmented_input = there.augment_images(inp)
+        there_res = self._tr_multioutput_if_needed(mdl.predict(np.array(augmented_input)))
         if self.flipPred:
             return back.augment_images(there_res)
         return there_res
@@ -1328,7 +1347,10 @@ class Stage:
         if 'unfreeze_encoder' in self.dict and not self.dict['unfreeze_encoder']:
             self.freeze(model)
         if callbacks is None:
-            cb = [] + self.cfg.callbacks
+            if self.cfg.callbacks is not None:
+                cb = [] + self.cfg.callbacks
+            else:
+                cb = []    
         else:
             cb=callbacks
         if self.cfg._reporter is not None:

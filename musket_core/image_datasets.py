@@ -10,6 +10,8 @@ import random
 import scipy
 import tqdm
 import imgaug
+from musket_core.coders import classes_from_vals,rle2mask_relative,mask2rle_relative,rle_decode,rle_encode
+import math
 
 class NegativeDataSet:
     def __init__(self, path):
@@ -590,6 +592,15 @@ class NoChangeDataSetImageClassificationImage(ImageKFoldedDataSet):
         return NullTerminatable(),NullTerminatable(),r
     
     
+
+
+
+
+
+
+
+
+
 class AbstractImagePathDataSet(DataSet):
     
     def __init__(self,imagePath):
@@ -636,7 +647,10 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
         try:
             self.data=pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath))
         except:
-            self.data=pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath),encoding="cp1251")
+            try:
+                self.data=pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath),encoding="cp1251")
+            except:    
+                self.data=pd.read_csv(csvPath)
     def __init__(self,imagePath,csvPath,imColumn):
         super().__init__(imagePath)
         self.imColumn=imColumn
@@ -691,79 +705,8 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
         for item in seq:            
             for t in templates:
                 self._encode_template(t,templates[t],item)
-        return seq        
-                    
+        return seq
 
-def mask2rle_relative(img, width, height):
-    rle = []
-    lastColor = 0;
-    currentPixel = 0;
-    runStart = -1;
-    runLength = 0;
-
-    for x in range(width):
-        for y in range(height):
-            currentColor = img[x][y]
-            if currentColor != lastColor:
-                if currentColor == 255:
-                    runStart = currentPixel;
-                    runLength = 1;
-                else:
-                    rle.append(str(runStart));
-                    rle.append(str(runLength));
-                    runStart = -1;
-                    runLength = 0;
-                    currentPixel = 0;
-            elif runStart > -1:
-                runLength += 1
-            lastColor = currentColor;
-            currentPixel+=1;
-
-    return " ".join(rle)
-
-def rle2mask_relative(rle, shape):
-    width=shape[0]
-    height=shape[1]
-    mask= np.zeros(width* height)
-    array = np.asarray([int(x) for x in rle.split()])
-    starts = array[0::2]
-    lengths = array[1::2]
-
-    current_position = 0
-    for index, start in enumerate(starts):
-        current_position += start
-        mask[current_position:current_position+lengths[index]] = 255
-        current_position += lengths[index]
-
-    return mask.reshape(width, height)
-
-def rle_encode(img):
-    '''
-    img: numpy array, 1 - mask, 0 - background
-    Returns run length as string formated
-    '''
-    pixels = img.flatten()
-    pixels = np.concatenate([[0], pixels, [0]])
-    runs = np.where(pixels[1:] != pixels[:-1])[0] + 1
-    runs[1::2] -= runs[::2]
-    return ' '.join(str(x) for x in runs)
- 
-def rle_decode(mask_rle, shape):
-    '''
-    mask_rle: run-length as string formated (start length)
-    shape: (height,width) of array to return 
-    Returns numpy array, 1 - mask, 0 - background
-
-    '''
-    s = mask_rle.split()
-    starts, lengths = [np.asarray(x, dtype=int) for x in (s[0:][::2], s[1:][::2])]
-    starts -= 1
-    ends = starts + lengths
-    img = np.zeros(shape[0]*shape[1], dtype=np.uint8)
-    for lo, hi in zip(starts, ends):
-        img[lo:hi] = 1
-    return img.reshape(shape)
-    
 
 class BinarySegmentationDataSet(CSVReferencedDataSet):    
     
@@ -936,9 +879,80 @@ class MultiClassSegmentationDataSet(BinarySegmentationDataSet):
         return PredictionItem(imageId,image,prediction)
 
 
+class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
 
-class BinaryClassificationDataSet(CSVReferencedDataSet): 
-    
+    def __init__(self, imagePath, csvPath, imColumn, rleColumn, clazzColumn, maskShape=None, rMask=True, isRel=False):
+        super().__init__(imagePath,csvPath,imColumn,rleColumn,clazzColumn,maskShape,rMask,isRel)
+
+        rawClasses = self.data[clazzColumn].values
+        def refineClass(x):
+            if "_" in str(x):
+                return x[:x.index("_")]
+            else:
+                return x
+
+        self.classes = sorted(list(set([ refineClass(x) for x in rawClasses ])))
+        self.class2Num = {}
+        self.num2class = {}
+        num = 0
+        for c in self.classes:
+            self.class2Num[c] = num
+            self.num2class[num] = c
+            num = num + 1
+
+    def meta(self):
+        return { 'CLASSES': self.classes }
+
+    def get_mask(self, image, imShape):
+        prediction = []
+        vl = self.get_all_about(image)
+        rle = vl[self.rleColumn].values
+        classes = vl[self.clazzColumn].values
+        for i in range(len(vl)):
+            rleString = rle[i]
+            clazz = classes[i]
+            if "_" in str(clazz):
+                clazz = clazz[:clazz.index("_")]
+            if isinstance(rleString, str):
+                if rleString.strip() != "-1":
+                    shape = (imShape[0], imShape[1])
+                    if self.maskShape is not None:
+                        shape = self.maskShape
+                    if self.rMask:
+                        lp = self.rle_decode(rleString, (shape[1], shape[0]))
+
+                    else:
+                        lp = self.rle_decode(rleString, shape)
+                    lp = np.rot90(lp)
+                    lp = np.flipud(lp)
+                    prediction.append((lp, int(clazz)))
+        return prediction
+
+    def __getitem__(self, item)->PredictionItem:
+        imageId=self.imageIds[item]
+        image=self.get_value(imageId)
+        gt = self.get_mask(imageId,image.shape)
+
+        labels = []
+        masks = []
+        bboxes = []
+        for m in gt:
+            mask = m[0]
+            if np.max(mask) == 0:
+                continue
+            label = m[1]
+            labels.append(label)
+            masks.append(mask > 0)
+            bboxes.append(getBB(mask, True))
+
+        labelsArr = np.array(labels, dtype=np.int64) + 1
+        bboxesArr = np.array(bboxes, dtype=np.float32)
+        masksArr = np.array(masks, dtype=np.int16)
+
+        y = (labelsArr, bboxesArr, masksArr)
+        return PredictionItem(imageId,image,y)
+
+class BinaryClassificationDataSet(CSVReferencedDataSet):
 
     def initClasses(self, clazzColumn):
         return sorted(list(set(self.data[clazzColumn].values)))
@@ -976,9 +990,9 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
         res=[]
         for i in range(len(o)):
             if o[i]==True:
-                res.append(self.num2Class[i+1])
+                res.append(str(self.num2Class[i+1]))
             else:
-                res.append(self.num2Class[0])    
+                res.append(str(self.num2Class[0]))
         return " ".join(res)
     
 
@@ -1008,7 +1022,7 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
 class CategoryClassificationDataSet(BinaryClassificationDataSet): 
     
     def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
-        super().__init__(imagePath,csvPath,imColumn)
+        super().__init__(imagePath,csvPath,imColumn,clazzColumn)
         
     def _encode_class(self,o):
         return self.num2Class[(np.where(o==o.max()))[0][0]]           
@@ -1029,21 +1043,8 @@ class MultiClassClassificationDataSet(BinaryClassificationDataSet):
     
     
     def initClasses(self, clazzColumn):
-        realC=set()
-        tc=set(self.data[clazzColumn].values)
-        for v in tc:
-            if isinstance(v, float):
-                if math.isnan(v):
-                    continue
-            if len(v.strip())==0:
-                continue
-            if " " in v:
-                for w in v.split(" "):
-                    realC.add(w.strip())
-            if "|" in v:
-                for w in v.split("|"):
-                    realC.add(w.strip())
-        return sorted(list(realC))
+        tc=self.data[clazzColumn].values
+        return classes_from_vals(tc)
     
     def _encode_class(self,o,treshold):
         o=o>treshold
@@ -1077,4 +1078,66 @@ class MultiClassClassificationDataSet(BinaryClassificationDataSet):
             else:
                 result[self.class2Num[clazz.strip()]]=1        
                         
-        return result    
+        return result
+
+
+
+class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet):
+
+    def __init__(self,imagePath,csvPath,imColumn,clazzColumns):
+        super().__init__(imagePath,csvPath,imColumn,clazzColumns[0])
+        self.classes=[]
+        self.class2Num=[]
+        self.num2Class=[]
+        self.clazzColumns=clazzColumns
+        for clazzColumn in clazzColumns:
+            cls=self.initClasses(clazzColumn)
+            self.classes.append(cls)
+            class2Num={}
+            num2Class={}
+            num=0
+            for c in cls:
+                class2Num[c]=num
+                num2Class[num]=c
+                num=num+1
+            self.class2Num.append(class2Num)
+            self.num2Class.append(num2Class)
+
+    def get_target(self,item):
+        imageId=self.imageIds[item]
+        vl = self.get_all_about(imageId)
+        num=0
+        results=[]
+        for clazzColumn in self.clazzColumns:
+            result=np.zeros((len(self.classes[num])),dtype=np.bool)
+            for i in range(len(vl)):
+
+                clazz = vl[clazzColumn].values[i]
+                if isinstance(clazz, float):
+                    if math.isnan(clazz):
+                        continue
+                if len(clazz.strip())==0:
+                    continue
+                if " " in clazz:
+                    for w in clazz.split(" "):
+                        result[self.class2Num[num][w]]=1
+                elif "|" in clazz:
+                    for w in clazz.split("|"):
+                        result[self.class2Num[num][w]]=1
+                else:
+                    result[self.class2Num[num][clazz.strip()]]=1
+            results.append(result)
+            num=num+1
+        return results
+
+def getBB(mask,reverse=False):
+    a = np.where(mask != 0)
+    bbox = np.min(a[0]), np.max(a[0]), np.min(a[1]), np.max(a[1])
+    minX = max(0, bbox[0] - 10)
+    maxX = min(mask.shape[0], bbox[1] + 1 + 10)
+    minY = max(0, bbox[2] - 10)
+    maxY = min(mask.shape[1], bbox[3] + 1 + 10)
+    if reverse:
+        return np.array([minY, minX, maxY, maxX])
+    else:
+        return np.array([minX, minY, maxX, maxY])

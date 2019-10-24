@@ -1,4 +1,7 @@
 # You have just found Musket
+
+![Build status](https://api.travis-ci.com/musket-ml/musket_core.svg?branch=master)
+
 Musket is a family of high-level frameworks written in Python and capable of running on top of [Keras](https://keras.io/).
 
 It was developed with a focus of enabling to make fast and simply-declared experiments, which can be easily stored, reproduced and compared to each other.

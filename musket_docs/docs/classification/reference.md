@@ -14,7 +14,7 @@ Example:
 activation: sigmoid
 ```
 
-### aggregation_metric
+### experiment_result
 
 **type**: ``string`` 
 
@@ -26,7 +26,7 @@ Metric name may have `val_` prefix or `_holdout` postfix to indicate calculation
 
 Example:
 ```yaml
-aggregation_metric: matthews_correlation_holdout
+experiment_result: matthews_correlation_holdout
 
 ```
 ### architecture

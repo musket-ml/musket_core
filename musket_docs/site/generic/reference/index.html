@@ -121,7 +121,7 @@
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#activation">activation</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#aggregation_metric">aggregation_metric</a>
+    <li class="toctree-l3"><a class="reference internal" href="#experiment_result">experiment_result</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#architecture">architecture</a>
     </li>
@@ -472,7 +472,7 @@
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#activation">activation</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#aggregation_metric">aggregation_metric</a>
+    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#experiment_result">experiment_result</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#architecture">architecture</a>
     </li>
@@ -751,7 +751,7 @@
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="../../classification/reference/#activation">activation</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="../../classification/reference/#aggregation_metric">aggregation_metric</a>
+    <li class="toctree-l3"><a class="reference internal" href="../../classification/reference/#experiment_result">experiment_result</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="../../classification/reference/#architecture">architecture</a>
     </li>
@@ -1031,13 +1031,13 @@
 <h2 id="pipeline-root-properties">Pipeline root properties</h2>
 <h3 id="activation">activation</h3>
 <p>TODO: does it have any use in the root of the file?</p>
-<h3 id="aggregation_metric">aggregation_metric</h3>
+<h3 id="experiment_result">experiment_result</h3>
 <p><strong>type</strong>: <code>string</code> </p>
 <p>Metric to calculate against the combination of all stages and report in <code>allStages</code> section of summary.yaml file after all experiment instances are finished.</p>
 <p>Uses metric name detection mechanism to search for the built-in metric or for a custom function with the same name across project modules.</p>
 <p>Metric name may have <code>val_</code> prefix or <code>_holdout</code> postfix to indicate calculation against validation or holdout, respectively. </p>
 <p>Example:</p>
-<pre><code class="yaml">aggregation_metric: matthews_correlation_holdout
+<pre><code class="yaml">experiment_result: matthews_correlation_holdout
 
 </code></pre>
 
