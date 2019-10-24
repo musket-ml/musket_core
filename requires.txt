@@ -12,6 +12,6 @@ imgaug==0.3.0
 tensorflow==1.15
 h5py
 tqdm
-segmentation_models
+segmentation_models==0.2.1
 lightgbm
 async_promises

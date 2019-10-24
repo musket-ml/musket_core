@@ -1,7 +1,7 @@
 from setuptools import setup
 import setuptools
 setup(name='musket_core',
-      version='0.46',
+      version='0.48',
       description='Common parts of my pipelines',
       url='https://github.com/petrochenko-pavel-a/musket_core',
       author='Petrochenko Pavel',
@@ -14,5 +14,5 @@ setup(name='musket_core',
 "opencv-python","imgaug==0.3.0",
 "h5py",
 "tqdm",
-"segmentation_models", "lightgbm", "async_promises"],
+"segmentation_models==0.2.1", "lightgbm", "async_promises"],
       zip_safe=False)
