@@ -29,6 +29,7 @@ nav:
     - 'User guide': 'generic/index.md'
     - 'Reference': 'generic/reference.md'
 - Segmentation:
+    - 'Getting started': 'segmentation/getting_started.md'
     - 'User guide': 'segmentation/index.md'
     - 'Reference': 'segmentation/reference.md'
 - Classification:

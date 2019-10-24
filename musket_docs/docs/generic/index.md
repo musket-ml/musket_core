@@ -117,15 +117,12 @@ There are more potential files, like intermediate results cache files etc.
 ### Launching experiments
 
 `fit.py` script is designed to launch experiment training.
- It is located in the `musket_core` root folder.
-
-Working directory *must* point to the `musket_core` root folder.
 
 In order to run the experiment or a number of experiments,   
 
 A typical command line may look like this:
 
-`python ./fit.py --project "path/to/project" --name "experiment_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"`
+`python -m musket_core.fit --project "path/to/project" --name "experiment_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"`
 
 [--project](reference.md#fitpy-project) points to the root of the [project](#project-structure)
 
@@ -144,7 +141,6 @@ Other parameters can be found in the [fit script reference](reference.md#fit-scr
 ### Launching tasks
 
 `task.py` script is designed to launch experiment training.
- It is located in the `musket_core` root folder.
  
 Tasks must be defined in the project python scope and marked by an 
 annotation like this:
@@ -156,13 +152,11 @@ def measure2(m: model.ConnectedModel):
     return result
 ```
 
-Working directory *must* point to the `musket_core` root folder.
-
 In order to run the experiment or a number of experiments,   
 
 A typical command line may look like this:
 
-`python ./task.py --project "path/to/project" --name "experiment_name" --task "task_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"`
+`python -m musket_core.task --project "path/to/project" --name "experiment_name" --task "task_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"`
 
 [--project](reference.md#taskpy-project) points to the root of the [project](#project-structure)
 
@@ -183,11 +177,10 @@ Other parameters can be found in the [task script reference](reference.md#task-s
 ### Launching project analysis
 
 `analize.py` script is designed to launch project-scope analysis.
-It is located in the `musket_core` root folder.
 
 Note that only experiments, which training is already finished will be covered.
 
-`python ./analize.py --inputFolder "path/to/project"`
+`python -m musket_core.analize --inputFolder "path/to/project"`
 
 [--inputFolder](reference.md#analyzepy-inputfolder) points to a folder to search for finished experiments in. Typically, project root.
 

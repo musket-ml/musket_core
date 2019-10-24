@@ -350,7 +350,7 @@ Folder to search for experiments, project root.
 
 Example:
 
-`fit.py --project "path/to/project"`
+`-m musket_core.fit --project "path/to/project"`
 
 ### fit.py name
 
@@ -360,9 +360,9 @@ Name of the experiment to launch, or a list of names.
 
 Example:
 
-`fit.py --name "experiment_name"`
+`-m musket_core.fit --name "experiment_name"`
 
-`fit.py --name "experiment_name1, experiment_name2"`
+`-m musket_core.fit --name "experiment_name1, experiment_name2"`
 
 ### fit.py num_gpus
 
@@ -373,7 +373,7 @@ Default: 1
 Number of GPUs to use during experiment launch.
 
 Example:
-`fit.py --num_gpus=1`
+`-m musket_core.fit --num_gpus=1`
 
 ### fit.py gpus_per_net
 
@@ -384,7 +384,7 @@ Default: 1
 Maximum number of GPUs to use per single experiment.
 
 Example:
-`fit.py --gpus_per_net=1`
+`-m musket_core.fit --gpus_per_net=1`
 
 ### fit.py num_workers
 
@@ -395,7 +395,7 @@ Default: 1
 Number of workers to use.
 
 Example:
-`fit.py --num_workers=1`
+`-m musket_core.fit --num_workers=1`
 
 ### fit.py allow_resume
 
@@ -407,7 +407,7 @@ Whether to allow resuming of experiments,
 which will cause unfinished experiments to start from the best saved weights.
 
 Example:
-`fit.py --allow_resume True`
+`-m musket_core.fit --allow_resume True`
 
 ### fit.py force_recalc
 
@@ -418,7 +418,7 @@ Default: False
 Whether to force rebuilding of reports and predictions.
 
 Example:
-`fit.py --force_recalc True`
+`-m musket_core.fit --force_recalc True`
 
 ### fit.py launch_tasks
 
@@ -429,7 +429,7 @@ Default: False
 Whether to launch associated tasks.
 
 Example:
-`fit.py --launch_tasks True`
+`-m musket_core.fit --launch_tasks True`
 
 ### fit.py only_report
 
@@ -440,7 +440,7 @@ Default: False
 Whether to only generate reports for cached data, no training occurs.
 
 Example:
-`fit.py --only_report True`
+`-m musket_core.fit --only_report True`
 
 ### fit.py cache
 
@@ -450,7 +450,7 @@ Path to the cache folder.
 Cache folder will contain temporary cached data for executed experiments.
 
 Example:
-`fit.py --cache "path/to/cache/folder"`
+`-m musket_core.fit --cache "path/to/cache/folder"`
 
 ### fit.py folds
 
@@ -460,7 +460,7 @@ Folds to launch. By default all folds of experiment will be executed,
 this argument allows launching only some of them. 
 
 Example:
-`fit.py --folds 1,2`
+`-m musket_core.fit --folds 1,2`
 
 ### fit.py time
 
@@ -469,7 +469,7 @@ Example:
 TODO 
 
 Example:
-`fit.py `
+`-m musket_core.fit `
 
 ## task script arguments
 

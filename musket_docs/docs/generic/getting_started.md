@@ -29,3 +29,7 @@ and invoke `kaggle competitions download -c tgs-salt-identification-challenge` c
 This will download dataset files.
 Then invoke `unzip train.zip -d train` to unzip `train.zip` files in to `train` folder.
 
+### Running the experiment
+
+`python -m musket_core.fit --project "D:\work\salt" --name "exp01" --num_gpus=2 --gpus_per_net=2 --num_workers=1 --cache "D:\work\salt\data"`
+

@@ -5,18 +5,15 @@ framework by means of Musket ML.
 
 ## Launching
 
-### Launching experiments
+## Launching experiments
 
 `fit.py` script is designed to launch experiment training.
- It is located in the `musket_core` root folder.
-
-Working directory *must* point to the `musket_core` root folder.
 
 In order to run the experiment or a number of experiments,   
 
 A typical command line may look like this:
 
-`python ./fit.py --project "path/to/project" --name "experiment_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"`
+`python -m musket_core.fit --project "path/to/project" --name "experiment_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"`
 
 [--project](reference.md#fitpy-project) points to the root of the [project](#project-structure)
 
@@ -31,6 +28,54 @@ A typical command line may look like this:
 [--cache](reference.md#fitpy-cache) points to a cache folder to store the temporary data.
 
 Other parameters can be found in the [fit script reference](reference.md#fit-script-arguments)
+
+### Launching tasks
+
+`task.py` script is designed to launch experiment training.
+ 
+Tasks must be defined in the project python scope and marked by an 
+annotation like this:
+
+```python
+from musket_core import tasks, model
+@tasks.task
+def measure2(m: model.ConnectedModel):
+    return result
+```
+
+In order to run the experiment or a number of experiments,   
+
+A typical command line may look like this:
+
+`python -m musket_core.task --project "path/to/project" --name "experiment_name" --task "task_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"`
+
+[--project](reference.md#taskpy-project) points to the root of the [project](#project-structure)
+
+[--name](reference.md#taskpy-name) is the name of the project sub-folder containing experiment yaml file.
+
+[--task](reference.md#taskpy-name) is the name of the task function.
+
+[--num_gpus](reference.md#taskpy-num_gpus) sets number of GPUs to use during experiment launch.
+
+[--gpus_per_net](reference.md#taskpy-gpus_per_net) is a maximum number of GPUs to use per single experiment.
+
+[--num_workers](reference.md#taskpy-num_workers) sets number of workers to use.
+
+[--cache](reference.md#taskpy-cache) points to a cache folder to store the temporary data.
+
+Other parameters can be found in the [task script reference](reference.md#task-script-arguments)
+
+### Launching project analysis
+
+`analize.py` script is designed to launch project-scope analysis.
+
+Note that only experiments, which training is already finished will be covered.
+
+`python -m musket_core.analize --inputFolder "path/to/project"`
+
+[--inputFolder](reference.md#analyzepy-inputfolder) points to a folder to search for finished experiments in. Typically, project root.
+
+Other parameters can be found in the [analyze script reference](reference.md#analyze-script-arguments)
 
 ## Usage guide
 
