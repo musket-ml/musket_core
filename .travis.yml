@@ -15,5 +15,3 @@ install:
 # command to run tests
 script:
   - pytest
-  - cd musket_all
-  - pytest
