@@ -13,10 +13,11 @@ def coder(name):
         return func        
     return inner #this is the fun_obj mentioned in the above content
 
-def classes_from_vals(tc,sep=" |_",emptyIs=None):
+def classes_from_vals_with_sep(tc,sep=" |_",emptyIs=None):
     realC=set()
     hasMulti=False
     nan=None
+    usedSep=None
     for v in set(tc):
             if isinstance(v, float):
                 if math.isnan(v):
@@ -30,19 +31,32 @@ def classes_from_vals(tc,sep=" |_",emptyIs=None):
                         continue
                     else:
                         realC.add(v)
-                        continue 
-                for s in sep:
-                    if s in v:
-                        bs=True
-                        hasMulti=True
-                        for w in v.split(s):
-                            realC.add(w.strip())  
+                        continue
+                if usedSep is None:     
+                    for s in sep:
+                        if s in v:
+                            bs=True
+                            usedSep=s
+                            hasMulti=True
+                            for w in v.split(s):
+                                realC.add(w.strip())
+                else:
+                    if usedSep in v:
+                            bs=True
+                            
+                            hasMulti=True
+                            for w in v.split(usedSep):
+                                realC.add(w.strip())                  
             if not bs:
                 realC.add(v)
     realC=sorted(list(realC))            
     if nan is not None and not hasMulti:
         realC.append("nan")                                      
-    return realC 
+    return realC,usedSep 
+
+def classes_from_vals(tc,sep=" |_",emptyIs=None):
+    cl,sep=classes_from_vals_with_sep(tc, sep, emptyIs);
+    return cl
 
 @coder("number")
 class NumCoder:
@@ -77,22 +91,23 @@ class ConcatCoder:
     def _decode(self,item,tr=0.5):
         raise NotImplementedError("Does not implemented yet") 
         
-@coder("one_hot")        
+@coder("multi_class")        
 class ClassCoder:
     
 
     def initClasses(self, vals, sep):
-        return classes_from_vals(vals, sep)
+        classes,sep= classes_from_vals_with_sep(vals, sep)
+        self.sep=sep
+        return classes
 
-    def __init__(self,vals,ctx,sep=" |",cat=False):
+    def __init__(self,vals,ctx,sep="|_ ",cat=False):
         self.class2Num={}
         self.ctx=ctx
         self.num2Class={}
         self.values=vals
         cls=self.initClasses(vals, sep)
         self.classes=cls
-        num=0
-        self.sep=sep
+        num=0        
         for c in cls:
             self.class2Num[c]=num
             if c=="nan":
@@ -111,8 +126,13 @@ class ClassCoder:
             if o[i]==True:
                 res.append(self.num2Class[i])
         if len(res)==1:
-            return res[0]                        
-        return self.sep[0].join(res)         
+            return res[0]
+        
+        if self.sep is None:
+            if len(res)>0:
+                return res[0]
+            return ""                        
+        return self.sep.join(res)         
             
     def encode(self,clazz):            
         result=np.zeros((len(self.classes)),dtype=np.bool)
@@ -124,10 +144,10 @@ class ClassCoder:
                     result[self.class2Num[clazz]]=1
                 return result
             bs=False
-            for s in self.sep:
-                if s in clazz:
+            if self.sep is not None:
+                if self.sep in clazz:
                     bs=True
-                    for w in clazz.split(s):
+                    for w in clazz.split(self.sep):
                         result[self.class2Num[w]]=1                        
             if not bs:
                 result[self.class2Num[clazz]]=1

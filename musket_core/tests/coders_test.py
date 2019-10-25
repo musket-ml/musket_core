@@ -98,3 +98,39 @@ class TestStringMethods(unittest.TestCase):
         v=bc._decode(np.array([0.2,0.1,0.1]))
         self.assertEqual(v, 1, "should be zero")
         pass
+    
+    def test_multiclass(self):
+        a=np.array(["1 2","0 2","0",""])
+        bc=coders.get_coder("multi_class",a, None)
+        
+        val=bc[0]
+        self.assertEqual((val==np.array([False,True,True])).sum(), 3,"Fixing format")
+        for i in range(len(a)):
+            val=bc[i]
+            r=bc._decode(val)
+            self.assertEqual(r, a[i], "Decoding should work also")
+        pass
+    
+    def test_multiclass1(self):
+        a=np.array(["1_2","0_2","0",""])
+        bc=coders.get_coder("multi_class",a, None)
+        
+        val=bc[0]
+        self.assertEqual((val==np.array([False,True,True])).sum(), 3,"Fixing format")
+        for i in range(len(a)):
+            val=bc[i]
+            r=bc._decode(val)
+            self.assertEqual(r, a[i], "Decoding should work also")
+        pass
+    
+    def test_multiclass2(self):
+        a=np.array(["1","","",""])
+        bc=coders.get_coder("multi_class",a, None)
+        
+        val=bc[0]
+        self.assertEqual((val==np.array([True])).sum(), 1,"Fixing format")
+        for i in range(len(a)):
+            val=bc[i]
+            r=bc._decode(val)
+            self.assertEqual(r, a[i], "Decoding should work also")
+        pass
