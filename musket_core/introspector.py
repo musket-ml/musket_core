@@ -1,4 +1,5 @@
 import keras
+
 import inspect
 from  keras.layers import Layer
 from  keras.callbacks import Callback
@@ -70,10 +71,10 @@ def instrospect(m,clazz):
 
         if inspect.isclass(v):
             try:
-                if issubclass(v, clazz):
+                if isinstance(clazz,type) and issubclass(v, clazz):
                     l.append(record(v,clazz.__name__))
-            except:
-                print(dir(clazz))
+            except:                
+                print("Can not inspect",v)
 
         if inspect.isfunction(v) and isinstance(clazz,str):
             l.append(record(v, clazz))
