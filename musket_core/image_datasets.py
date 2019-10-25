@@ -10,8 +10,10 @@ import random
 import scipy
 import tqdm
 import imgaug
-from musket_core.coders import classes_from_vals,rle2mask_relative,mask2rle_relative,rle_decode,rle_encode
 import math
+from musket_core.coders import classes_from_vals,rle2mask_relative,mask2rle_relative,rle_decode,rle_encode,\
+    classes_from_vals_with_sep
+
 
 class NegativeDataSet:
     def __init__(self, path):
@@ -654,7 +656,10 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
     def __init__(self,imagePath,csvPath,imColumn):
         super().__init__(imagePath)
         self.imColumn=imColumn
-        self.readCSV(csvPath)
+        if isinstance(csvPath, str):
+            self.readCSV(csvPath)
+        else:
+            self.data=csvPath    
         self.splitColumns={}
         for m in self.data.columns:
             parts=m.split("_")
@@ -955,14 +960,21 @@ class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
 class BinaryClassificationDataSet(CSVReferencedDataSet):
 
     def initClasses(self, clazzColumn):
-        return sorted(list(set(self.data[clazzColumn].values)))
+        self.hasNa=self.data[clazzColumn].isna().sum()>0        
+        vals=self.data[clazzColumn][self.data[clazzColumn].notna()].values
+        if isinstance(vals[0],str):
+            return sorted(list(set([x.strip() for x in set(vals)])))
+        ss=set(vals)
+        if self.hasNa:
+            return [""]+list(ss)
+        return sorted(list(ss))
 
     def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
         super().__init__(imagePath,csvPath,imColumn)
-        self.clazzColumn=clazzColumn    
         self.classes=self.initClasses(clazzColumn)
         self.class2Num={}
-        self.num2Class={}        
+        self.num2Class={}
+        self.clazzColumn=clazzColumn        
         num=0
         for c in self.classes:
             self.class2Num[c]=num
@@ -975,7 +987,9 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
         result=np.zeros((1),dtype=np.bool)
         for i in range(len(vl)):
             clazz = vl[self.clazzColumn].values[i]
-            if self.class2Num[clazz]==1:
+            if isinstance(clazz,str):
+                clazz=clazz.strip()
+            if clazz in self.class2Num and self.class2Num[clazz]==1:
                 result[0]=1                
         return result        
             
@@ -985,15 +999,12 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
         prediction = self.get_target(item)
         return PredictionItem(self._id(item),image,prediction)
     
-    def _encode_class(self,o,treshold):
+    def _encode_class(self,o,treshold=0.5):
         o=o>treshold
-        res=[]
-        for i in range(len(o)):
-            if o[i]==True:
-                res.append(str(self.num2Class[i+1]))
-            else:
-                res.append(str(self.num2Class[0]))
-        return " ".join(res)
+        if o[0]:
+            return self.num2Class[1]
+        return self.num2Class[0]
+    
     
 
     def _encode_x(self, item):
@@ -1024,7 +1035,7 @@ class CategoryClassificationDataSet(BinaryClassificationDataSet):
     def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
         super().__init__(imagePath,csvPath,imColumn,clazzColumn)
         
-    def _encode_class(self,o):
+    def _encode_class(self,o,treshold=0.5):
         return self.num2Class[(np.where(o==o.max()))[0][0]]           
             
     def get_target(self,item):    
@@ -1033,6 +1044,8 @@ class CategoryClassificationDataSet(BinaryClassificationDataSet):
         result=np.zeros((len(self.classes)),dtype=np.bool)                
         for i in range(len(vl)):
             clazz = vl[self.clazzColumn].values[i]
+            if isinstance(clazz, str):
+                clazz=clazz.strip()
             result[self.class2Num[clazz]]=1            
         return result
 
@@ -1044,15 +1057,22 @@ class MultiClassClassificationDataSet(BinaryClassificationDataSet):
     
     def initClasses(self, clazzColumn):
         tc=self.data[clazzColumn].values
-        return classes_from_vals(tc)
+        clz,sep=classes_from_vals_with_sep(tc)
+        self.sep=sep
+        return clz
+        
     
     def _encode_class(self,o,treshold):
         o=o>treshold
         res=[]
         for i in range(len(o)):
             if o[i]==True:
-                res.append(self.num2Class[i])                
-        return " ".join(res)            
+                res.append(self.num2Class[i])
+        if self.sep is None:
+            if len(res)==0:
+                return ""
+            return res[0]        
+        return self.sep.join(res)            
     
     def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
         super().__init__(imagePath,csvPath,imColumn,clazzColumn)                
@@ -1064,19 +1084,18 @@ class MultiClassClassificationDataSet(BinaryClassificationDataSet):
         for i in range(len(vl)):
             
             clazz = vl[self.clazzColumn].values[i]
+            
             if isinstance(clazz, float):
                 if math.isnan(clazz):
                     continue
-            if len(clazz.strip())==0:
+            clazz=clazz.strip()    
+            if len(clazz)==0:
                 continue
-            if " " in clazz:
-                for w in clazz.split(" "):
-                    result[self.class2Num[w]]=1
-            elif "|" in clazz:
-                for w in clazz.split("|"):
+            if self.sep is not None:
+                for w in clazz.split(self.sep):
                     result[self.class2Num[w]]=1
             else:
-                result[self.class2Num[clazz.strip()]]=1        
+                result[self.class2Num[clazz]]=1        
                         
         return result
 

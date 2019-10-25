@@ -8,7 +8,7 @@ import math
 fl=__file__
 
 fl=os.path.dirname(fl)
-class TestStringMethods(unittest.TestCase):
+class TestCoders(unittest.TestCase):
 
     def test_binary_num(self):
         a=np.array([0,1,0,1])
