@@ -1051,6 +1051,44 @@ class CategoryClassificationDataSet(BinaryClassificationDataSet):
 
 import math
 
+class FolderClassificationDataSet(CategoryClassificationDataSet):
+    def __init__(self,imagePath,folder,imColumn,clazzColumn):
+        self.images={}
+        self.data={"ImageId":[],"Clazz":[]} 
+        for x in imagePath:
+            self.addPath(os.path.join(folder,x))
+        tmp=self.images
+            
+        super().__init__([],pd.DataFrame(self.data),imColumn,clazzColumn)
+        self.images=tmp
+    
+    def addPath(self, imagePath):
+        p0 = os.path.join(context.get_current_project_data_path(), imagePath)
+        if not os.path.exists(p0):
+            p0 = imagePath
+        ld0 = os.listdir(p0)
+        nm=os.path.basename(p0)
+        for x in ld0:
+            ext=x[-4:]
+            if ext==".jpg" or ext==".png" or ext==".gif":
+                fp = os.path.join(p0, x)
+                self.images[x] = fp
+                self.data["ImageId"].append(x)
+                self.data["Clazz"].append(nm)
+                self.images[x[:-4]] = fp
+                
+
+class FolderDataSet(FolderClassificationDataSet):
+    def __init__(self,imagePath,folder,imColumn,clazzColumn):
+        self.images={}
+        self.data={"ImageId":[],"Clazz":[]}         
+        self.addPath(folder)
+        tmp=self.images            
+        CategoryClassificationDataSet.__init__(self,[],pd.DataFrame(self.data),imColumn,clazzColumn)
+        self.images=tmp
+        
+    
+   
     
 class MultiClassClassificationDataSet(BinaryClassificationDataSet): 
     
