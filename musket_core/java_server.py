@@ -90,7 +90,13 @@ class Server(projects.Workspace):
     def performTask(self,config:str,reporter:tools.ProgressMonitor):
         try:
             config=config[1:].replace("!!com.onpositive","!com.onpositive")
-            obj=yaml.load(config)
+            for d in dir(tools):
+                clz=getattr(tools, d);
+                if hasattr(clz, "yaml_tag"):
+                    tg=getattr(clz, "yaml_tag");
+                    ld=getattr(clz, "from_yaml")
+                    yaml.FullLoader.add_constructor(tg, ld)                
+            obj=yaml.load(config,Loader=yaml.FullLoader)
             results=obj.perform(self.w,reporter)
             return results
         except:
