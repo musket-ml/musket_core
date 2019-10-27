@@ -71,9 +71,153 @@ stages:
 
 ## Installation
 
+### Prerequisites
+
+The package has many prerequisites, but some of them are 
+recommended to be installed manually.
+
+Tensorflow package of versions of 1.14 and below split into CPU and GPU ones.
+Moreover, Tensorflow may be more or less compatible with the version of 
+CUDA/CUDNN installed.
+
+Here is the repository containing lots of pre-built Tensorflow 
+wheels for Windows: [tensorflow-windows-wheel](https://github.com/fo40225/tensorflow-windows-wheel).
+It can be used to choose the wheel depending on system architecture, 
+CUDA/CUDNN version, CPU/GPU and Python version.
+
+Read more in [Tensorflow installation guide](https://www.tensorflow.org/install/pip).
+
+Keras has no strong dependency on Tensorflow, but in our common setup they run in pair.
+We used the 2.2.4 one.
+
+Shapely requires compilation on install on Linux/MacOS or pre-built version on Windows.
+Here are the [pre-built Shapely wheels for Windows](https://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely). 
+
+### Choosing your installation type
+
+It is recommended to install to a virtual environment in order to avoid dependency version conflicts.
+
+### Global pip installation
+
+Install Tensorflow, Keras and Shapely as described in pre-requisites.
+In example, if you have downloaded particular 
+Tensorflow wheel into `C:\downloads\tensorflow_gpu-1.12.0-cp36-cp36m-win_amd64.whl` 
+and particular Shapely wheel into `C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl`, run:
+
+```
+pip install C:\downloads\tensorflow_gpu-1.12.0-cp36-cp36m-win_amd64.whl
+pip install Keras==2.2.4
+pip install C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl
+```
+
 ```
 pip install musket_core 
 ```
+
+### Virtual environment installation (recommended)
+
+#### virtualenv installation (recommended)
+
+This type of installation uses virtualenv manager for 
+creating your virtual environment.
+
+Create a new virtual environment:
+
+```
+virtualenv ./musket
+```
+
+This will create `musket` folder and place a copy of your python, pip and wheel inside.
+
+Activate the new virtual environment:
+
+On Posix systems:
+```
+source ./musket/bin/activate
+```
+On Windows:
+```
+.\musket\Scripts\activate
+```
+
+Install Tensorflow, Keras and Shapely as described in pre-requisites.
+In example, if you have downloaded particular 
+Tensorflow wheel into `C:\downloads\tensorflow_gpu-1.12.0-cp36-cp36m-win_amd64.whl` 
+and particular Shapely wheel into `C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl`, run:
+
+```
+pip install C:\downloads\tensorflow_gpu-1.12.0-cp36-cp36m-win_amd64.whl
+pip install Keras==2.2.4
+pip install C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl
+```
+
+Now install musket:
+```
+pip install musket_core 
+```
+
+Experiment launches and other activity should be performed when this environment is activated.
+
+When you are done working with musket, you can deactivate the environment by 
+launching:
+```
+virtualenv deactivate
+```
+
+#### pipenv installation
+
+This type of installation uses pipenv manager for 
+creating your virtual environment.
+
+Install pipenv if needed:
+
+```
+pip install --user pipenv
+```
+
+Create new environment by launching:
+```
+mkdir musket
+cd musket
+pipenv --python 3.6
+```
+
+Install Tensorflow, Keras and Shapely as described in pre-requisites.
+In example, if you have downloaded particular 
+Tensorflow wheel into `C:\downloads\tensorflow_gpu-1.12.0-cp36-cp36m-win_amd64.whl` 
+and particular Shapely wheel into `C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl`, run:
+
+```
+pipenv install C:\downloads\tensorflow_gpu-1.12.0-cp36-cp36m-win_amd64.whl
+pipenv install Keras==2.2.4
+pipenv install C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl
+```
+
+Now install musket:
+```
+pipenv install musket_core 
+```
+
+Experiment launches and other activity should be performed 
+when this environment is activated or using pipenv.
+
+So, the first approach is to activate the environment by launching
+```
+pipenv shell
+```
+while inside `musket` folder.
+
+Or, alternativelly, prefix all experiment management commands with 
+
+`pipenv run`,
+ 
+in example, instead of running
+
+`python -m musket_core.fit --project "D:\work\salt" --name "exp01" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "D:\work\salt\data\cache"`
+ 
+ run
+ 
+`pipenv run python -m musket_core.fit --project "D:\work\salt" --name "exp01" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "D:\work\salt\data\cache"`
 
 
 ## Project structure
