@@ -1,10 +1,10 @@
-####build musket_core image
+#### build musket_core image
 ```
 cd musket_core
 docker image build -t pythonmusket:1.0 .
 ```
 
-####build and run server image
+#### build and run server image
 ```
 cd ../server
 docker image build -t server:1.0 .
@@ -12,12 +12,12 @@ docker container run --publish 8000:9393 --detach --name server_instance server:
 ```
 
 where 8000 - host port, 9393 docker instance port
-####redirect docker instance's stderr and stdout to current terminal
+#### redirect docker instance's stderr and stdout to current terminal
 ```
 docker container attach server_instance
 ```
 
-####stop instance
+#### stop instance
 ```
 docker container rm --force server_instance
 ```
