@@ -653,6 +653,10 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
                 self.data=pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath),encoding="cp1251")
             except:    
                 self.data=pd.read_csv(csvPath)
+
+    def ordered_vals(self, imColumn):
+        return sorted(list(set(self.get_values(imColumn))))
+
     def __init__(self,imagePath,csvPath,imColumn):
         super().__init__(imagePath)
         self.imColumn=imColumn
@@ -673,7 +677,7 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
                     except:
                         pass    
                 ind=ind+1
-        self.imageIds=sorted(list(set(self.get_values(imColumn))))                            
+        self.imageIds=self.ordered_vals(imColumn)                            
     
     def _id(self,item):
         imageId=self.imageIds[item]
@@ -958,6 +962,9 @@ class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
         return PredictionItem(imageId,image,y)
 
 class BinaryClassificationDataSet(CSVReferencedDataSet):
+    
+    def ordered_vals(self, imColumn):
+        return self.data[imColumn].values
 
     def initClasses(self, clazzColumn):
         self.hasNa=self.data[clazzColumn].isna().sum()>0        
@@ -1009,16 +1016,19 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
 
     def _encode_x(self, item):
         return item.id
+    
+    def _encode_item(self, item:PredictionItem, encode_y=False, treshold=0.5):
+        imageId=self._encode_x(item)
+        if encode_y:
+            o=item.y
+        else:    
+            o=item.prediction
+        return { self.imColumn:imageId,self.clazzColumn:self._encode_class(o,treshold)}
+        
 
     def encode(self,item:PredictionItem,encode_y=False,treshold=0.5):
         if isinstance(item, PredictionItem):
-            imageId=self._encode_x(item)
-            if encode_y:
-                o=item.y
-            else:    
-                o=item.prediction
-            
-            return { self.imColumn:imageId,self.clazzColumn:self._encode_class(o,treshold)}        
+            return self._encode_item(item, encode_y, treshold)            
         if isinstance(item, DataSet):
             res=[]            
             for i in tqdm.tqdm(range(len(item)),"Encoding dataset"):
@@ -1088,12 +1098,64 @@ class FolderDataSet(FolderClassificationDataSet):
         self.images=tmp
         
     
-   
+
+def _join_column_get_trg(trg,values):
+    def func(item):
+        v=values[item]
+        return v
+    return func   
     
+def _enc(trg):    
+    def _encode_item(item:PredictionItem, encode_y=False, treshold=0.5):
+        
+        imageId=trg._encode_x(item)
+        res={trg.imColumn:imageId}
+        if encode_y:
+            o=item.y
+        else:
+            o=item.prediction
+        
+        o=o>treshold        
+        for i in range(len(trg.classes)):
+            if trg.classes[i] in trg.columnCls:
+                classes=trg.columnCls[trg.classes[i]]
+                if o[i]:
+                    res[trg.classes[i]]=classes[1]
+                else:
+                    res[trg.classes[i]]=classes[0]
+            else: 
+                res[trg.classes[i]]=o[i]
+        return res
+    return _encode_item
+
+def _to_int(vls):
+    mn=sorted(list(set(vls)))
+    return vls==mn[1],mn
+            
 class MultiClassClassificationDataSet(BinaryClassificationDataSet): 
     
     
     def initClasses(self, clazzColumn):
+        if clazzColumn not in self.data.columns:
+            cls=clazzColumn.split("|")
+            if len(cls)>1:
+                allVls=[]
+                self.columnCls={}
+                for c in cls:
+                    vls = self.data[c].values
+                    if not "int" in str(vls.dtype) and not "bool" in str(vls.dtype):
+                        self.data[c]=self.data[c].fillna("")
+                        vls,column_cls=_to_int(self.data[c].str.strip())
+                        self.columnCls[c]=column_cls
+                    allVls.append(vls)
+                
+                self.allValues=np.stack(allVls,axis=1)
+                self.get_target=_join_column_get_trg(self,self.allValues)
+                self._encode_item=_enc(self)
+                def _cr(items):
+                    return pd.DataFrame(items,columns=tuple([self.imColumn]+self.classes))
+                self._create_dataframe=_cr
+                return cls                 
         tc=self.data[clazzColumn].values
         clz,sep=classes_from_vals_with_sep(tc)
         self.sep=sep

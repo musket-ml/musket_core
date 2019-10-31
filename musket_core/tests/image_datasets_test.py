@@ -242,3 +242,69 @@ class TestCoders(unittest.TestCase):
         rs=encoded["Clazz"].values==df["Clazz"].values
         self.assertEqual(rs.sum(), 4, "")
         pass
+    
+    def test_multi_class4(self):
+        TESTDATA = StringIO("""Image,A,B
+        a1, 0, 0
+        a2, 1, 0
+        a3, 0 ,1
+        a4, 0 ,0
+            """)
+
+        df = pd.read_csv(TESTDATA, sep=",") 
+        ds=image_datasets.MultiClassClassificationDataSet([],df,"Image","A|B")
+        ds.get_value=dummyImage
+        
+        self.assertEqual(ds[0].y[0],False)
+        self.assertEqual(ds[2].y[1],True)
+        
+        encoded=ds.encode(ds, True)
+        df['A'] = df['A']
+        rs=encoded["A"].values==df["A"].values
+        self.assertEqual(rs.sum(), 4, "")
+        pass
+    
+    def test_multi_class5(self):
+        TESTDATA = StringIO("""Image,A,B
+        a1, n, n
+        a2, y, n
+        a3, n ,y
+        a4, y ,n
+            """)
+
+        df = pd.read_csv(TESTDATA, sep=",") 
+        ds=image_datasets.MultiClassClassificationDataSet([],df,"Image","A|B")
+        ds.get_value=dummyImage
+        
+        self.assertEqual(ds[0].y[0],False)
+        self.assertEqual(ds[2].y[1],True)
+        
+        encoded=ds.encode(ds, True)
+        df['A'] = df['A']
+        df['A'] = df['A'].str.strip()
+        rs=encoded["A"].values==df["A"].values
+        self.assertEqual(rs.sum(), 4, "")
+        pass      
+    
+    
+    def test_multi_class6(self):
+        TESTDATA = StringIO("""Image,A,B
+        a1, , 
+        a2, y,
+        a3,  ,y
+        a4, y ,
+            """)
+
+        df = pd.read_csv(TESTDATA, sep=",") 
+        ds=image_datasets.MultiClassClassificationDataSet([],df,"Image","A|B")
+        ds.get_value=dummyImage
+        
+        self.assertEqual(ds[0].y[0],False)
+        self.assertEqual(ds[2].y[1],True)
+        
+        encoded=ds.encode(ds, True)
+        df['A'] = df['A']
+        df['A'] = df['A'].str.strip()
+        rs=encoded["A"].values==df["A"].values
+        self.assertEqual(rs.sum(), 4, "")
+        pass
