@@ -43,8 +43,12 @@ class GenericPipeline(generic.GenericTaskConfig):
             
             inputs=[keras.Input(x) for x in inp]
             if contributions is not None:
-                for i in range(len(inputs)):
-                    inputs[i].contribution=contributions[i]
+                if isinstance(contributions, list):
+                    for i in range(len(inputs)):
+                        inputs[i].contribution=contributions[i]
+                else:                   
+                    for i in range(len(inputs)):
+                        inputs[i].contribution=contributions
         else:
             i=keras.Input(inp);
             i.contribution=contributions
