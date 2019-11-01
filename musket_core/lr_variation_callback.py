@@ -52,7 +52,7 @@ class LRVariator(CallbackModule):
             args: see CallbackModule for details
         """
 
-    def __init__(self, fromVal=None, toVal=0.006, style="linear", **args):
+    def __init__(self, fromVal=None, toVal=0.006, style="linear", then=None, **args):
         super(LRVariator, self).__init__(**args)
 
         self.fromVal = fromVal

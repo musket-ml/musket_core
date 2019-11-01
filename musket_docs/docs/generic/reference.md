@@ -613,11 +613,26 @@ Properties:
   * **sin-** - `-1 * sin(2x/pi) + 1 for x in [0;1]`
   * **sin** - same as 'sin+'
   * **any positive float or integer value** - x^a for x in [0;1]
+* **absSize** : - size in batches
+* **relSize** : - size in fractions of epoch
+* **periodEpochs** : - period in epochs
+* **periodSteps** : - period in batches
+* **then**: - LRVariator that should manage learning rate after this
 
-TODO: examples from lr_variation_callback.py look strange,
-also it is unclear how to number of steps is being set up.
 Example
+
 ```yaml
+  LRVariator: 
+     fromVal: 0
+     toVal: 0.00005 
+     style: linear     
+     relSize: 0.05 # lets go for 1/20 of epoch
+     then:
+         LRVariator:
+             fromVal: 0.00005
+             toVal: 0
+             relSize: 2 # lets go for 2 of epochs                
+             style: linear 
 ```
 
 ### TensorBoard
