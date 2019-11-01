@@ -33,6 +33,14 @@ def parameters(sig):
             p["defaultValue"]=str(parameter.default)
         pars.append(p)
     return pars
+
+
+def extra_params(parameters): 
+    def inner(func): 
+        func.extra_params=parameters
+        return func        
+    return inner #this is the fun_obj mentioned in the above content
+
 def record(m,kind):
     rs={}
     if hasattr(m, "original"):
@@ -54,6 +62,12 @@ def record(m,kind):
     try:
         rs["sourcefile"]=inspect.getsourcefile(m)
         rs["source"] = inspect.getsource(m)
+        if hasattr(m, "extra_params"):
+            prms=getattr(m, "extra_params")
+            if "parameters" in rs:
+                rs["parameters"]=rs["parameters"]+prms
+            else:
+                rs["parameters"]=prms    
     except:
         pass
     return rs

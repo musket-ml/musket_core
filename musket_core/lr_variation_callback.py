@@ -1,5 +1,6 @@
 from musket_core.callback_module import CallbackModule
 from keras import backend as K
+
 import math
 
 lambdas = {
@@ -12,6 +13,7 @@ lambdas = {
     "cos-"  :    lambda x: math.cos(2 * x / math.pi),
     "cos+"  :    lambda x: (-1) * math.cos(2 * x / math.pi) + 1
 }
+
 
 class LRVariator(CallbackModule):
     """ This callback allows learning rate variations within or across epochs.
@@ -51,8 +53,10 @@ class LRVariator(CallbackModule):
               - any positive float or integer value 'a'. x^a for x in [0;1]
             args: see CallbackModule for details
         """
-
-    def __init__(self, fromVal=None, toVal=0.006, style="linear", then=None, **args):
+    
+    extra_params=[{"name":"relSize","kind":"any","type":"number"},{"name":"absSize","kind":"any","type":"int","defaultValue":""},{"name":"then","kind":"object","defaultValue":""}]    
+    
+    def __init__(self, fromVal=None, toVal=0.006, style="linear", **args):
         super(LRVariator, self).__init__(**args)
 
         self.fromVal = fromVal
