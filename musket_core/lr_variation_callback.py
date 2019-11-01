@@ -56,8 +56,8 @@ class LRVariator(CallbackModule):
     
     extra_params=[{"name":"relSize","kind":"any","type":"number"},{"name":"absSize","kind":"any","type":"int","defaultValue":""},
                   {"name":"then","kind":"object","defaultValue":""},
-                  {"periodEpochs":"then","kind":"number","defaultValue":""},
-                  {"periodSteps":"then","kind":"int","defaultValue":""}
+                  {"name":"periodEpochs","kind":"number","defaultValue":""},
+                  {"name":"periodSteps","kind":"int","defaultValue":""}
                   ]    
     
     def __init__(self, fromVal=None, toVal=0.006, style="linear", **args):
