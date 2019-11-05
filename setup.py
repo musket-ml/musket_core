@@ -10,6 +10,7 @@ setup(name='musket_core',
       packages=setuptools.find_packages(),
       include_package_data=True,
       dependency_links=['https://github.com/aleju/imgaug'],
+      entry_points={'console_scripts': ['musket_run_experiment = musket_core.cli:run_experiment']},
       install_requires=[
             "hyperopt>=0.1.2,<=0.2.1",
             "PyYAML>=3.13,<=5.1.2",
