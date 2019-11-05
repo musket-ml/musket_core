@@ -120,7 +120,7 @@ def isFinal(metric:str)->bool:
     except:
         return True
 
-def cross_validation_stat(cfg:IGenericTaskConfig, metric, stage=None, treshold=0.5, folds=None):
+def cross_validation_stat(cfg:IGenericTaskConfig, metric, stage=None, threshold=0.5, folds=None):
     metrics=[]
     cfg.get_dataset()# this is actually needed
     mDict={}
@@ -155,13 +155,13 @@ def cross_validation_stat(cfg:IGenericTaskConfig, metric, stage=None, treshold=0
             return {"canceled": True}
 
         predictionDS = get_validation_prediction(cfg, i, stage)
-        val = considerThreshold(predictionDS, metric, treshold)
+        val = considerThreshold(predictionDS, metric, threshold)
         eval_metric = generic_config.eval_metric(val, metric, cfg.get_eval_batch())
         metrics.append(np.mean(eval_metric))
     return stat(metrics)
 
 
-def holdout_stat(cfg:IGenericTaskConfig, metric,stage=None,treshold=0.5):
+def holdout_stat(cfg:IGenericTaskConfig, metric,stage=None,threshold=0.5):
     if cfg._reporter is not None and cfg._reporter.isCanceled():
         return {"canceled": True}
     
@@ -177,19 +177,19 @@ def holdout_stat(cfg:IGenericTaskConfig, metric,stage=None,treshold=0.5):
                 return r
             return float(r)
     predictionDS = get_holdout_prediction(cfg, None, stage)
-    val = considerThreshold(predictionDS, metric, treshold)
+    val = considerThreshold(predictionDS, metric, threshold)
     eval_metric = generic_config.eval_metric(val, metric, cfg.get_eval_batch())
     if cfg._reporter is not None and cfg._reporter.isCanceled():
         return {"canceled": True}
     return float(np.mean(eval_metric))
 
 
-def considerThreshold(predictionDS, metric, treshold)->DataSet:
+def considerThreshold(predictionDS, metric, threshold)->DataSet:
 
     need_threshold = generic_config.need_threshold(metric)
     if need_threshold:
         def applyThreshold(dsItem: PredictionItem) -> PredictionItem:
-            thresholded = dsItem.prediction > treshold
+            thresholded = dsItem.prediction > threshold
             result = PredictionItem(dsItem.id, dsItem.x, dsItem.y, thresholded)
             return result
 

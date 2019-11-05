@@ -6,14 +6,13 @@ import math
 lambdas = {
     "const" :    lambda x: 0,
     "linear":    lambda x: x,
-    "sin"   :    lambda x: math.sin(2 * x / math.pi),
-    "sin+"  :    lambda x: math.sin(2 * x / math.pi),
-    "sin-"  :    lambda x: (-1) * math.sin(2 * x / math.pi) + 1,
-    "cos"   :    lambda x: math.cos(2 * x / math.pi),
-    "cos-"  :    lambda x: math.cos(2 * x / math.pi),
-    "cos+"  :    lambda x: (-1) * math.cos(2 * x / math.pi) + 1
+    "sin"   :    lambda x: math.sin(math.pi * x / 2),
+    "sin+"  :    lambda x: math.sin(math.pi * x / 2),
+    "sin-"  :    lambda x: (-1) * math.sin(math.pi * x / 2) + 1,
+    "cos"   :    lambda x: math.cos(math.pi * x / 2),
+    "cos-"  :    lambda x: math.cos(math.pi * x / 2),
+    "cos+"  :    lambda x: (-1) * math.cos(math.pi * x / 2) + 1
 }
-
 
 class LRVariator(CallbackModule):
     """ This callback allows learning rate variations within or across epochs.
@@ -44,11 +43,11 @@ class LRVariator(CallbackModule):
             style: shape of the variation graphic. One of
               - linear
               - const
-              - cos+ ascending cosine segment: -1 * cos(2x/pi) + 1 for x in [0;1]
-              - cos- descending cosine segment: cos(2x/pi) for x in [0;1]
+              - cos+ ascending cosine segment: -1 * cos(x * pi/2) + 1 for x in [0;1]
+              - cos- descending cosine segment: cos(x * pi/2) for x in [0;1]
               - cos  same as 'cos-'
-              - sin+ ascending sine segment: sin(2x/pi) x in [0;1]
-              - sin- descending sine segment: -1 * sin(2x/pi) + 1 for x in [0;1]
+              - sin+ ascending sine segment: sin(x * pi/2) x in [0;1]
+              - sin- descending sine segment: -1 * sin(x * pi/2) + 1 for x in [0;1]
               - sin  same as 'sin+'
               - any positive float or integer value 'a'. x^a for x in [0;1]
             args: see CallbackModule for details
