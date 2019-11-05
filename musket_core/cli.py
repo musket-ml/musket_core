@@ -24,3 +24,20 @@ def run_experiment():
     sys.argv = argv
 
     fit.main()
+
+def run_project():
+    cwd = os.getcwd()
+
+    argv = []
+
+    argv.append(__file__)
+
+    argv.append("--project")
+    argv.append(cwd)
+
+    argv.append("--allow_resume")
+    argv.append("true")
+
+    sys.argv = argv
+
+    fit.main()
