@@ -7,6 +7,8 @@ import zipfile
 
 import urllib
 
+from musket_core import utils
+
 from urllib.parse import urlparse
 
 try:
@@ -108,6 +110,8 @@ def build_loader(parsed_url):
         return Loader(lambda id, dest: download_url(id, dest))
 
 def load_item(url, dest):
+    utils.ensure(dest)
+
     parsed = parse_url(url)
 
     loader = build_loader(parsed)
@@ -120,7 +124,20 @@ def download(root):
     deps = load_yaml(full_path)["dependencies"]
 
     for item in deps:
-        load_item(item, os.path.join(root, "data"))
+        url = item
+
+        data_path = os.path.join(root, "data")
+
+        if isinstance(item, dict):
+            url = list(item.keys())[0]
+
+            dst = item[url]["destination"]
+
+            data_path = os.path.abspath(os.path.join(data_path, dst))
+
+            pass
+
+        load_item(url, data_path)
 
 def main(*args):
     root = args[0][1]
