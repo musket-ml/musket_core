@@ -260,6 +260,10 @@ class MultiClassF1Analizer(MultiClassMetricsAnalizer):
         preds=np.array(self.predictions)
         gt=np.array(self.ground_truth)
         scores=[]
+        if len(preds.shape)>2:
+            preds=np.concatenate(self.predictions,axis=0)
+            gt=np.concatenate(self.ground_truth,axis=0)
+            pass
         for i in range(preds.shape[1]):
             pri=preds[:,i]
             gti=gt[:,i]
@@ -276,6 +280,10 @@ class MultiClassPrecisionAnalizer(MultiClassMetricsAnalizer):
     def results(self):
         preds=np.array(self.predictions)
         gt=np.array(self.ground_truth)
+        if len(preds.shape)>2:
+            preds=np.concatenate(self.predictions,axis=0)
+            gt=np.concatenate(self.ground_truth,axis=0)
+            pass
         scores=[]
         for i in range(preds.shape[1]):
             pri=preds[:,i]
@@ -295,6 +303,10 @@ class MultiClassRecallAnalizer(MultiClassMetricsAnalizer):
     def results(self):
         preds=np.array(self.predictions)
         gt=np.array(self.ground_truth)
+        if len(preds.shape)>2:
+            preds=np.concatenate(self.predictions,axis=0)
+            gt=np.concatenate(self.ground_truth,axis=0)
+            pass
         scores=[]
         for i in range(preds.shape[1]):
             pri=preds[:,i]
