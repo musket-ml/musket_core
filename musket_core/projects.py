@@ -3,6 +3,7 @@ from musket_core.context import context
 from musket_core import datasets,visualization,utils
 from musket_core import parralel
 from musket_core import dataset_analizers,dataset_visualizers,metrics
+from musket_core import crf
 import keras
 import  musket_core.model
 from typing import Collection
@@ -318,6 +319,7 @@ class Project:
         res.append(dataset_visualizers)
         res.append(builtin_datasets)
         res.append(metrics)
+        res.append(crf)
         if os.path.exists(self.commonPath()):
             
                 mods=utils.load_yaml(self.commonPath())
