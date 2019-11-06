@@ -9,9 +9,9 @@ def run():
     
     task = sys.argv[1]
     
-    if task is "run_experiment":
+    if task == "run_experiment":
         run_experiment()
-    elif task is "run_project":
+    elif task == "run_project":
         run_project()
     else:
         raise("'run_experiment' or 'run_project' should be specified")
