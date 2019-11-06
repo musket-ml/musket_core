@@ -3,6 +3,19 @@ import os
 
 from musket_core import fit
 
+def run():
+    if len(sys.argv) < 2:
+        raise("'run_experiment' or 'run_project' should be specified")
+    
+    task = sys.argv[1]
+    
+    if task is "run_experiment":
+        run_experiment()
+    elif task is "run_project":
+        run_project()
+    else:
+        raise("'run_experiment' or 'run_project' should be specified")
+
 def run_experiment():
     cwd = os.getcwd()
 
