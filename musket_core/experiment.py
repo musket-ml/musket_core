@@ -172,7 +172,7 @@ class Experiment:
                 elif "experiment_result" in self.config():
                     am=self.config()["experiment_result"]
                     if am in m["allStages"]:
-                        return ["allStages"][am]
+                        return m["allStages"][am]
                 elif True:
                       
                     if pm in m["allStages"]:
