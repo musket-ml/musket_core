@@ -12,7 +12,7 @@ setup(name='musket_core',
       dependency_links=['https://github.com/aleju/imgaug'],
       entry_points={
             'console_scripts': [
-                  'musket = musket_core.cli:run'
+                  'musket = musket_core.cli:main'
             ]
       },
       install_requires=[
