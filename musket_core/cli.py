@@ -36,7 +36,7 @@ def convert_args(root, task_name):
         new_args.append(project_path())
 
     elif task_name == DOWNLOAD_DEPS:
-        new_args.append(project_path())
+        new_args.insert(1, project_path())
 
     sys.argv = new_args
 

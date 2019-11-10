@@ -147,7 +147,7 @@ def load_item(url, dest):
 
     loader.load(parsed["url"], dest)
 
-def download(root):
+def download(root, force_all=False):
     full_path = os.path.join(root, "deps.yaml")
 
     try:
@@ -191,7 +191,7 @@ def download(root):
 
             pass
 
-        if is_loaded(root, url) and not force:
+        if is_loaded(root, url) and not (force or force_all):
             print("skipping: " + url)
 
             continue
@@ -203,7 +203,7 @@ def download(root):
 def main(*args):
     root = args[0][1]
 
-    download(root)
+    download(root, "--force" in args[0])
 
 if __name__ == '__main__':
     main(sys.argv)
