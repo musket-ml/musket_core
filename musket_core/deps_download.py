@@ -7,6 +7,8 @@ import zipfile
 
 import urllib
 
+from musket_core import utils
+
 from urllib.parse import urlparse
 
 try:
@@ -107,25 +109,101 @@ def build_loader(parsed_url):
     if parsed_url["type"] == HTTP:
         return Loader(lambda id, dest: download_url(id, dest))
 
+def is_loaded(root, url):
+    try:
+        fullPath = os.path.join(root, ".metadata", "downloaded_deps.yaml")
+
+        loadedYaml = load_yaml(fullPath)
+
+        return url in loadedYaml["dependencies"]
+    except:
+        return False
+
+
+def mark_loaded(root, url):
+    fullPath = os.path.join(root, ".metadata")
+
+    utils.ensure(fullPath)
+
+    fullPath = os.path.join(fullPath, "downloaded_deps.yaml")
+
+    try:
+        loaded_yaml = load_yaml(fullPath)
+    except:
+        loaded_yaml = {"dependencies": []}
+
+    deps = loaded_yaml["dependencies"]
+
+    deps.append(url)
+
+    utils.save_yaml(fullPath, loaded_yaml)
+
 def load_item(url, dest):
+    utils.ensure(dest)
+
     parsed = parse_url(url)
 
     loader = build_loader(parsed)
 
     loader.load(parsed["url"], dest)
 
-def download(root):
-    full_path = os.path.join(root, "deps.yaml")
+def download(root, force_all=False):
+    full_path = os.path.join(root, "project.yaml")
 
-    deps = load_yaml(full_path)["dependencies"]
+    try:
+        loadedYaml = load_yaml(full_path)
+    except:
+        print("no dependencies file found")
+
+        return
+
+    try:
+        deps = loadedYaml["dependencies"]
+    except:
+        print("can not parse project.yaml")
+
+        return
+
+    if not isinstance(deps, list):
+        print("can not parse project.yaml")
+
+        return
 
     for item in deps:
-        load_item(item, os.path.join(root, "data"))
+        url = item
+
+        data_path = os.path.join(root, "data")
+
+        force = False
+
+        if isinstance(item, dict):
+            url = item.get("url", False)
+
+            if not url:
+                print("incorrect url")
+
+                continue
+
+            dst = item.get("destination", data_path)
+            force = item.get("force", False)
+
+            data_path = os.path.abspath(os.path.join(data_path, dst))
+
+            pass
+
+        if is_loaded(root, url) and not (force or force_all):
+            print("skipping: " + url)
+
+            continue
+
+        load_item(url, data_path)
+
+        mark_loaded(root, url)
 
 def main(*args):
     root = args[0][1]
 
-    download(root)
+    download(root, "--force" in args[0])
 
 if __name__ == '__main__':
     main(sys.argv)

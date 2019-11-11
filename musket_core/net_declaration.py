@@ -5,12 +5,14 @@ import keras
 import musket_core.templating as tp
 from musket_core.caches import *
 from musket_core import datasets
+from musket_core import crf
 from builtins import isinstance
 layers=configloader.load("layers")
 from  musket_core.preprocessing import SplitPreproccessor,SplitConcatPreprocessor, Augmentation,take_nth
 import musket_core.builtin_datasets
 import musket_core.builtin_trainables
 import importlib
+layers.register_module(crf)
 
 def take_input(layers,declarations,config,outputs,linputs,pName,withArgs):
 

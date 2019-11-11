@@ -1,5 +1,5 @@
 from py4j.clientserver import ClientServer, JavaParameters, PythonParameters,JavaGateway,GatewayParameters,CallbackServerParameters
-from musket_core import projects, tools, parralel
+from musket_core import projects, tools, parralel, deps_download
 import yaml
 import io
 import sys
@@ -149,6 +149,11 @@ class Server(projects.Workspace):
 
     def runOnKaggle(self, projectPath):
         loop.MainLoop(kernel.Project(projectPath)).start()
+
+    def downloadDeps(self, fullPath):
+        print("downloading dependencies...")
+
+        deps_download.download(fullPath)
 
     class Java:
         implements = ["com.onpositive.musket_core.IServer"]

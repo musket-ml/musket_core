@@ -79,7 +79,7 @@ class GenericPipeline(generic.GenericTaskConfig):
         if self._multiOutput is not None:
             return self._multiOutput
         inp,output=utils.load_yaml(self.path + ".shapes")
-        self._multiOutput= len(output)>1
+        self._multiOutput= len(output)>1 and isinstance(output, list)
         return self._multiOutput
 
     def predict_on_batch(self, mdl, ttflips, batch):

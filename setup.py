@@ -1,7 +1,7 @@
 from setuptools import setup
 import setuptools
 setup(name='musket_core',
-      version='0.491',
+      version='0.495',
       description='Common parts of my pipelines',
       url='https://github.com/petrochenko-pavel-a/musket_core',
       author='Petrochenko Pavel',
@@ -12,8 +12,7 @@ setup(name='musket_core',
       dependency_links=['https://github.com/aleju/imgaug'],
       entry_points={
             'console_scripts': [
-                  'musket_run_experiment = musket_core.cli:run_experiment',
-                  'musket_run_project = musket_core.cli:run_project'
+                  'musket = musket_core.cli:main'
             ]
       },
       install_requires=[

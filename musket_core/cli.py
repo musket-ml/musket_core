@@ -1,43 +1,75 @@
 import sys
 import os
 
-from musket_core import fit
+FIT = "fit"
+ANALYZE = "analyze"
+DOWNLOAD_DEPS = "deps_download"
 
-def run_experiment():
+def is_experiment(root):
+    config_path = os.path.join(root, "config.yaml")
+
+    return os.path.exists(config_path)
+
+def project_path():
     cwd = os.getcwd()
 
-    experiment_name = os.path.basename(cwd)
+    if is_experiment(cwd):
+        return os.path.abspath(os.path.join(cwd, "../../"))
 
-    argv = []
+    return cwd
 
-    argv.append(__file__)
+def convert_args(root, task_name):
+    args = sys.argv
 
-    argv.append("--project")
-    argv.append(os.path.abspath(os.path.join(cwd, "../../")))
+    new_args = [os.path.join(os.path.dirname(__file__), task_name + ".py")] + list(args[2:])
 
-    argv.append("--name")
-    argv.append(experiment_name)
+    if task_name == FIT:
+        new_args.append("--project")
+        new_args.append(project_path())
 
-    argv.append("--allow_resume")
-    argv.append("true")
+        if is_experiment(root):
+            new_args.append("--name")
+            new_args.append(experiment_name())
 
-    sys.argv = argv
+    elif task_name == ANALYZE:
+        new_args.append("--inputFolder")
+        new_args.append(project_path())
 
-    fit.main()
+    elif task_name == DOWNLOAD_DEPS:
+        new_args.insert(1, project_path())
 
-def run_project():
+    sys.argv = new_args
+
+def main():
+    if len(sys.argv) < 2:
+        print("no task specified, command should be one of:")
+        print("musket " + FIT)
+        print("musket " + ANALYZE)
+        print("musket " + DOWNLOAD_DEPS)
+
+        return
+
+    task_name = sys.argv[1]
+
+    if task_name not in [FIT, ANALYZE, DOWNLOAD_DEPS]:
+        print("unknown task: " + task_name + ", command should be one of:")
+        print("musket " + FIT)
+        print("musket " + ANALYZE)
+        print("musket " + DOWNLOAD_DEPS)
+
+        return
+
+    from musket_core import fit, analize, deps_download
+
+    convert_args(os.getcwd(), task_name)
+
+    if task_name == FIT:
+        fit.main()
+    elif task_name == ANALYZE:
+        analize.main()
+    elif task_name == DOWNLOAD_DEPS:
+        deps_download.main(sys.argv)
+
+def experiment_name():
     cwd = os.getcwd()
-
-    argv = []
-
-    argv.append(__file__)
-
-    argv.append("--project")
-    argv.append(cwd)
-
-    argv.append("--allow_resume")
-    argv.append("true")
-
-    sys.argv = argv
-
-    fit.main()
+    return os.path.basename(cwd)

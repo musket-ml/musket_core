@@ -782,6 +782,8 @@ class DefaultKFoldedDataSet:
             r=[]+sindexes+nindexes
             random.shuffle(r)
             return r;
+        random.seed(23232)
+        random.shuffle(indexes)
         return indexes
 
     def generator_from_indexes(self, indexes, isTrain=True, returnBatch=False):
