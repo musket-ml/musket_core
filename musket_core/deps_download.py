@@ -148,7 +148,7 @@ def load_item(url, dest):
     loader.load(parsed["url"], dest)
 
 def download(root, force_all=False):
-    full_path = os.path.join(root, "deps.yaml")
+    full_path = os.path.join(root, "project.yaml")
 
     try:
         loadedYaml = load_yaml(full_path)
@@ -160,12 +160,12 @@ def download(root, force_all=False):
     try:
         deps = loadedYaml["dependencies"]
     except:
-        print("can not parse deps.yaml")
+        print("can not parse project.yaml")
 
         return
 
     if not isinstance(deps, list):
-        print("can not parse deps.yaml")
+        print("can not parse project.yaml")
 
         return
 
