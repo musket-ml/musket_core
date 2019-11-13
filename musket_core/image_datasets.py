@@ -937,6 +937,40 @@ class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
                     prediction.append((lp, int(clazz)))
         return prediction
 
+    def encode(self, item, encode_y=False, treshold=0.5):
+        if isinstance(item, PredictionItem):
+            raise NotImplementedError("Instance segmentation is only capable to encode datasets")
+        if isinstance(item, DataSet):
+            res = []
+            for i in tqdm.tqdm(range(len(item)), "Encoding dataset"):
+                q = item[i]
+                imageId = q.id
+                for j in range(len(self.classes)):
+                    if encode_y:
+                        vl = q.y[:, :, j:j + 1] > treshold
+                    else:
+                        vl = q.prediction[:, :, j:j + 1] > treshold
+                    labels = vl[0]
+                    masks = vl[2]
+                    if len(labels) != len(masks):
+                        raise Exception(f"{imageId} does not have same ammount of masks and labels")
+                    for i in range(len(masks)):
+                        mask = masks[i]
+                        label = labels[i]
+                        rle = self._to_rle(mask)
+                        res.append({self.imColumn: imageId, self.rleColumn: rle, self.clazzColumn: label})
+            res = self._recode(res)
+
+            clns = []
+            for c in self.splitColumns:
+                if not self.splitColumns[c] in clns:
+                    clns.append(self.splitColumns[c])
+            r = [self.imColumn, self.clazzColumn, self.rleColumn]
+            for c in r:
+                if not c in self.splitColumns:
+                    clns.append(c)
+            return pd.DataFrame(res, columns=clns)
+
     def __getitem__(self, item)->PredictionItem:
         imageId=self.imageIds[item]
         image=self.get_value(imageId)

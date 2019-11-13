@@ -1,6 +1,9 @@
 import yaml
 import pickle
 import os
+
+import shutil
+
 from threading import Lock
 
 
@@ -110,3 +113,56 @@ def templates_folder():
     root = os.path.dirname(__file__)
 
     return os.path.join(root, "templates")
+
+def copy_tree(src, dst):
+    return shutil.copytree(src, dst, True)
+
+def copy_file(src, dst):
+    return shutil.copy(src, dst)
+
+def archive(target_folder, output_path):
+    shutil.make_archive(output_path, 'zip', target_folder)
+
+def collect_project(src, dst):
+    project_dst = os.path.join(dst, os.path.basename(src))
+
+    ensure(project_dst)
+
+    def filter(item):
+        if item == "experiments":
+            return False
+
+        if item == "kaggle":
+            return False
+
+        if item == "data":
+            return False
+
+        if item == ".metadata":
+            return False
+
+        if item.startswith('.'):
+            return False
+
+        return True
+
+    directories = [item for item in os.listdir(src) if filter(item)]
+
+    for item in directories:
+        src_path = os.path.join(src, item)
+        dst_path = os.path.join(project_dst, item)
+
+        if os.path.isdir(src_path):
+            copy_tree(src_path, dst_path)
+        else:
+            copy_file(src_path, dst_path)
+
+    experiments = [item for item in os.listdir(os.path.join(src, "experiments")) if not item.startswith('.')]
+
+    for item in experiments:
+        src_path = os.path.join(src, "experiments", item, "config.yaml")
+        dst_path = os.path.join(project_dst, "experiments", item, "config.yaml")
+
+        ensure(os.path.dirname(dst_path))
+
+        copy_file(src_path, dst_path)
