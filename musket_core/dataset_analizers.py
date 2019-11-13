@@ -1,10 +1,19 @@
 from musket_core import visualization,datasets
 from musket_core import dataset_analis
+from musket_core import losses
 import  numpy as np
 import operator
 import string
 from tqdm import tqdm
 from sklearn import metrics
+from numpy import ndarray
+
+def checker(origin=None): 
+    def inner(func): 
+        func.checker=origin
+        return func        
+    return inner #this is the fun_obj mentioned in the above content
+
 
 @visualization.dataset_analizer
 def dataset_balance(y):
@@ -13,8 +22,48 @@ def dataset_balance(y):
         return "Positive samples"
     return "Negative samples"
 
+def segmentationChecker(dataset):
+    shp=dataset[0].y
+    if isinstance(shp,ndarray):
+        return len(shp.shape)==2 or len(shp.shape)==3
+    return False
 
 @visualization.dataset_analizer
+@checker(segmentationChecker)
+def positive_area(i,p:datasets.PredictionItem):
+    y=p.y
+    s=(y>0.5).sum()
+    if s==0:
+        return "0"
+    alli=(y>=0.0).sum()
+    if all==s:
+        return "1"
+    vl=int((s*10)/alli)
+    return str(float(vl)/10)+"-"+str(float(vl+1)/10)
+
+
+
+@visualization.prediction_analizer
+@checker(segmentationChecker)
+def iou_analizer(i,p:datasets.PredictionItem,pr:datasets.PredictionItem):
+    vl=losses.iou_numpy(pr.prediction>0.5, pr.y, 0.0000001, 1)
+    if vl==0:
+        return "0"
+    if vl==1:
+        if pr.y.sum()==0:
+            return "True negative"
+        return "1"
+    vl=int(vl*10)
+    return str(float(vl)/10)+"-"+str(float(vl+1)/10)
+
+def classificationChecker(dataset):
+    shp=dataset[0].y
+    if isinstance(shp,ndarray):
+        return len(shp.shape)==1
+    return False
+
+@visualization.dataset_analizer
+@checker(classificationChecker)
 def onehot_analizer(y):
     r=np.where(y>0.5)
     if len(r[0])>0:
@@ -23,15 +72,12 @@ def onehot_analizer(y):
 
 
 @visualization.dataset_analizer
+@checker(classificationChecker)
 def class_num_analizer(y):
     if isinstance(y, np.ndarray):
         return int(y[0])
     return int(y)
 
-@visualization.caption('Simple analyzer for testing purposes, just gving value 1 for all samples')
-@visualization.dataset_analizer
-def constant_analizer(y):
-    return 1
 
 class FixedShape:
     def __init__(self,shape,pos):
@@ -195,12 +241,12 @@ class LengthAnalizer:
         self.all(index,p)
         if self.looksLikeBinary:
             if isinstance(p.y,np.ndarray):
-               if len(p.y.shape)==1 and p.y.shape[0]==1:
-                   if p.y[0]==0:
-                      self.negative(index,p)
-                   if p.y[0]==1:
-                      self.positive(index,p)
-                   return
+                if len(p.y.shape)==1 and p.y.shape[0]==1:
+                    if p.y[0]==0:
+                        self.negative(index,p)
+                    if p.y[0]==1:
+                        self.positive(index,p)
+                    return
         self.looksLikeBinary=False
         pass
 
@@ -253,6 +299,7 @@ class MultiClassMetricsAnalizer:
         return {"type": "hist", "values": self.scores,"x_axis":"Class","y_axis":"F1 Score"}    
 
 @visualization.prediction_analizer
+@checker(classificationChecker)
 class MultiClassF1Analizer(MultiClassMetricsAnalizer):
     
 
@@ -274,6 +321,7 @@ class MultiClassF1Analizer(MultiClassMetricsAnalizer):
     
     
 @visualization.prediction_analizer
+@checker(classificationChecker)
 class MultiClassPrecisionAnalizer(MultiClassMetricsAnalizer):
     
 
@@ -297,6 +345,7 @@ class MultiClassPrecisionAnalizer(MultiClassMetricsAnalizer):
         return {"type": "hist", "values": self.scores,"x_axis":"Class","y_axis":"Precision"}    
 
 @visualization.prediction_analizer
+@checker(classificationChecker)
 class MultiClassRecallAnalizer(MultiClassMetricsAnalizer):
     
 
@@ -320,6 +369,7 @@ class MultiClassRecallAnalizer(MultiClassMetricsAnalizer):
         return {"type": "hist", "values": self.scores,"x_axis":"Class","y_axis":"Recall"}
     
 @visualization.dataset_analizer
+@checker(classificationChecker)
 class MultiClassFrequenceyAnalizer:
 
     def __init__(self):
@@ -356,6 +406,7 @@ class MultiClassFrequenceyAnalizer:
         
 
 @visualization.prediction_analizer
+@checker(classificationChecker)
 def ground_truth_vs_prediction(x,y):
     
     allCorrect=np.equal(x>0.5,y>0.5).sum()==len(x)
@@ -364,6 +415,7 @@ def ground_truth_vs_prediction(x,y):
     return "Incorrect"
 
 @visualization.prediction_analizer
+@checker(classificationChecker)
 class MultiOutputCategoricalAnalizer(MultiClassMetricsAnalizer):
     
 
@@ -423,7 +475,15 @@ class WordDS2(datasets.DataSet):
     def __getitem__(self, item)->datasets.PredictionItem:
         return datasets.PredictionItem(self.sorted[item][0],self.sorted[item][0],(self.sorted[item][1],"count:"+str(self.sorted[item][2])))        
 
+def textDS(dataset):
+    for i in range(len(dataset)):
+        shp=dataset[i].x
+        if len(shp)>0:
+            return isinstance(shp[0],str)
+    return False
+
 @visualization.dataset_analizer
+@checker(textDS)
 class VocabularyAnalizer:
     def __init__(self):
         self.components={}
@@ -462,6 +522,7 @@ class VocabularyAnalizer:
         return {"type": "hist", "values": [res],"total":self.doccount,"x_axis":"Size of vocubalary","y_axis":"Fraction of fully covered documents"}
     
 @visualization.dataset_analizer
+@checker(textDS)
 class WordFrequencyAnalizer:
     def __init__(self,min_count:int=5,exclude_stop_words:bool=False,stopWordsLanguage:str="english",exclude_punctuation:bool=False,top_n:int=20):
         self.analizers={}
@@ -528,6 +589,7 @@ class WordFrequencyAnalizer:
 
 
 @visualization.dataset_analizer
+@checker(classificationChecker)
 def multi_class_balance(y):
     if isinstance(y, np.ndarray):
         return int(y[0])

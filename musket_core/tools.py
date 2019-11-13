@@ -262,8 +262,8 @@ class AnalizeOptionsRequest(yaml.YAMLObject):
 
         rs={
             "visualizers":[v.introspect() for v in project.get_visualizers()],
-            "analizers": [v.introspect() for v in project.get_analizers()],
-            "data_analizers": [v.introspect() for v in project.get_data_analizers()],
+            "analizers": [v.introspect() for v in project.get_analizers() if v.isApplicable(ds)],
+            "data_analizers": [v.introspect() for v in project.get_data_analizers() if v.isApplicable(ds)],
             "datasetStages": datasets.get_stages(ds),
             "datasetFilters":[v.introspect() for v in project.get_data_filters()],
         }
@@ -406,7 +406,7 @@ class AnalizePredictions(yaml.YAMLObject):
                 pr=predictions[i]
                 if analizerFunc.usePredictionItem:
                     gr = analizerFunc(i,ds[i],pr, **self.analzierArgs)
-                else: gr=analizerFunc(gt,pr.prediction,**self.analzierArgs)
+                else: gr=analizerFunc(pr.y,pr.prediction,**self.analzierArgs)
                 if gr in res:
                     res[gr].append(i)
                 else:
