@@ -31,6 +31,8 @@ class Cache(DataSet):
 
     def __len__(self):
         return len(self.parent)
+    
+    
 
 
 class CachedPredictionItem(PredictionItem):
@@ -45,6 +47,8 @@ class CachedPredictionItem(PredictionItem):
     def rootItem(self):
         return self.original().rootItem()
 
+    def item_id(self):
+        return self.original().item_id()
 
 class DiskCache(DataSet):
 

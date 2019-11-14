@@ -32,6 +32,9 @@ class PredictionItem:
 
     def rootItem(self):
         return self
+    
+    def item_id(self):
+        return self.id
 
 
 class DataSet:
@@ -107,7 +110,11 @@ class DataSet:
         res=[]            
         for i in tqdm.tqdm(range(len(ds)),"Encoding dataset"):
             q=ds[i]
-            res.append(self.encode(q,encode_y,treshold))
+            rs=self.encode(q,encode_y,treshold)
+            if isinstance(rs, list):
+                res=res+rs
+            else:    
+                res.append(rs);
         return self._create_dataframe(res)
     
     def _create_dataframe(self,items):
@@ -341,13 +348,18 @@ class CompositeDataSet(DataSet):
         
     def _encode_dataset(self,item:PredictionItem,encode_y=False,treshold=0.5):
         res=[]
-        orD=None
+        orD=None        
         for i in tqdm.tqdm(range(len(item)),"Encoding dataset"):
                 q=item[i]
                 ti=q;
                 while not hasattr(ti, "originalDataSet") :ti=ti.original()
                 orD=ti.originalDataSet
-                res.append(orD.encode(q,encode_y,treshold))
+                
+                rs=orD.encode(q,encode_y,treshold)
+                if isinstance(rs, list):
+                    res=res+rs
+                else:    
+                    res.append(rs);                
         res=orD._create_dataframe(res)                        
         return res 
                         
