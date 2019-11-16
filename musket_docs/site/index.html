@@ -56,6 +56,24 @@
     <li class="toctree-l2"><a class="reference internal" href="generic/#reasons-to-use-generic-pipeline">Reasons to use Generic Pipeline</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="generic/#installation">Installation</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="generic/#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="generic/#choosing-your-installation-type">Choosing your installation type</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="generic/#global-pip-installation">Global pip installation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="generic/#virtual-environment-installation-recommended">Virtual environment installation (recommended)</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="generic/#virtualenv-installation-recommended">virtualenv installation (recommended)</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="generic/#pipenv-installation">pipenv installation</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="generic/#other-packages">Other packages</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="generic/#project-structure">Project structure</a>
     </li>
@@ -404,6 +422,10 @@
                 </ul>
                 <p class="caption"><span class="caption-text">Segmentation</span></p>
                 <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="segmentation/getting_started/">Getting started</a>
+    <ul>
+    </ul>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="segmentation/">User guide</a>
     <ul>
     <li class="toctree-l2"><a class="reference internal" href="segmentation/#reasons-to-use-segmentation-pipeline">Reasons to use Segmentation Pipeline</a>
@@ -715,7 +737,11 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="classification/#custom-datasets">Custom datasets</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="classification/#multistage-training">Multistage training</a>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="classification/#multi-output-classification">Multi output classification</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="classification/#preparing-dataset-for-multi-output-classification">preparing dataset for multi output classification:</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="classification/#balancing-your-data">Balancing your data</a>
     </li>
@@ -954,6 +980,15 @@
     </ul>
                     </li>
                 </ul>
+                <p class="caption"><span class="caption-text">Text</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="text/">About</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="text/#installation">Installation</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
                 <p class="caption"><span class="caption-text">Musket IDE</span></p>
                 <ul>
                     <li class="toctree-l1"><a class="reference internal" href="ide/getting_started/">Setup</a>
@@ -1024,6 +1059,7 @@
             <div class="section">
               
                 <h1 id="you-have-just-found-musket">You have just found Musket</h1>
+<p><img alt="Build status" src="https://api.travis-ci.com/musket-ml/musket_core.svg?branch=master" /></p>
 <p>Musket is a family of high-level frameworks written in Python and capable of running on top of <a href="https://keras.io/">Keras</a>.</p>
 <p>It was developed with a focus of enabling to make fast and simply-declared experiments, which can be easily stored, reproduced and compared to each other.</p>
 <p>Use Musket if you need a deep learning framework that:</p>
@@ -1291,5 +1327,5 @@ stages:
 
 <!--
 MkDocs version : 1.0.4
-Build Date UTC : 2019-10-09 13:58:16
+Build Date UTC : 2019-11-16 14:24:37
 -->

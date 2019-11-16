@@ -56,6 +56,24 @@
     <li class="toctree-l2"><a class="reference internal" href="../generic/#reasons-to-use-generic-pipeline">Reasons to use Generic Pipeline</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="../generic/#installation">Installation</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../generic/#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../generic/#choosing-your-installation-type">Choosing your installation type</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../generic/#global-pip-installation">Global pip installation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../generic/#virtual-environment-installation-recommended">Virtual environment installation (recommended)</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../generic/#virtualenv-installation-recommended">virtualenv installation (recommended)</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../generic/#pipenv-installation">pipenv installation</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../generic/#other-packages">Other packages</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="../generic/#project-structure">Project structure</a>
     </li>
@@ -404,6 +422,10 @@
                 </ul>
                 <p class="caption"><span class="caption-text">Segmentation</span></p>
                 <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../segmentation/getting_started/">Getting started</a>
+    <ul>
+    </ul>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="../segmentation/">User guide</a>
     <ul>
     <li class="toctree-l2"><a class="reference internal" href="../segmentation/#reasons-to-use-segmentation-pipeline">Reasons to use Segmentation Pipeline</a>
@@ -715,7 +737,11 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#custom-datasets">Custom datasets</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="#multistage-training">Multistage training</a>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#multi-output-classification">Multi output classification</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#preparing-dataset-for-multi-output-classification">preparing dataset for multi output classification:</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#balancing-your-data">Balancing your data</a>
     </li>
@@ -954,6 +980,15 @@
     </ul>
                     </li>
                 </ul>
+                <p class="caption"><span class="caption-text">Text</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../text/">About</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../text/#installation">Installation</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
                 <p class="caption"><span class="caption-text">Musket IDE</span></p>
                 <ul>
                     <li class="toctree-l1"><a class="reference internal" href="../ide/getting_started/">Setup</a>
@@ -1028,6 +1063,8 @@
             <div class="section">
               
                 <h1 id="classification-training-pipeline">Classification training pipeline</h1>
+<p>Classification pipeline is a declarative pipeline for single and multi output image classification tasks.
+It can be also used for regression tasks</p>
 <h2 id="reasons-to-use-classification-pipeline">Reasons to use Classification Pipeline</h2>
 <p>Classification Pipeline was developed with a focus of enabling to make fast and 
 simply-declared experiments, which can be easily stored, 
@@ -1045,21 +1082,19 @@ Also there are a number of classification-specific features.</p>
 <li>Common blocks like an architecture, callbacks, model metrics, predictions vizualizers and others should be written once and be a part of a common library</li>
 </ul>
 <h2 id="installation">Installation</h2>
-<p>At this moment library requires the latest version of imgaug which has not been published yet to pip, so installation requires
-execution of following two commands </p>
-<pre><code>pip install git+https://github.com/aleju/imgaug
-pip install classification_pipeline
+<pre><code>pip install classification_pipeline
 </code></pre>
 
 <p><em>Note: this package requires python 3.6</em></p>
+<p>This package is a part of <a href="https://musket-ml.com/">Musket ML</a> framework,
+ it is recommended to install the whole collection of the framework
+ packages at once using instructions <a href="../generic/#installation">here</a>.</p>
 <h2 id="launching">Launching</h2>
 <h3 id="launching-experiments">Launching experiments</h3>
-<p><code>fit.py</code> script is designed to launch experiment training.
- It is located in the <code>musket_core</code> root folder.</p>
-<p>Working directory <em>must</em> point to the <code>musket_core</code> root folder.</p>
+<p><code>fit.py</code> script is designed to launch experiment training.</p>
 <p>In order to run the experiment or a number of experiments,   </p>
 <p>A typical command line may look like this:</p>
-<p><code>python ./fit.py --project "path/to/project" --name "experiment_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"</code></p>
+<p><code>musket fit --project "path/to/project" --name "experiment_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"</code></p>
 <p><a href="reference/#fitpy-project">--project</a> points to the root of the <a href="#project-structure">project</a></p>
 <p><a href="reference/#fitpy-name">--name</a> is the name of the project sub-folder containing experiment yaml file.</p>
 <p><a href="reference/#fitpy-num_gpus">--num_gpus</a> sets number of GPUs to use during experiment launch.</p>
@@ -1068,8 +1103,7 @@ pip install classification_pipeline
 <p><a href="reference/#fitpy-cache">--cache</a> points to a cache folder to store the temporary data.</p>
 <p>Other parameters can be found in the <a href="reference/#fit-script-arguments">fit script reference</a></p>
 <h3 id="launching-tasks">Launching tasks</h3>
-<p><code>task.py</code> script is designed to launch experiment training.
- It is located in the <code>musket_core</code> root folder.</p>
+<p><code>task.py</code> script is designed to launch experiment training.</p>
 <p>Tasks must be defined in the project python scope and marked by an 
 annotation like this:</p>
 <pre><code class="python">from musket_core import tasks, model
@@ -1078,10 +1112,9 @@ def measure2(m: model.ConnectedModel):
     return result
 </code></pre>
 
-<p>Working directory <em>must</em> point to the <code>musket_core</code> root folder.</p>
 <p>In order to run the experiment or a number of experiments,   </p>
 <p>A typical command line may look like this:</p>
-<p><code>python ./task.py --project "path/to/project" --name "experiment_name" --task "task_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"</code></p>
+<p><code>python -m musket_core.task --project "path/to/project" --name "experiment_name" --task "task_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"</code></p>
 <p><a href="reference/#taskpy-project">--project</a> points to the root of the <a href="#project-structure">project</a></p>
 <p><a href="reference/#taskpy-name">--name</a> is the name of the project sub-folder containing experiment yaml file.</p>
 <p><a href="reference/#taskpy-name">--task</a> is the name of the task function.</p>
@@ -1094,7 +1127,7 @@ def measure2(m: model.ConnectedModel):
 <p><code>analize.py</code> script is designed to launch project-scope analysis.
 It is located in the <code>musket_core</code> root folder.</p>
 <p>Note that only experiments, which training is already finished will be covered.</p>
-<p><code>python ./analize.py --inputFolder "path/to/project"</code></p>
+<p><code>musket analize --inputFolder "path/to/project"</code></p>
 <p><a href="reference/#analyzepy-inputfolder">--inputFolder</a> points to a folder to search for finished experiments in. Typically, project root.</p>
 <p>Other parameters can be found in the <a href="reference/#analyze-script-arguments">analyze script reference</a></p>
 <h2 id="usage-guide">Usage guide</h2>
@@ -1325,12 +1358,40 @@ def getTrain()-&gt;datasets.DataSet:
 
 <p><a href="reference/#dataset">dataset</a> sets the main training dataset.</p>
 <p><a href="reference/#datasets">datasets</a> sets up a list of available data sets to be referred by other entities.</p>
-<h4 id="multistage-training">Multistage training</h4>
-<p>Sometimes you need to split your training into several stages. You can easily do it by adding several stage entries
-in your experiment configuration file.</p>
-<p><a href="reference/#stages">stages</a> instruction allows to set up stages of the train process, where for each stage it is possible to set some specific training options like the number of epochs, learning rate, loss, callbacks, etc.
-Full list of stage properties can be found <a href="reference/#stage-properties">here</a>.</p>
-<pre><code class="yaml">stages:
+<h3 id="multi-output-classification">Multi output classification</h3>
+<p>Sometimes you need to create network that performs several classification tasks at the same moment, in this situation
+you need to declare <code>classes</code> , <code>activation</code> and <code>loss</code> as the lists of class counts, activation functions and losses
+like in the following snippet:</p>
+<pre><code class="yaml">classes: [ 4, 4 ] #define the number of classes
+activation: [sigmoid,sigmoid]
+loss: 
+  - binary_crossentropy
+  - binary_crossentropy
+primary_metric: val_loss #the most interesting metric is val_binary_accuracy
+primary_metric_mode: min  
+</code></pre>
+
+<p>it is also very likely that you need to change primary metric to <code>val_loss</code></p>
+<h4 id="preparing-dataset-for-multi-output-classification">preparing dataset for multi output classification:</h4>
+<p>When you use multi output classification your prediction item <code>y</code> should be a list of numpy arrays, like in
+the following sample:</p>
+<pre><code class="python">return PredictionItem(self.ids[item], image, [t0,t1,t2])
+````
+
+length of this list should be equal to the number of network outputs
+
+
+
+#### Multistage training
+
+Sometimes you need to split your training into several stages. You can easily do it by adding several stage entries
+in your experiment configuration file.
+
+[stages](reference.md#stages) instruction allows to set up stages of the train process, where for each stage it is possible to set some specific training options like the number of epochs, learning rate, loss, callbacks, etc.
+Full list of stage properties can be found [here](reference.md#stage-properties).
+
+```yaml
+stages:
   - epochs: 100 #Let's go for 100 epochs
   - epochs: 100 #Let's go for 100 epochs
   - epochs: 100 #Let's go for 100 epochs

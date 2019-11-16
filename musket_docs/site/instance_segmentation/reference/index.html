@@ -56,6 +56,24 @@
     <li class="toctree-l2"><a class="reference internal" href="../../generic/#reasons-to-use-generic-pipeline">Reasons to use Generic Pipeline</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="../../generic/#installation">Installation</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/#choosing-your-installation-type">Choosing your installation type</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/#global-pip-installation">Global pip installation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/#virtual-environment-installation-recommended">Virtual environment installation (recommended)</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../../generic/#virtualenv-installation-recommended">virtualenv installation (recommended)</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../../generic/#pipenv-installation">pipenv installation</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../generic/#other-packages">Other packages</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="../../generic/#project-structure">Project structure</a>
     </li>
@@ -404,6 +422,10 @@
                 </ul>
                 <p class="caption"><span class="caption-text">Segmentation</span></p>
                 <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../segmentation/getting_started/">Getting started</a>
+    <ul>
+    </ul>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="../../segmentation/">User guide</a>
     <ul>
     <li class="toctree-l2"><a class="reference internal" href="../../segmentation/#reasons-to-use-segmentation-pipeline">Reasons to use Segmentation Pipeline</a>
@@ -715,7 +737,11 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="../../classification/#custom-datasets">Custom datasets</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="../../classification/#multistage-training">Multistage training</a>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../classification/#multi-output-classification">Multi output classification</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../../classification/#preparing-dataset-for-multi-output-classification">preparing dataset for multi output classification:</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="../../classification/#balancing-your-data">Balancing your data</a>
     </li>
@@ -950,6 +976,15 @@
     <li class="toctree-l3"><a class="reference internal" href="../../classification/reference/#analyzepy-sortby">analyze.py sortBy</a>
     </li>
         </ul>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Text</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../text/">About</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../text/#installation">Installation</a>
     </li>
     </ul>
                     </li>
@@ -1274,73 +1309,73 @@ Named parameters are also mapped, in example <code>translate_px</code> key of <c
 <p><strong>type</strong>: <code>string</code> </p>
 <p>Folder to search for experiments, project root.</p>
 <p>Example:</p>
-<p><code>fit.py --project "path/to/project"</code></p>
+<p><code>-m musket_core.fit --project "path/to/project"</code></p>
 <h3 id="fitpy-name">fit.py name</h3>
 <p><strong>type</strong>: <code>string or comma-separated list of strings</code> </p>
 <p>Name of the experiment to launch, or a list of names.</p>
 <p>Example:</p>
-<p><code>fit.py --name "experiment_name"</code></p>
-<p><code>fit.py --name "experiment_name1, experiment_name2"</code></p>
+<p><code>-m musket_core.fit --name "experiment_name"</code></p>
+<p><code>-m musket_core.fit --name "experiment_name1, experiment_name2"</code></p>
 <h3 id="fitpy-num_gpus">fit.py num_gpus</h3>
 <p><strong>type</strong>: <code>integer</code></p>
 <p>Default: 1</p>
 <p>Number of GPUs to use during experiment launch.</p>
 <p>Example:
-<code>fit.py --num_gpus=1</code></p>
+<code>-m musket_core.fit --num_gpus=1</code></p>
 <h3 id="fitpy-gpus_per_net">fit.py gpus_per_net</h3>
 <p><strong>type</strong>: <code>integer</code> </p>
 <p>Default: 1</p>
 <p>Maximum number of GPUs to use per single experiment.</p>
 <p>Example:
-<code>fit.py --gpus_per_net=1</code></p>
+<code>-m musket_core.fit --gpus_per_net=1</code></p>
 <h3 id="fitpy-num_workers">fit.py num_workers</h3>
 <p><strong>type</strong>: <code>integer</code> </p>
 <p>Default: 1</p>
 <p>Number of workers to use.</p>
 <p>Example:
-<code>fit.py --num_workers=1</code></p>
+<code>-m musket_core.fit --num_workers=1</code></p>
 <h3 id="fitpy-allow_resume">fit.py allow_resume</h3>
 <p><strong>type</strong>: <code>boolean</code> </p>
 <p>Default: False</p>
 <p>Whether to allow resuming of experiments, 
 which will cause unfinished experiments to start from the best saved weights.</p>
 <p>Example:
-<code>fit.py --allow_resume True</code></p>
+<code>-m musket_core.fit --allow_resume True</code></p>
 <h3 id="fitpy-force_recalc">fit.py force_recalc</h3>
 <p><strong>type</strong>: <code>boolean</code> </p>
 <p>Default: False</p>
 <p>Whether to force rebuilding of reports and predictions.</p>
 <p>Example:
-<code>fit.py --force_recalc True</code></p>
+<code>-m musket_core.fit --force_recalc True</code></p>
 <h3 id="fitpy-launch_tasks">fit.py launch_tasks</h3>
 <p><strong>type</strong>: <code>boolean</code> </p>
 <p>Default: False</p>
 <p>Whether to launch associated tasks.</p>
 <p>Example:
-<code>fit.py --launch_tasks True</code></p>
+<code>-m musket_core.fit --launch_tasks True</code></p>
 <h3 id="fitpy-only_report">fit.py only_report</h3>
 <p><strong>type</strong>: <code>boolean</code> </p>
 <p>Default: False</p>
 <p>Whether to only generate reports for cached data, no training occurs.</p>
 <p>Example:
-<code>fit.py --only_report True</code></p>
+<code>-m musket_core.fit --only_report True</code></p>
 <h3 id="fitpy-cache">fit.py cache</h3>
 <p><strong>type</strong>: <code>string</code> </p>
 <p>Path to the cache folder. 
 Cache folder will contain temporary cached data for executed experiments.</p>
 <p>Example:
-<code>fit.py --cache "path/to/cache/folder"</code></p>
+<code>-m musket_core.fit --cache "path/to/cache/folder"</code></p>
 <h3 id="fitpy-folds">fit.py folds</h3>
 <p><strong>type</strong>: <code>integer or comma-separated list of integers</code> </p>
 <p>Folds to launch. By default all folds of experiment will be executed, 
 this argument allows launching only some of them. </p>
 <p>Example:
-<code>fit.py --folds 1,2</code></p>
+<code>-m musket_core.fit --folds 1,2</code></p>
 <h3 id="fitpy-time">fit.py time</h3>
 <p><strong>type</strong>: <code>string</code> </p>
 <p>TODO </p>
 <p>Example:
-<code>fit.py</code></p>
+<code>-m musket_core.fit</code></p>
 <h2 id="task-script-arguments">task script arguments</h2>
 <h3 id="taskpy-project">task.py project</h3>
 <p><strong>type</strong>: <code>string</code> </p>
