@@ -131,7 +131,7 @@ The forth one points to CSV column with RLE mask.
 Launch the console and run the following command, taking into account
 that `..salt` should be replaced with the path to the project top-level
 `salt` directory.
-`python -m musket_core.fit --project "...salt" --name "exp01" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "...salt\data\cache"`
+`musket fit --project "...salt" --name "exp01" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "...salt\data\cache"`
 
 This will launch the training process.
 
