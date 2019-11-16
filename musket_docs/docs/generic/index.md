@@ -111,7 +111,7 @@ pip install C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl
 ```
 
 ```
-pip install musket_core 
+pip install musket_ml 
 ```
 
 ### Virtual environment installation (recommended)
@@ -153,7 +153,7 @@ pip install C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl
 
 Now install musket:
 ```
-pip install musket_core 
+pip install musket_ml 
 ```
 
 Experiment launches and other activity should be performed when this environment is activated.
@@ -195,7 +195,7 @@ pipenv install C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl
 
 Now install musket:
 ```
-pipenv install musket_core 
+pipenv install musket_ml 
 ```
 
 Experiment launches and other activity should be performed 
@@ -219,6 +219,18 @@ in example, instead of running
  
 `pipenv run musket fit --project "D:\work\salt" --name "exp01" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "D:\work\salt\data\cache"`
 
+### Other packages
+
+`musket_ml` joins all mainstream pipelines that belong to Musket-ML framework.
+In particular, besides `musket_core` generic pipeline, it includes 
+`classification_pipeline` [classification pipeline](../classification/index.md),
+`segmentation_pipeline` [segmentation pipeline](../segmentation/index.md)
+ and `musket_text` [text support](../text/index.md).
+
+To install only the generic pipeline, follow the same instructions, 
+but use `musket_core` wheel instead of `musket_ml`.
+
+ 
 
 ## Project structure
 
