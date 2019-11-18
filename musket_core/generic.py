@@ -55,7 +55,8 @@ class GenericPipeline(generic.GenericTaskConfig):
             inputs=[i]
         m=net.create_model_from_config(self.declarations,inputs,self.architecture,self.imports)
         if context.isTrainMode():
-            utils.save(self.path+".ncx", context.context.net_cx)
+            if hasattr(context.context, "net_cx"):
+                utils.save(self.path+".ncx", context.context.net_cx)
         context.context.net_cx=[]
         
         return m
