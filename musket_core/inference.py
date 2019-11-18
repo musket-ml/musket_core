@@ -1,0 +1,86 @@
+from musket_core import generic,context,genericcsv,configloader,parralel
+import pandas as pd
+import os
+import sys
+import importlib
+import numpy as np
+
+def _from_numpy(x):
+    if isinstance(x, np.ndarray):
+        return [_from_numpy(i) for i in x]
+    if isinstance(x, np.bool):
+        return bool(x)
+    if isinstance(x, np.bool_):
+        return bool(x)
+    if isinstance(x, np.float):
+        return float(x)
+    if isinstance(x, np.int):
+        return float(x)
+    if isinstance(x, list):
+        return [_from_numpy(i) for i in x]
+    if isinstance(x, dict):
+        return { k:_from_numpy(v) for (k,v) in x.items()}
+    return x
+            
+
+class BasicEngine:
+    
+    def __init__(self,path,input_columns,output_columns,ctypes={},input_groups={},output_groups={}):
+        self.cfg=generic.parse(path)
+        path=context.get_current_project_path()
+        self.input_columns=input_columns
+        self.output_columns=output_columns
+        self.image_path=[]
+        self.ctypes=ctypes
+        self.path=context.get_current_project_path()
+        self.input_groups=input_groups
+        self.output_groups=output_groups
+        
+        
+    def __call__(self,inp):
+        unpack=False
+        if isinstance(inp, dict):
+            inp= [inp]
+            unpack=True
+        pi=pd.DataFrame(inp)
+        context.context.no_cache=True   
+        context.context.projectPath=self.path
+        dataset=genericcsv.GenericCSVDataSet(pi,self.input_columns,self.output_columns,[],self.ctypes,self.input_groups,self.output_groups)
+        dataset.ignoreOutput=True
+        res=self.cfg.predict_all_to_dataset(dataset, cacheModel=True,verbose=0)
+        result_frame=dataset.encode(res)        
+        for c in self.output_columns:
+            vls=result_frame[c].values
+            for i in range(len(inp)):
+                inp[i][c]=vls[i]
+        inp=_from_numpy(inp)        
+        if unpack:
+            return inp[0]        
+        return inp
+    
+def inference_service_factory(f):
+    f.serviceCreator=True
+    return f
+    
+def create_engine(path:str,multi_threaded=False):    
+    sys.path.insert(0, path)
+    creator=None
+    for f in os.listdir(path):
+        if len(f)>3 and f[-3:]==".py":
+            mod=importlib.import_module(f[:-3])
+            configloader.register(mod)             
+            for x in dir(mod):
+                ele=getattr(mod, x)
+                if hasattr(ele,"serviceCreator"):
+                    creator=ele
+    if multi_threaded:
+        engine=creator()                
+        def fnc(data):
+            def calc():
+                return engine(data)
+            t=parralel.Task(calc,requiresSession=False)
+            parralel.schedule([t])
+            return t.result
+        return fnc
+    return creator()                
+
