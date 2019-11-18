@@ -57,7 +57,7 @@ def relu6(x):
     return K.relu(x, max_value=6)
 
 keras.utils.get_custom_objects()["relu6"]=relu6
-from musket_core.datasets import DataSet, MeanDataSet, BufferedWriteableDS, WriteableDataSet
+from musket_core.datasets import DataSet, MeanDataSet, BufferedWriteableDS, WriteableDataSet, PredictionBlend
 
 dataset_augmenters={
 
@@ -725,17 +725,24 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             mdl=[]
             for i in fold:
                 mdl.append(self.load_model(i,stage))
-            return AnsembleModel(mdl)
+            return self.createAnsambleModel(mdl)
         if isinstance(stage,list):
             mdl=[]
             for s in stage:
                 mdl.append(self.load_model(fold,s))
-            return AnsembleModel(mdl)
+            return self.createAnsambleModel(mdl)
         if stage == -1: stage = len(self.stages) - 1
         ec = ExecutionConfig(fold=fold, stage=stage, subsample=1.0, dr=self.directory())
         model = self.createAndCompile()
         model.load_weights(ec.weightsPath(),False)
         return model
+
+    def createAnsambleModel(self, mdl):
+        return AnsembleModel(mdl)
+
+
+    def createPredictionsBlend(self, prs):
+        return PredictionBlend(prs)
 
     def info(self,metric=None):
         if metric is None:

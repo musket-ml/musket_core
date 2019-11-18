@@ -657,9 +657,10 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
     def ordered_vals(self, imColumn):
         return sorted(list(set(self.get_values(imColumn))))
 
-    def __init__(self,imagePath,csvPath,imColumn):
+    def __init__(self,imagePath,csvPath,imColumn,len=-1):
         super().__init__(imagePath)
         self.imColumn=imColumn
+        self.len=len
         if isinstance(csvPath, str):
             self.readCSV(csvPath)
         else:
@@ -687,7 +688,10 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
         return self.data[col]
             
     def __len__(self):
-        return len(self.imageIds)
+        l = len(self.imageIds)
+        if self.len >= 0 and self.len <= l:
+            return self.len
+        return l
     
     def get_all_about(self,item):
         return self.data[self.data[self.imColumn]==item]
@@ -719,8 +723,8 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
 
 class BinarySegmentationDataSet(CSVReferencedDataSet):    
     
-    def __init__(self,imagePath,csvPath,imColumn,rleColumn=None,maskShape=None,rMask=True,isRel=False):   
-        super().__init__(imagePath,csvPath,imColumn)
+    def __init__(self,imagePath,csvPath,imColumn,rleColumn=None,maskShape=None,rMask=True,isRel=False,len=-1):
+        super().__init__(imagePath,csvPath,imColumn,len)
         self.rleColumn=rleColumn
         self.maskShape=maskShape
         self.rMask=rMask
@@ -808,8 +812,8 @@ class BinarySegmentationDataSet(CSVReferencedDataSet):
 
 class MultiClassSegmentationDataSet(BinarySegmentationDataSet):    
     
-    def __init__(self,imagePath,csvPath,imColumn,rleColumn,clazzColumn,maskShape=None,rMask=True,isRel=False):   
-        super().__init__(imagePath,csvPath,imColumn,rleColumn,maskShape,rMask,isRel)
+    def __init__(self,imagePath,csvPath,imColumn,rleColumn,clazzColumn,maskShape=None,rMask=True,isRel=False,len=-1):
+        super().__init__(imagePath,csvPath,imColumn,rleColumn,maskShape,rMask,isRel,len)
         self.clazzColumn=clazzColumn    
         self.classes=sorted(list(set(self.data[clazzColumn].values)))
         self.class2Num={}
@@ -890,8 +894,8 @@ class MultiClassSegmentationDataSet(BinarySegmentationDataSet):
 
 class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
 
-    def __init__(self, imagePath, csvPath, imColumn, rleColumn, clazzColumn, maskShape=None, rMask=True, isRel=False):
-        super().__init__(imagePath,csvPath,imColumn,rleColumn,clazzColumn,maskShape,rMask,isRel)
+    def __init__(self, imagePath, csvPath, imColumn, rleColumn, clazzColumn, maskShape=None, rMask=True, isRel=False, len=-1):
+        super().__init__(imagePath,csvPath,imColumn,rleColumn,clazzColumn,maskShape,rMask,isRel,len)
 
         rawClasses = self.data[clazzColumn].values
         def refineClass(x):
@@ -945,18 +949,18 @@ class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
             for i in tqdm.tqdm(range(len(item)), "Encoding dataset"):
                 q = item[i]
                 imageId = q.id
-                for j in range(len(self.classes)):
-                    if encode_y:
-                        vl = q.y[:, :, j:j + 1] > treshold
-                    else:
-                        vl = q.prediction[:, :, j:j + 1] > treshold
-                    labels = vl[0]
-                    masks = vl[2]
-                    if len(labels) != len(masks):
-                        raise Exception(f"{imageId} does not have same ammount of masks and labels")
-                    for i in range(len(masks)):
-                        mask = masks[i]
-                        label = labels[i]
+                if encode_y:
+                    vl = q.y
+                else:
+                    vl = q.prediction
+                labels = vl[0]
+                masks = vl[2]
+                if len(labels) != len(masks):
+                    raise Exception(f"{imageId} does not have same ammount of masks and labels")
+                for i in range(len(masks)):
+                    mask = masks[i]
+                    label = str(int(labels[i] + 0.5))
+                    if label in self.classes:
                         rle = self._to_rle(mask)
                         res.append({self.imColumn: imageId, self.rleColumn: rle, self.clazzColumn: label})
             res = self._recode(res)

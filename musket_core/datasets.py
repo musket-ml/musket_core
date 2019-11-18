@@ -1256,11 +1256,15 @@ class PredictionBlend(DataSet):
         
         if z.prediction is None:
             return z
-        pr=np.mean([v[item].prediction for v in self.predictions if v[item].prediction is not None],axis=0)
+        pr= self.blend_predictions(item)
         r= PredictionItem(z.id,z.x,z.y,pr)
         if self.enableCache:
             self.cache[item]=r
         return r
+
+    def blend_predictions(self, item):
+        return np.mean([v[item].prediction for v in self.predictions if v[item].prediction is not None], axis=0)
+
 
 class WeightedBlend(DataSet):
     
