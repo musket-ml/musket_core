@@ -1,7 +1,9 @@
 # Classification training pipeline
 
 Classification pipeline is a declarative pipeline for single and multi output image classification tasks.
-It can be also used for regression tasks
+It can be also used for regression tasks.
+
+This package is a part of [Musket ML](https://musket-ml.com/) framework.
 
 ## Reasons to use Classification Pipeline
 

@@ -1,5 +1,7 @@
 # Segmentation Training Pipeline
 
+This package is a part of [Musket ML](https://musket-ml.com/) framework.
+
 ## Reasons to use Segmentation Pipeline
 Segmentation Pipeline was developed with a focus of enabling to make fast and 
 simply-declared experiments, which can be easily stored, 
