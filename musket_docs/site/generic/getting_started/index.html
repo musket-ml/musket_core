@@ -56,6 +56,24 @@
     <li class="toctree-l2"><a class="reference internal" href="../#reasons-to-use-generic-pipeline">Reasons to use Generic Pipeline</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="../#installation">Installation</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../#choosing-your-installation-type">Choosing your installation type</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../#global-pip-installation">Global pip installation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../#virtual-environment-installation-recommended">Virtual environment installation (recommended)</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../#virtualenv-installation-recommended">virtualenv installation (recommended)</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../#pipenv-installation">pipenv installation</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../#other-packages">Other packages</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="../#project-structure">Project structure</a>
     </li>
@@ -404,6 +422,10 @@
                 </ul>
                 <p class="caption"><span class="caption-text">Segmentation</span></p>
                 <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../segmentation/getting_started/">Getting started</a>
+    <ul>
+    </ul>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="../../segmentation/">User guide</a>
     <ul>
     <li class="toctree-l2"><a class="reference internal" href="../../segmentation/#reasons-to-use-segmentation-pipeline">Reasons to use Segmentation Pipeline</a>
@@ -715,7 +737,11 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="../../classification/#custom-datasets">Custom datasets</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="../../classification/#multistage-training">Multistage training</a>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../classification/#multi-output-classification">Multi output classification</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../../classification/#preparing-dataset-for-multi-output-classification">preparing dataset for multi output classification:</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="../../classification/#balancing-your-data">Balancing your data</a>
     </li>
@@ -954,6 +980,15 @@
     </ul>
                     </li>
                 </ul>
+                <p class="caption"><span class="caption-text">Text</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../text/">About</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../text/#installation">Installation</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
                 <p class="caption"><span class="caption-text">Musket IDE</span></p>
                 <ul>
                     <li class="toctree-l1"><a class="reference internal" href="../../ide/getting_started/">Setup</a>
@@ -1044,6 +1079,8 @@ To create this folder from console, run <code>cmd</code> and launch the followin
 and invoke <code>kaggle competitions download -c tgs-salt-identification-challenge</code> command.</p>
 <p>This will download dataset files.
 Then invoke <code>unzip train.zip -d train</code> to unzip <code>train.zip</code> files in to <code>train</code> folder.</p>
+<h3 id="running-the-experiment">Running the experiment</h3>
+<p><code>musket fit --project "D:\work\salt" --name "exp01" --num_gpus=2 --gpus_per_net=2 --num_workers=1 --cache "D:\work\salt\data"</code></p>
               
             </div>
           </div>

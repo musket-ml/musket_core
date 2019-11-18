@@ -2,8 +2,6 @@
 
 ![Build status](https://api.travis-ci.com/musket-ml/musket_core.svg?branch=master)
 
-Here is the [Framework Documentation](https://musket-ml.github.io/webdocs/).
-
 Musket is a family of high-level frameworks written in Python and capable of running on top of [Keras](https://keras.io/).
 
 It was developed with a focus of enabling to make fast and simply-declared experiments, which can be easily stored, reproduced and compared to each other.
@@ -14,6 +12,12 @@ Use Musket if you need a deep learning framework that:
 * Provides a way to store and compare experiments in order to methodically find the best deap learning solution
 * Easy to share experiments and their results to work in a team
 * Provides IDE and visual tooling to make experimentation faster
+
+There are some videos to check [here](https://www.youtube.com/playlist?list=PLyV40LHl22j5VOv2DgHoNDkpxkfueIQmn).
+
+Here is the [Framework Documentation](https://musket-ml.github.io/webdocs/).
+
+Main framework website: [musket-ml.com](https://musket-ml.com/)
 
 # Goals and principles
 
@@ -71,7 +75,7 @@ Musket supports lots of custom substances: dataset definitions, preprocessors, c
  
 Most of the time to define a custom thing, it is enough to put a python file into a top-level folder and define a function with an appropriate annotation, like this:
 
-```yaml
+```python
 @preprocessing.dataset_preprocessor
 def splitInput(input, parts:int):
     result = np.array_split(input,parts,axis=0)
@@ -80,7 +84,7 @@ def splitInput(input, parts:int):
 
 or this:
 
-```yaml
+```python
 @dataset_visualizer
 def visualize(val:PredictionItem):
     cache_path=context().path

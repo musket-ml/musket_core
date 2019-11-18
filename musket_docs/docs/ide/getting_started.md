@@ -5,9 +5,13 @@
 [Download Musket IDE for MacOS](http://onpositive.club/public/dside.zip)
 ### Installation
 
-* Install [Musket Core](../generic/index.md). Read installation instructions [here](../generic/index.md#installation).
-* Install [Segmentation Pipeline](../segmentation/index.md). Read installation instructions [here](../segmentation/index.md#installation).
-* Install [Classification Pipeline](../classification/index.md). Read installation instructions [here](../classification/index.md#installation).
+Install all of [Musket ML](../generic/index.md) Python packages. Read installation instructions [here](../generic/index.md#installation).
+
+Note: if only [Generic pipeline](../generic/index.md) package of 
+[Musket ML](https://musket-ml.com/) is installed, you way also consider
+to Install [Segmentation Pipeline](../segmentation/index.md), 
+[Classification Pipeline](../classification/index.md) and
+[Musket Text](../text/index.md).
 
 Unzip and launch executable (`ds-ide.exe` for Windows and `ds-ide` for MacOS).
 

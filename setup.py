@@ -1,9 +1,19 @@
+import io
+import os
+import sys
+
 from setuptools import setup
 import setuptools
+
+here = os.path.abspath(os.path.dirname(__file__))
+with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
+    long_description = '\n' + f.read()
+
 setup(name='musket_core',
       version='0.497',
-      description='Common parts of my pipelines',
-      url='https://github.com/petrochenko-pavel-a/musket_core',
+      description='The core of Musket ML',
+      long_description=long_description,
+      url='https://github.com/musket-ml/musket_core',
       author='Petrochenko Pavel',
       author_email='petrochenko.pavel.a@gmail.com',
       license='MIT',

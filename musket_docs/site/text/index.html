@@ -5,11 +5,11 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="None">
+  
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>Musket ML</title>
+  <title>About - Musket ML</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "Instance Segmentation Training Pipeline";
-    var mkdocs_page_input_path = "instance_segmentation\\index.md";
+    var mkdocs_page_name = "About";
+    var mkdocs_page_input_path = "text\\index.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -981,10 +981,10 @@
                     </li>
                 </ul>
                 <p class="caption"><span class="caption-text">Text</span></p>
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../text/">About</a>
-    <ul>
-    <li class="toctree-l2"><a class="reference internal" href="../text/#installation">Installation</a>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">About</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a>
     </li>
     </ul>
                     </li>
@@ -1046,8 +1046,12 @@
     <li><a href="..">Docs</a> &raquo;</li>
     
       
+        
+          <li>Text &raquo;</li>
+        
+      
     
-    <li>Instance Segmentation Training Pipeline</li>
+    <li>About</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -1058,110 +1062,16 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="instance-segmentation-training-pipeline">Instance Segmentation Training Pipeline</h1>
-<p>Instance Segmentation Pipeline was developed in order to enable using the <a href="https://github.com/open-mmlab/mmdetection">MMDetection</a>
-framework by means of Musket ML.</p>
+                <h1 id="text-support">Text support</h1>
+<p>This package adds text-related datasets, preprocessors and algorithms 
+(like BERT) to <a href="../generic/">Generic pipeline</a> of <a href="https://musket-ml.com/">Musket ML</a>.</p>
 <h2 id="installation">Installation</h2>
-<pre><code>pip install instance_segmentation_pipeline
+<pre><code>pip install musket_text
 </code></pre>
 
-<p><em>Note: this package requires python 3.6</em></p>
 <p>This package is a part of <a href="https://musket-ml.com/">Musket ML</a> framework,
  it is recommended to install the whole collection of the framework
  packages at once using instructions <a href="../generic/#installation">here</a>.</p>
-<h2 id="launching">Launching</h2>
-<h2 id="launching-experiments">Launching experiments</h2>
-<p><code>fit.py</code> script is designed to launch experiment training.</p>
-<p>In order to run the experiment or a number of experiments,   </p>
-<p>A typical command line may look like this:</p>
-<p><code>musket fit --project "path/to/project" --name "experiment_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"</code></p>
-<p><a href="reference/#fitpy-project">--project</a> points to the root of the <a href="#project-structure">project</a></p>
-<p><a href="reference/#fitpy-name">--name</a> is the name of the project sub-folder containing experiment yaml file.</p>
-<p><a href="reference/#fitpy-num_gpus">--num_gpus</a> sets number of GPUs to use during experiment launch.</p>
-<p><a href="reference/#fitpy-gpus_per_net">--gpus_per_net</a> is a maximum number of GPUs to use per single experiment.</p>
-<p><a href="reference/#fitpy-num_workers">--num_workers</a> sets number of workers to use.</p>
-<p><a href="reference/#fitpy-cache">--cache</a> points to a cache folder to store the temporary data.</p>
-<p>Other parameters can be found in the <a href="reference/#fit-script-arguments">fit script reference</a></p>
-<h3 id="launching-tasks">Launching tasks</h3>
-<p><code>task.py</code> script is designed to launch experiment training.</p>
-<p>Tasks must be defined in the project python scope and marked by an 
-annotation like this:</p>
-<pre><code class="python">from musket_core import tasks, model
-@tasks.task
-def measure2(m: model.ConnectedModel):
-    return result
-</code></pre>
-
-<p>In order to run the experiment or a number of experiments,   </p>
-<p>A typical command line may look like this:</p>
-<p><code>python -m musket_core.task --project "path/to/project" --name "experiment_name" --task "task_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"</code></p>
-<p><a href="reference/#taskpy-project">--project</a> points to the root of the <a href="#project-structure">project</a></p>
-<p><a href="reference/#taskpy-name">--name</a> is the name of the project sub-folder containing experiment yaml file.</p>
-<p><a href="reference/#taskpy-name">--task</a> is the name of the task function.</p>
-<p><a href="reference/#taskpy-num_gpus">--num_gpus</a> sets number of GPUs to use during experiment launch.</p>
-<p><a href="reference/#taskpy-gpus_per_net">--gpus_per_net</a> is a maximum number of GPUs to use per single experiment.</p>
-<p><a href="reference/#taskpy-num_workers">--num_workers</a> sets number of workers to use.</p>
-<p><a href="reference/#taskpy-cache">--cache</a> points to a cache folder to store the temporary data.</p>
-<p>Other parameters can be found in the <a href="reference/#task-script-arguments">task script reference</a></p>
-<h3 id="launching-project-analysis">Launching project analysis</h3>
-<p><code>analize.py</code> script is designed to launch project-scope analysis.</p>
-<p>Note that only experiments, which training is already finished will be covered.</p>
-<p><code>musket analize --inputFolder "path/to/project"</code></p>
-<p><a href="reference/#analyzepy-inputfolder">--inputFolder</a> points to a folder to search for finished experiments in. Typically, project root.</p>
-<p>Other parameters can be found in the <a href="reference/#analyze-script-arguments">analyze script reference</a></p>
-<h2 id="usage-guide">Usage guide</h2>
-<h3 id="dataset-format">Dataset format</h3>
-<p>The pipline must be used with datasets which return prediction items of certain structure.
-Suppose that our prediction item represents a training example with some image and <code>N</code> objects on it.</p>
-<ul>
-<li><code>x</code> must contain image data represented by a numpy array of shape <code>(height, width, 3)</code>.</li>
-<li><code>y</code> must be a tuple <code>(labels, bboxes, masks)</code> where<ul>
-<li><code>labels</code> is a length <code>N</code> one dimansional numpy array of integers which contains object labels. Note that zero label is reserved for background. </li>
-<li><code>bboxes</code> is a float array of shape <code>(N, 4)</code> which contains object bounding boxes. Note that bounding box coordinates order must be <code>[minY, minX, maxY, maxX]</code>.</li>
-<li><code>masks</code> is an integer or boolean numpy array of shape <code>(N, height, width)</code> which contains object masks.
-Note that integer mask should contain <code>1</code> for object pixels and <code>0</code> for background.</li>
-</ul>
-</li>
-</ul>
-<h3 id="training-a-model">Training a model</h3>
-<p>Let's start from the absolutely minimalistic example. Let's say that you have two folders, one of them contains
-jpeg images, and another one - png files with segmentation masks for these images. And you need to train a neural network
-that will do segmentation for you. In this extremely simple setup all that you need is to type following 5
-lines of python code:</p>
-<pre><code class="python">from musket_core import generic
-from get_some_gataset import getDataset
-
-ds = getDataset #some dataset which has the required format
-cfg = generic.parse(&quot;config.yaml&quot;)
-cfg.fit(ds)
-</code></pre>
-
-<p>Looks simple, but there is a <code>config.yaml</code> file in the code, and probably it is the place where everything actually happens.</p>
-<pre><code class="yaml">#%Musket MMDetection 1.0
-classes: 46
-shape: [800, 1333]
-
-imagesPerGpu: 1
-folds_count: 1
-testSplit: 0.1
-
-stages:
-  - epochs: 3
-
-dataset:
-  getTrain2:
-
-configPath: '../../data/configs/htc/htc_dconv_c3-c5_mstrain_400_1400_x101_64x4d_fpn_20e-1.py'
-weightsPath: '../../data/checkpoints/Hybrid-Task-Cascade-(HTC)/htc_dconv_c3-c5_mstrain_400_1400_x101_64x4d_fpn_20e_20190408-0e50669c-nohead.pth'
-</code></pre>
-
-<h4 id="general-train-properties">General train properties</h4>
-<p>The following property is required to set:</p>
-<p><a href="reference/#configpath">configPath</a> path to MMDetection config.</p>
-<p>The following ones are optional, but commonly used:</p>
-<p><a href="reference/#classes">classes</a> sets the number of classes that should be used.</p>
-<p><a href="reference/#shape">shape</a> set the desired shape of the input picture and mask, in the form heigth, width, number of channels. Input will be resized to fit.</p>
-<p><a href="reference/#weightspath">weightsPath</a> path to initial weights of the model.</p>
               
             </div>
           </div>
@@ -1189,6 +1099,10 @@ weightsPath: '../../data/checkpoints/Hybrid-Task-Cascade-(HTC)/htc_dconv_c3-c5_m
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
+        <span><a href="../classification/reference/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../ide/getting_started/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
@@ -1203,8 +1117,3 @@ weightsPath: '../../data/checkpoints/Hybrid-Task-Cascade-(HTC)/htc_dconv_c3-c5_m
 
 </body>
 </html>
-
-<!--
-MkDocs version : 1.0.4
-Build Date UTC : 2019-11-18 03:44:07
--->

@@ -23,15 +23,16 @@ def convert_args(root, task_name):
 
     new_args = [os.path.join(os.path.dirname(__file__), task_name + ".py")] + list(args[2:])
 
-    if task_name == FIT:
+    if task_name == FIT and not "--project" in new_args:
         new_args.append("--project")
         new_args.append(project_path())
 
+    if task_name == FIT and not "--name" in new_args:
         if is_experiment(root):
             new_args.append("--name")
             new_args.append(experiment_name())
 
-    elif task_name == ANALYZE:
+    elif task_name == ANALYZE and not "--inputFolder" in new_args:
         new_args.append("--inputFolder")
         new_args.append(project_path())
 

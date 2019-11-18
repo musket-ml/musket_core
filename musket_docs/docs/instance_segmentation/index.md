@@ -3,6 +3,18 @@
 Instance Segmentation Pipeline was developed in order to enable using the [MMDetection](https://github.com/open-mmlab/mmdetection)
 framework by means of Musket ML.
 
+## Installation
+
+```
+pip install instance_segmentation_pipeline
+```
+*Note: this package requires python 3.6*
+
+This package is a part of [Musket ML](https://musket-ml.com/) framework,
+ it is recommended to install the whole collection of the framework
+ packages at once using instructions [here](../generic/index.md#installation).
+
+
 ## Launching
 
 ## Launching experiments
@@ -13,7 +25,7 @@ In order to run the experiment or a number of experiments,
 
 A typical command line may look like this:
 
-`python -m musket_core.fit --project "path/to/project" --name "experiment_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"`
+`musket fit --project "path/to/project" --name "experiment_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"`
 
 [--project](reference.md#fitpy-project) points to the root of the [project](#project-structure)
 
@@ -71,7 +83,7 @@ Other parameters can be found in the [task script reference](reference.md#task-s
 
 Note that only experiments, which training is already finished will be covered.
 
-`python -m musket_core.analize --inputFolder "path/to/project"`
+`musket analize --inputFolder "path/to/project"`
 
 [--inputFolder](reference.md#analyzepy-inputfolder) points to a folder to search for finished experiments in. Typically, project root.
 
