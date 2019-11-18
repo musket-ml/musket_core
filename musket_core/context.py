@@ -32,7 +32,22 @@ def _find_path():
      
     return None
 
+def isTrainMode():
+    if hasattr(context, "train_mode"):
+        return context.train_mode
+    return True
+
+def addTrainSetting(setting):
+    context.net_cx.append(setting)
+    
+def popTrainSetting():
+    res=context.net_cx[0]
+    context.net_cx=context.net_cx[1:]
+    return res    
+
 def csv_from_data(relative_path:str):
+    if isinstance(relative_path, pd.DataFrame):
+        return relative_path
     try:
         return pd.read_csv(os.path.join(get_current_project_data_path(),relative_path))
     except:            

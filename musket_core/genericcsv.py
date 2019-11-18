@@ -24,7 +24,7 @@ class GenericCSVDataSet(datasets.DataSet):
             raise NotImplementedError("Output groups support is not implemented yet")
         return super()._encode_dataset(ds, encode_y, treshold);
     
-    def _create_dataframe(self,items):
+    def _create_dataframe(self,items):    
         return pd.DataFrame(items,columns=self.data.columns)
             
     def _encode_item(self,item:PredictionItem,encode_y=False,treshold=0.5):
@@ -40,6 +40,7 @@ class GenericCSVDataSet(datasets.DataSet):
                 res[cln]=self.outputs[nm]._decode(pr[nm],treshold)                
             else:
                 res[cln]=data[i]
+
         return res
               
 
@@ -53,6 +54,9 @@ class GenericCSVDataSet(datasets.DataSet):
         self.output_columns_set=set(output_columns)
         self.imagePath=image_path
         self.output_groups=output_groups
+        for c in output_columns:
+            if c not in self.data.columns:
+                self.data.insert(len(self.data.columns),c,"")
         consumedInputs=set()
         consumedOutputs=set()
         self.imageCoders=[]
@@ -72,10 +76,12 @@ class GenericCSVDataSet(datasets.DataSet):
         for i in output_columns:
             if i in consumedOutputs:
                 continue
-            v=self.data[i].values;
+            else:    
+                v=self.data[i].values;
             if i in ctypes:
                 v=self.transformType(v,ctypes[i])
             self.outputs.append(v)
+            
             
     def transformType(self,values,tpe):
             if tpe=="as_is":
@@ -97,3 +103,5 @@ class GenericCSVDataSet(datasets.DataSet):
         if isinstance(outputs, list) and len(outputs)==1:
             outputs=outputs[0]    
         return PredictionItem(item,inputs,outputs)
+    
+    

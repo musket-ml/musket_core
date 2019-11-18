@@ -54,6 +54,10 @@ class GenericPipeline(generic.GenericTaskConfig):
             i.contribution=contributions
             inputs=[i]
         m=net.create_model_from_config(self.declarations,inputs,self.architecture,self.imports)
+        if context.isTrainMode():
+            utils.save(self.path+".ncx", context.context.net_cx)
+        context.context.net_cx=[]
+        
         return m
 
     def load_writeable_dataset(self, ds, path):
@@ -132,7 +136,14 @@ class GenericPipeline(generic.GenericTaskConfig):
         return lastFullValPred,lastFullValLabels
 
     def predict_on_dataset(self, dataset, fold=0, stage=0, limit=-1, batch_size=32, ttflips=False, cacheModel=False):
-        mdl = self.load_model(fold, stage)
+        if cacheModel:
+            if hasattr(self, "_mdl"):
+                mdl=self._mdl
+            else:    
+                mdl = self.createNetForInference(fold, stage)
+                self._mdl=mdl
+        else:
+            mdl = self.createNetForInference(fold, stage)       
         if self.testTimeAugmentation is not None:
             mdl=qm.TestTimeAugModel(mdl,net.create_test_time_aug(self.testTimeAugmentation,self.imports))
         if self.preprocessing is not None:

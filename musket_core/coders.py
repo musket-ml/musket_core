@@ -191,6 +191,8 @@ class BinaryClassCoder(ClassCoder):
         return self.num2Class[0] 
     
     def initClasses(self, vals, sep):
+        if len(vals)==1 and vals[0]=='':
+            vals=[False,True]
         return classes_from_vals(vals, "",emptyIs=True)
     
     def encode(self,clazz):            

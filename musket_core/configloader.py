@@ -23,6 +23,10 @@ def get_object(name):
     vs=load("layers").catalog[name]
     return vs 
 
+
+def register(module):
+    load("layers").register_module(module)
+
 def has_object(name):
     return name in load("layers").catalog
 
