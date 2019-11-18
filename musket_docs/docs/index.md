@@ -1,7 +1,5 @@
 # You have just found Musket
 
-![Build status](https://api.travis-ci.com/musket-ml/musket_core.svg?branch=master)
-
 Musket is a family of high-level frameworks written in Python and capable of running on top of [Keras](https://keras.io/).
 
 It was developed with a focus of enabling to make fast and simply-declared experiments, which can be easily stored, reproduced and compared to each other.
@@ -12,6 +10,10 @@ Use Musket if you need a deep learning framework that:
 * Provides a way to store and compare experiments in order to methodically find the best deap learning solution
 * Easy to share experiments and their results to work in a team
 * Provides IDE and visual tooling to make experimentation faster
+
+There are some videos to check [here](https://www.youtube.com/playlist?list=PLyV40LHl22j5VOv2DgHoNDkpxkfueIQmn).
+
+Main framework website: [musket-ml.com](https://musket-ml.com/)
 
 # Goals and principles
 
