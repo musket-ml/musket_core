@@ -27,12 +27,13 @@ class BasicEngine:
     
     def __init__(self,path,input_columns,output_columns,ctypes={},input_groups={},output_groups={}):
         self.cfg=generic.parse(path)
-        path=context.get_current_project_path()
+        path=os.path.dirname(os.path.dirname(path))
+        self.cfg._projectDir=path
         self.input_columns=input_columns
         self.output_columns=output_columns
         self.image_path=[]
         self.ctypes=ctypes
-        self.path=context.get_current_project_path()
+        self.path=path
         self.input_groups=input_groups
         self.output_groups=output_groups
         
@@ -73,6 +74,11 @@ def create_engine(path:str,multi_threaded=False):
                 ele=getattr(mod, x)
                 if hasattr(ele,"serviceCreator"):
                     creator=ele
+    try:
+        from musket_text import preprocessors
+        configloader.register(preprocessors)
+    except:
+        pass                    
     if multi_threaded:
         engine=creator()                
         def fnc(data):

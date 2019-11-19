@@ -34,6 +34,8 @@ class GenericPipeline(generic.GenericTaskConfig):
 
     def createNet(self):
         inp,output=utils.load_yaml(self.path + ".shapes")
+        if not hasattr(context.context,"net_cx"):
+            context.context.net_cx=[]
         contributions=None
         if os.path.exists(self.path+".contribution"):
             contributions=utils.load(self.path+".contribution")

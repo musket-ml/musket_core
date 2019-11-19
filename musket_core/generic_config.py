@@ -642,23 +642,46 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         model.summary()
         
     def createNetForInference(self,fold=0,stage=-1):
+        if stage == -1: stage = len(self.stages) - 1
         if isinstance(fold,list):
             mdl=[]
             for i in fold:
-                mdl.append(self.createNetForInference(i,stage))
+                ec = ExecutionConfig(i, stage, subsample=1.0, dr=self.directory())
+                if os.path.exists(ec.weightsPath()) or isinstance(stage, list):
+                    rs=self.createNetForInference(i,stage);
+                    if rs is not None:
+                        mdl.append(rs)
+                else:
+                    print("can not find weights for stage:"+str(stage)+" fold: "+str(i)+" skipping.")
+            if len(mdl)==0:
+                return None
+            if len(mdl)==1:
+                return mdl[0]            
             return AnsembleModel(mdl)
         if isinstance(stage,list):
             mdl=[]
             for s in stage:
-                mdl.append(self.createNetForInference(fold,s))
+                ec = ExecutionConfig(fold, s, subsample=1.0, dr=self.directory())
+                if os.path.exists(ec.weightsPath()) or isinstance(fold, list):
+                    rs=self.createNetForInference(fold,s)
+                    if rs is not None:
+                        mdl.append(rs)
+                else:
+                    print("can not find weights for stage:"+str(s)+" fold: "+str(fold)+" skipping.")
+            if len(mdl)==0:
+                return None
+            if len(mdl)==1:
+                return mdl[0]           
             return AnsembleModel(mdl)
-        if stage == -1: stage = len(self.stages) - 1
+        
         ec = ExecutionConfig(fold=fold, stage=stage, subsample=1.0, dr=self.directory())
         context.train_mode=False
         try:
             if os.path.exists(self.path+".ncx"):
                 context.net_cx=utils.load(self.path+".ncx")
             model=self.createNet()
+            if not os.path.exists(ec.weightsPath()):
+                return None
             model.load_weights(ec.weightsPath(),False)
             return model
         finally:

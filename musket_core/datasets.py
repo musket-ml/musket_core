@@ -163,23 +163,41 @@ def get_id(d:DataSet)->str:
     return "<unknown>"
 
 def get_stages(d:DataSet)->typing.List[str]:
-  ds=d
-  while isinstance(ds, SubDataSet):
+    ds=d
+    while isinstance(ds, SubDataSet):
+            ds = ds.ds
+    result=[]
+    while ds is not None:
+        _id= get_id(ds)
+        result.append(_id)
+        if hasattr(ds,"parent"):
+            if hasattr(ds,"subStages"):
+                brs=ds.subStages()
+                for v in brs:
+                    if v not in result:
+                        result.append(v)
+            p=getattr(ds,"parent")
+            ds=p
+        else: break
+    return result
+  
+def get_preprocessors(d:DataSet)->typing.List[str]:
+    ds=d
+    while isinstance(ds, SubDataSet):
         ds = ds.ds
-  result=[]
-  while ds is not None:
-    _id= get_id(ds)
-    result.append(_id)
-    if hasattr(ds,"parent"):
-        if hasattr(ds,"subStages"):
-            brs=ds.subStages()
-            for v in brs:
-                if v not in result:
-                    result.append(v)
-        p=getattr(ds,"parent")
-        ds=p
-    else: break
-  return result
+    result=[]
+    while ds is not None:
+        result.append(ds)
+        if hasattr(ds,"parent"):
+            if hasattr(ds,"subStages"):
+                brs=ds.subStages()
+                for v in brs:
+                    if v not in result:
+                        result.append(v)
+            p=getattr(ds,"parent")
+            ds=p
+        else: break
+    return result  
 
 
 def get_stage(d:DataSet,n:str)->DataSet:
