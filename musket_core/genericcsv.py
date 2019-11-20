@@ -13,7 +13,7 @@ class GenericCSVDataSet(datasets.DataSet):
             for q in clns:
                 consumedInputs.add(q)
                 v = self.data[q].values
-                v = self.transformType(v, ctypes[q])
+                v = self.transformType(q,v, ctypes[q])
                 vls.append(v)
             
             r = coders.ConcatCoder(vls)
