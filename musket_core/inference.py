@@ -59,6 +59,7 @@ class BasicEngine:
         pi=pd.DataFrame(inp)
         context.context.no_cache=True   
         context.context.projectPath=self.path
+        context.context.dataPath=os.path.join(self.path,"assets")
         dataset=genericcsv.GenericCSVDataSet(pi,self.input_columns,self.output_columns,[],self.ctypes,self.input_groups,self.output_groups)
         
         dataset.ignoreOutput=True
