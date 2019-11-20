@@ -99,7 +99,15 @@ class ClassCoder:
         classes,sep= classes_from_vals_with_sep(vals, sep)
         self.sep=sep
         return classes
-
+    
+    def init_from_meta(self,data:dict):
+        self.class2Num=data
+        self.num2Class={}
+        for c in data:
+            self.num2Class[data[c]]=c
+        self.classes=data.keys()
+        self.sep=" "    
+        
     def __init__(self,vals,ctx,sep="|_ ",cat=False):
         self.class2Num={}
         self.ctx=ctx

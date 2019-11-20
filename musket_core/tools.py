@@ -473,7 +473,7 @@ class ExportForWeb(yaml.YAMLObject):
             if hasattr(s, "deployHandler"):
                 lastDeploy=s
                 
-        args=lastDeploy.deployHandler()
+        args=lastDeploy.deployHandler(cfg,self.resultPath)
         lm=os.path.join(path,"init.py")
         with open(lm, "w",encoding="utf-8") as f:
             f.write("""
@@ -482,7 +482,8 @@ import os
 
 @inference.inference_service_factory
 def createEngine():
-    return """+args)                            
+    """+args)                            
+        print("Done.")    
         return None
         
 

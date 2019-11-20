@@ -1,8 +1,8 @@
-from musket_core import coders,datasets
+from musket_core import coders,datasets,utils
 from musket_core.datasets import PredictionItem
 from musket_core import context
 import pandas as pd
-
+import os
 class GenericCSVDataSet(datasets.DataSet):
     
 
@@ -43,6 +43,14 @@ class GenericCSVDataSet(datasets.DataSet):
 
         return res
               
+    def init_coders_from_path(self,path):
+        ph=os.path.join(path,"assets")
+        for c in self.coders:
+            coderPath=os.path.join(ph,c.replace("|","_")+".cm")
+            if os.path.exists(coderPath):
+                dt=utils.load(coderPath)
+                self.coders[c].init_from_meta(dt)
+                  
 
     def __init__(self,path,input_columns,output_columns,image_path=[],ctypes={},input_groups={},output_groups={}):
         super().__init__()
@@ -50,6 +58,7 @@ class GenericCSVDataSet(datasets.DataSet):
         self.inputs=[]
         self.outputs=[]
         self.ctypes=ctypes
+        self.coders={}
         self.output_columns=output_columns
         self.output_columns_set=set(output_columns)
         self.imagePath=image_path
@@ -69,7 +78,7 @@ class GenericCSVDataSet(datasets.DataSet):
                 continue
             v=self.data[i].values;
             if i in ctypes:
-                v=self.transformType(v,ctypes[i])
+                v=self.transformType(i,v,ctypes[i])
             self.inputs.append(v)
             
                 
@@ -79,14 +88,15 @@ class GenericCSVDataSet(datasets.DataSet):
             else:    
                 v=self.data[i].values;
             if i in ctypes:
-                v=self.transformType(v,ctypes[i])
+                v=self.transformType(i,v,ctypes[i])
             self.outputs.append(v)
             
             
-    def transformType(self,values,tpe):
+    def transformType(self,cln,values,tpe):
             if tpe=="as_is":
                 return values
             cd= coders.get_coder(tpe, values,self)
+            self.coders[cln]=cd
             if isinstance(cd, coders.ImageCoder):
                 self.imageCoders.append(cd)
             return cd

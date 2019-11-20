@@ -19,7 +19,20 @@ def _from_numpy(x):
     if isinstance(x, list):
         return [_from_numpy(i) for i in x]
     if isinstance(x, dict):
-        return { k:_from_numpy(v) for (k,v) in x.items()}
+        res={}
+        for (k,v) in x.items():
+            ds=_from_numpy(v)
+            if "|" in k:
+                clns=k.split("|")
+                for c in clns:
+                    if c in ds:
+                        res[c]=True
+                    else:
+                        res[c]=False    
+                pass
+            else:
+                res[k]=ds 
+        return res            
     return x
             
 
@@ -47,7 +60,9 @@ class BasicEngine:
         context.context.no_cache=True   
         context.context.projectPath=self.path
         dataset=genericcsv.GenericCSVDataSet(pi,self.input_columns,self.output_columns,[],self.ctypes,self.input_groups,self.output_groups)
+        
         dataset.ignoreOutput=True
+        dataset.init_coders_from_path(self.path)
         res=self.cfg.predict_all_to_dataset(dataset, cacheModel=True,verbose=0)
         result_frame=dataset.encode(res)        
         for c in self.output_columns:
