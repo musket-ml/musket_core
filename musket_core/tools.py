@@ -1,4 +1,4 @@
-from musket_core import parralel
+from musket_core import parralel, configloader
 from musket_core import hyper
 from musket_core import model
 from musket_core import datasets
@@ -355,8 +355,8 @@ class AnalizePredictions(yaml.YAMLObject):
         visualizerFunc = exp.project.get_visualizer_by_name(self.visualizer)
         targets=_cache.get_targets(exp,self.datasetName)
         filters=[]
-        for f in self.filters:
-            fa:dict=f
+        for filter in self.filters:
+            fa:dict=filter
             flt_func=exp.project.get_filter_by_name(fa["filterKind"]).clazz
             if flt_func==dataset_analizers.custom_python:
                 d={}
@@ -384,7 +384,7 @@ class AnalizePredictions(yaml.YAMLObject):
         if self.data:
             pass
             l = len(targets)
-            res = {}
+            results = {}
             for i in tqdm(range(l)):
                 gt = targets[i]
                 if not self.accept_filter(ds,i):
@@ -392,14 +392,14 @@ class AnalizePredictions(yaml.YAMLObject):
                 if analizerFunc.usePredictionItem:
                     gr = analizerFunc(i,ds[i], **self.analzierArgs)
                 else: gr = analizerFunc(gt,**self.analzierArgs)
-                if gr in res:
-                    res[gr].append(i)
+                if gr in results:
+                    results[gr].append(i)
                 else:
-                    res[gr] = [i]
+                    results[gr] = [i]
         else:
             predictions=wrappedModel.predictions(self.datasetName)
             l=len(targets)
-            res={}
+            results={}
             for i in tqdm(range(l)):
                 gt=targets[i]
                 if not self.accept_filter(ds,i):
@@ -408,26 +408,65 @@ class AnalizePredictions(yaml.YAMLObject):
                 if analizerFunc.usePredictionItem:
                     gr = analizerFunc(i,ds[i],pr, **self.analzierArgs)
                 else: gr=analizerFunc(pr.y,pr.prediction,**self.analzierArgs)
-                if gr in res:
-                    res[gr].append(i)
+                if gr in results:
+                    results[gr].append(i)
                 else:
-                    res[gr]=[i]
+                    results[gr]=[i]
 
         _results=[]
         visualizationHints=None
         if isClass:
-            res=analizerFunc.results()
+            results=analizerFunc.results()
             visualizationHints=analizerFunc.visualizationHints()
-        for q in res:
-            if isinstance(res[q],DataSet):
-                r=WrappedDS(res[q],list(range(len(res[q]))),str(q),None,predictions)
-            else: r=WrappedDS(ds,res[q],str(q),None,predictions)
+        for cur_result in results:
+            if isinstance(results[cur_result],DataSet):
+                r=WrappedDS(results[cur_result],list(range(len(results[cur_result]))),str(cur_result),None,predictions)
+            else: r=WrappedDS(ds,results[cur_result],str(cur_result),None,predictions)
             r._visualizer=visualizerFunc.create(r,tempfile.mkdtemp())
             if (len(self.visualizerArgs)) > 0:
                 r._visualizer.args=self.visualizerArgs
             _results.append(r)
         return AnalizeResults(_results,visualizationHints)
+    
+class AnalizeAugmentations(yaml.YAMLObject):
 
+    yaml_tag = u'!com.onpositive.dside.dto.ImageDataSetAugmentRequest'
+
+    def __init__(self,**kwargs):
+        self.spec=None
+        self.experimentPath=None
+        self.datasetName=None
+        self.analizer=_exactValue
+        self.augmentationConfig=None       
+        pass
+
+
+    def perform(self, server, reporter: ProgressMonitor):
+        ms=ModelSpec(**self.spec)
+        exp:Experiment=server.experiment(self.experimentPath)
+        cf=exp.parse_config()
+
+        ds = _cache.get_dataset(exp, self.datasetName)
+        wrappedModel = ms.wrap(cf, exp)
+
+        targets=_cache.get_targets(exp,self.datasetName)       
+        augment = configloader.parse("augmenters", self.augmentationConfig) #TODO
+
+        _results=[]
+        visualizationHints=None
+        if isClass:
+            results=analizerFunc.results()
+            visualizationHints=analizerFunc.visualizationHints()
+        for cur_result in results:
+            if isinstance(results[cur_result],DataSet):
+                r=WrappedDS(results[cur_result],list(range(len(results[cur_result]))),str(cur_result),None,predictions)
+            else: r=WrappedDS(ds,results[cur_result],str(cur_result),None,predictions)
+            r._visualizer=visualizerFunc.create(r,tempfile.mkdtemp())
+            if (len(self.visualizerArgs)) > 0:
+                r._visualizer.args=self.visualizerArgs
+            _results.append(r)
+        return AnalizeResults(_results,visualizationHints)
+        
 class Validate(yaml.YAMLObject):
     yaml_tag = u'!com.onpositive.musket_core.ValidateTask'
 
