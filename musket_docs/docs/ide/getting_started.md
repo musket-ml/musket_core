@@ -1,8 +1,8 @@
 # Getting started
 ### Download
-[Download Musket IDE for Windows](https://github.com/petrochenko-pavel-a/ds-ide/releases/download/M1/dside-1.0.0.t201911210735.zip) 
+[Download Musket IDE for Windows](https://github.com/musket-ml/ds-ide/releases/download/M1/dside-1.0.0.t201911210735.zip) 
 
-[Download Musket IDE for Linux](https://github.com/petrochenko-pavel-a/ds-ide/releases/download/M1/dside-1.0.0.t201911210735.tar.gz)
+[Download Musket IDE for Linux](https://github.com/musket-ml/ds-ide/releases/download/M1/dside-1.0.0.t201911210735.tar.gz)
 
 #### Nightly builds:
 
