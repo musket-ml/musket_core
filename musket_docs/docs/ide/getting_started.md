@@ -1,8 +1,13 @@
 # Getting started
 ### Download
-[Download Musket IDE for Windows](http://onpositive.club/public/dsideNew2.zip) 
+[Download Musket IDE for Windows](https://github.com/petrochenko-pavel-a/ds-ide/releases/download/M1/dside-1.0.0.t201911210735.zip) 
 
-[Download Musket IDE for MacOS](http://onpositive.club/public/dside.zip)
+[Download Musket IDE for Linux](https://github.com/petrochenko-pavel-a/ds-ide/releases/download/M1/dside-1.0.0.t201911210735.tar.gz)
+
+#### Nightly builds:
+
+We publish nightly build to the [Source forge](https://sourceforge.net/projects/musket-ide/files/)
+
 ### Installation
 
 Install all of [Musket ML](../generic/index.md) Python packages. Read installation instructions [here](../generic/index.md#installation).
