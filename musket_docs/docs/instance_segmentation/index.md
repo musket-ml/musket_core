@@ -3,16 +3,16 @@
 Instance Segmentation Pipeline was developed in order to enable using the [MMDetection](https://github.com/open-mmlab/mmdetection)
 framework by means of Musket ML.
 
+*This package is not yet completely ready for production use*
+
 ## Installation
 
 ```
-pip install instance_segmentation_pipeline
+pip install git+https://github.com/musket_ml/instance_segmentation_pipeline
 ```
 *Note: this package requires python 3.6*
 
-This package is a part of [Musket ML](https://musket-ml.com/) framework,
- it is recommended to install the whole collection of the framework
- packages at once using instructions [here](../generic/index.md#installation).
+This package is not a part of [Musket ML](https://musket-ml.com/) framework yet,
 
 
 ## Launching
