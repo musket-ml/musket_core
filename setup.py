@@ -10,7 +10,7 @@ with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = '\n' + f.read()
 
 setup(name='musket_core',
-      version='0.497',
+      version='0.498',
       description='The core of Musket ML',
       long_description=long_description,
       url='https://github.com/musket-ml/musket_core',
