@@ -1,5 +1,3 @@
-### Requirements
-TODO
 ### Getting dataset from Kaggle
 #### Installing kaggle stuff 
 This should be done only once.
