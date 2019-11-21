@@ -38,7 +38,7 @@ nav:
 - Text:
     - 'About': 'text/index.md'
 - Musket IDE:
-    - 'Setup': 'ide/getting_started.md'
+    - 'Getting started': 'ide/getting_started.md'
 #- Instance Segmentation:
 #    - 'User guide': 'instance_segmentation/index.md'
 #    - 'Reference': 'instance_segmentation/reference.md'
