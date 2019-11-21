@@ -99,7 +99,15 @@ class ClassCoder:
         classes,sep= classes_from_vals_with_sep(vals, sep)
         self.sep=sep
         return classes
-
+    
+    def init_from_meta(self,data:dict):
+        self.class2Num=data
+        self.num2Class={}
+        for c in data:
+            self.num2Class[data[c]]=c
+        self.classes=data.keys()
+        self.sep=" "    
+        
     def __init__(self,vals,ctx,sep="|_ ",cat=False):
         self.class2Num={}
         self.ctx=ctx
@@ -191,6 +199,8 @@ class BinaryClassCoder(ClassCoder):
         return self.num2Class[0] 
     
     def initClasses(self, vals, sep):
+        if len(vals)==1 and vals[0]=='':
+            vals=[False,True]
         return classes_from_vals(vals, "",emptyIs=True)
     
     def encode(self,clazz):            

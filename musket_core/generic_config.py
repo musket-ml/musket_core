@@ -561,7 +561,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
     def isMultiOutput(self):
         return isinstance(self.classes,list);
 
-    def predict_all_to_dataset(self, dataset, fold=None, stage=None, limit=-1, batch_size=None, ttflips=False, dsPath = None, cacheModel=False)->DataSet:
+    def predict_all_to_dataset(self, dataset, fold=None, stage=None, limit=-1, batch_size=None, ttflips=False, dsPath = None, cacheModel=False,verbose=1)->DataSet:
 
         result = self.create_writeable_dataset(dataset, dsPath)
 
@@ -575,15 +575,19 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             dataset=self.get_dataset(dataset)
         
             
-            
-        with tqdm.tqdm(total=len(dataset), unit="files", desc="prediction from  " + str(dataset)) as pbar:
+        if verbose>0:    
+            with tqdm.tqdm(total=len(dataset), unit="files", desc="prediction from  " + str(dataset)) as pbar:
+                for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips, cacheModel=cacheModel):
+                    b=v
+                    for i in range(len(b.results)):
+                        result.append(b.results[i])
+                    pbar.update(batch_size)
+            result.commit()        
+        else:
             for v in self.predict_on_dataset(dataset, fold=fold, stage=stage, limit=limit, batch_size=batch_size, ttflips=ttflips, cacheModel=cacheModel):
-                b=v
-                for i in range(len(b.results)):
-                    result.append(b.results[i])
-                pbar.update(batch_size)
-
-        result.commit()
+                for i in range(len(v.results)):
+                    result.append(v.results[i])           
+        
         return result
 
 
@@ -636,6 +640,53 @@ class GenericTaskConfig(model.IGenericTaskConfig):
     def validate(self):
         model = self.createAndCompile()
         model.summary()
+        
+    def createNetForInference(self,fold=0,stage=-1):
+        if stage == -1: stage = len(self.stages) - 1
+        if isinstance(fold,list):
+            mdl=[]
+            for i in fold:
+                ec = ExecutionConfig(i, stage, subsample=1.0, dr=self.directory())
+                if os.path.exists(ec.weightsPath()) or isinstance(stage, list):
+                    rs=self.createNetForInference(i,stage);
+                    if rs is not None:
+                        mdl.append(rs)
+                else:
+                    print("can not find weights for stage:"+str(stage)+" fold: "+str(i)+" skipping.")
+            if len(mdl)==0:
+                return None
+            if len(mdl)==1:
+                return mdl[0]            
+            return AnsembleModel(mdl)
+        if isinstance(stage,list):
+            mdl=[]
+            for s in stage:
+                ec = ExecutionConfig(fold, s, subsample=1.0, dr=self.directory())
+                if os.path.exists(ec.weightsPath()) or isinstance(fold, list):
+                    rs=self.createNetForInference(fold,s)
+                    if rs is not None:
+                        mdl.append(rs)
+                else:
+                    print("can not find weights for stage:"+str(s)+" fold: "+str(fold)+" skipping.")
+            if len(mdl)==0:
+                return None
+            if len(mdl)==1:
+                return mdl[0]           
+            return AnsembleModel(mdl)
+        
+        ec = ExecutionConfig(fold=fold, stage=stage, subsample=1.0, dr=self.directory())
+        context.train_mode=False
+        try:
+            if os.path.exists(self.path+".ncx"):
+                context.net_cx=utils.load(self.path+".ncx")
+            model=self.createNet()
+            if not os.path.exists(ec.weightsPath()):
+                return None
+            model.load_weights(ec.weightsPath(),False)
+            return model
+        finally:
+            context.train_mode=True  
+            context.net_cx=[]  
 
     def createNet(self):
         raise ValueError("Not implemented")
@@ -1070,10 +1121,10 @@ class GenericImageTaskConfig(GenericTaskConfig):
 
         if cacheModel:
             if self.mdl is None:
-                self.mdl = self.load_model(fold, stage)
+                self.mdl = self.createNetForInference(fold, stage)
             mdl = self.mdl
         else:
-            mdl = self.load_model(fold, stage)
+            mdl = self.createNetForInference(fold, stage)
 
         if self.crops is not None:
             mdl=BatchCrop(self.crops,mdl)

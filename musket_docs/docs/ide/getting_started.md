@@ -1,13 +1,22 @@
 # Getting started
 ### Download
-[Download Musket IDE for Windows](http://onpositive.club/public/dsideNew2.zip) 
+[Download Musket IDE for Windows](https://github.com/musket-ml/ds-ide/releases/download/M1/dside-1.0.0.t201911210735.zip) 
 
-[Download Musket IDE for MacOS](http://onpositive.club/public/dside.zip)
+[Download Musket IDE for Linux](https://github.com/musket-ml/ds-ide/releases/download/M1/dside-1.0.0.t201911210735.tar.gz)
+
+#### Nightly builds:
+
+We publish nightly build to the [Source forge](https://sourceforge.net/projects/musket-ide/files/)
+
 ### Installation
 
-* Install [Musket Core](../generic/index.md). Read installation instructions [here](../generic/index.md#installation).
-* Install [Segmentation Pipeline](../segmentation/index.md). Read installation instructions [here](../segmentation/index.md#installation).
-* Install [Classification Pipeline](../classification/index.md). Read installation instructions [here](../classification/index.md#installation).
+Install all of [Musket ML](../generic/index.md) Python packages. Read installation instructions [here](../generic/index.md#installation).
+
+Note: if only [Generic pipeline](../generic/index.md) package of 
+[Musket ML](https://musket-ml.com/) is installed, you way also consider
+to Install [Segmentation Pipeline](../segmentation/index.md), 
+[Classification Pipeline](../classification/index.md) and
+[Musket Text](../text/index.md).
 
 Unzip and launch executable (`ds-ide.exe` for Windows and `ds-ide` for MacOS).
 

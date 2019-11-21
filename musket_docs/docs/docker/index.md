@@ -1,6 +1,16 @@
-#### build musket_core image
+#### Building Musket ML image
+
+Building musket_ml image
+
 ```
-cd musket_core
+FROM python:3.6-buster
+
+WORKDIR /usr/src/app
+RUN pip install musket_ml
+```
+
+```
+cd musket_ml
 docker image build -t pythonmusket:1.0 .
 ```
 

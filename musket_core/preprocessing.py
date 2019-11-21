@@ -49,6 +49,12 @@ class AbstractPreprocessedDataSet(DataSet):
     def _create_dataframe(self,items):
         return self.parent._create_dataframe(items)
 
+def deployHandler(origin=None): 
+    def inner(func):         
+        func.deployHandler=origin
+        return func        
+    return inner #this is the fun_obj mentioned in the above content
+
 def _sorted_args(args):
     rs={}
     for k in sorted(args.keys()):
@@ -215,6 +221,9 @@ class SplitConcatPreprocessor(SplitPreproccessor):
     def __getitem__(self, item):
         items=[x[item] for x in self.branches]
         return PreproccedPredictionItem(items[0].id,np.concatenate([x.x for x in items],axis=self.axis),items[0].y,items[0].original())
+    
+    
+    
 
 class Augmentation(AbstractPreprocessedDataSet):
 

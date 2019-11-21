@@ -56,6 +56,24 @@
     <li class="toctree-l2"><a class="reference internal" href="../#reasons-to-use-generic-pipeline">Reasons to use Generic Pipeline</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="../#installation">Installation</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../#choosing-your-installation-type">Choosing your installation type</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../#global-pip-installation">Global pip installation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../#virtual-environment-installation-recommended">Virtual environment installation (recommended)</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../#virtualenv-installation-recommended">virtualenv installation (recommended)</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="../#pipenv-installation">pipenv installation</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../#other-packages">Other packages</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="../#project-structure">Project structure</a>
     </li>
@@ -119,17 +137,11 @@
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#pipeline-root-properties">Pipeline root properties</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#activation">activation</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="#experiment_result">experiment_result</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#architecture">architecture</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#augmentation">augmentation</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="#batch">batch</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#classes">classes</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#callbacks">callbacks</a>
     </li>
@@ -143,21 +155,13 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#datasets">datasets</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#dataset_augmenter">dataset_augmenter</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#dropout">dropout</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="#declarations">declarations</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#extra_train_data">extra_train_data</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#folds_count">folds_count</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#freeze_encoder">freeze_encoder</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="#final_metrics">final_metrics</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#holdout">holdout</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#imports">imports</a>
     </li>
@@ -191,8 +195,6 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#testtimeaugmentation">testTimeAugmentation</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#transforms">transforms</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="#validationsplit">validationSplit</a>
     </li>
         </ul>
@@ -217,7 +219,7 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#gaussiannoise">GaussianNoise</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#dropout_1">Dropout</a>
+    <li class="toctree-l3"><a class="reference internal" href="#dropout">Dropout</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#spatialdropout1d">SpatialDropout1D</a>
     </li>
@@ -303,8 +305,6 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#extra_callbacks">extra_callbacks</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#freeze_encoder_1">freeze_encoder</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="#initial_weights">initial_weights</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#negatives">negatives</a>
@@ -312,8 +312,6 @@
     <li class="toctree-l3"><a class="reference internal" href="#loss_1">loss</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#lr_1">lr</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#unfreeze_encoder">unfreeze_encoder</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#validation_negatives">validation_negatives</a>
     </li>
@@ -331,7 +329,7 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#seq-preprocessor">seq-preprocessor</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#augmentation_1">augmentation</a>
+    <li class="toctree-l3"><a class="reference internal" href="#augmentation">augmentation</a>
     </li>
         </ul>
     </li>
@@ -358,8 +356,6 @@
     <li class="toctree-l3"><a class="reference internal" href="#fitpy-cache">fit.py cache</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#fitpy-folds">fit.py folds</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#fitpy-time">fit.py time</a>
     </li>
         </ul>
     </li>
@@ -404,6 +400,14 @@
                 </ul>
                 <p class="caption"><span class="caption-text">Segmentation</span></p>
                 <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../segmentation/getting_started/">Getting started</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/getting_started/#installing-kaggle-stuff">Installing kaggle stuff</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../segmentation/getting_started/#downloading-tgs-salt-competition-dataset">Downloading TGS Salt competition dataset</a>
+    </li>
+    </ul>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="../../segmentation/">User guide</a>
     <ul>
     <li class="toctree-l2"><a class="reference internal" href="../../segmentation/#reasons-to-use-segmentation-pipeline">Reasons to use Segmentation Pipeline</a>
@@ -483,8 +487,6 @@
     <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#batch">batch</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#classifier">classifier</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#classifier_lr">classifier_lr</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="../../segmentation/reference/#classes">classes</a>
     </li>
@@ -715,7 +717,11 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="../../classification/#custom-datasets">Custom datasets</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="../../classification/#multistage-training">Multistage training</a>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../classification/#multi-output-classification">Multi output classification</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../../classification/#preparing-dataset-for-multi-output-classification">preparing dataset for multi output classification:</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="../../classification/#balancing-your-data">Balancing your data</a>
     </li>
@@ -911,8 +917,6 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="../../classification/reference/#fitpy-folds">fit.py folds</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="../../classification/reference/#fitpy-time">fit.py time</a>
-    </li>
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="../../classification/reference/#task-script-arguments">task script arguments</a>
@@ -954,11 +958,185 @@
     </ul>
                     </li>
                 </ul>
+                <p class="caption"><span class="caption-text">Instance Segmentation (alpha)</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../instance_segmentation/">User guide</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../instance_segmentation/#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../instance_segmentation/#launching">Launching</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../instance_segmentation/#launching-experiments">Launching experiments</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/#launching-tasks">Launching tasks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/#launching-project-analysis">Launching project analysis</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../instance_segmentation/#usage-guide">Usage guide</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/#dataset-format">Dataset format</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/#training-a-model">Training a model</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../../instance_segmentation/#general-train-properties">General train properties</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../../instance_segmentation/reference/">Reference</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../instance_segmentation/reference/#pipeline-root-properties">Pipeline root properties</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#classes">classes</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#configpath">configPath</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#dataset">dataset</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#datasets">datasets</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#folds_count">folds_count</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#holdout">holdout</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#imagespergpu">imagesPerGpu</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#imports">imports</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#multiscalemode">multiscaleMode</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#num_seeds">num_seeds</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#preprocessing">preprocessing</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#random_state">random_state</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#shape">shape</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#stages">stages</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#stratified">stratified</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#testsplit">testSplit</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#testsplitseed">testSplitSeed</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#validationsplit">validationSplit</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#weightspath">weightsPath</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../instance_segmentation/reference/#stage-properties">Stage properties</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#epochs">epochs</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../instance_segmentation/reference/#preprocessors">Preprocessors</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#cache">cache</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#disk-cache">disk-cache</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#split-preprocessor">split-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#split-concat-preprocessor">split-concat-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#seq-preprocessor">seq-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#augmentation">augmentation</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../instance_segmentation/reference/#fit-script-arguments">fit script arguments</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#fitpy-project">fit.py project</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#fitpy-name">fit.py name</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#fitpy-num_gpus">fit.py num_gpus</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#fitpy-gpus_per_net">fit.py gpus_per_net</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#fitpy-num_workers">fit.py num_workers</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#fitpy-allow_resume">fit.py allow_resume</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#fitpy-force_recalc">fit.py force_recalc</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#fitpy-launch_tasks">fit.py launch_tasks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#fitpy-only_report">fit.py only_report</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#fitpy-cache">fit.py cache</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#fitpy-folds">fit.py folds</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../instance_segmentation/reference/#task-script-arguments">task script arguments</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#taskpy-project">task.py project</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#taskpy-name">task.py name</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#taskpy-task">task.py task</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#taskpy-num_gpus">task.py num_gpus</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#taskpy-gpus_per_net">task.py gpus_per_net</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#taskpy-num_workers">task.py num_workers</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#taskpy-allow_resume">task.py allow_resume</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#taskpy-force_recalc">task.py force_recalc</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#taskpy-launch_tasks">task.py launch_tasks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#taskpy-cache">task.py cache</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../instance_segmentation/reference/#analyze-script-arguments">analyze script arguments</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#analyzepy-inputfolder">analyze.py inputFolder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#analyzepy-output">analyze.py output</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#analyzepy-onlymetric">analyze.py onlyMetric</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../instance_segmentation/reference/#analyzepy-sortby">analyze.py sortBy</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Text</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../text/">About</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../text/#installation">Installation</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
                 <p class="caption"><span class="caption-text">Musket IDE</span></p>
                 <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../../ide/getting_started/">Setup</a>
+                    <li class="toctree-l1"><a class="reference internal" href="../../ide/getting_started/">Getting started</a>
     <ul>
     <li class="toctree-l2"><a class="reference internal" href="../../ide/getting_started/#download">Download</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../ide/getting_started/#nightly-builds">Nightly builds:</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="../../ide/getting_started/#installation">Installation</a>
     </li>
@@ -1029,8 +1207,6 @@
               
                 <h1 id="generic-pipeline-reference">Generic pipeline reference</h1>
 <h2 id="pipeline-root-properties">Pipeline root properties</h2>
-<h3 id="activation">activation</h3>
-<p>TODO: does it have any use in the root of the file?</p>
 <h3 id="experiment_result">experiment_result</h3>
 <p><strong>type</strong>: <code>string</code> </p>
 <p>Metric to calculate against the combination of all stages and report in <code>allStages</code> section of summary.yaml file after all experiment instances are finished.</p>
@@ -1056,40 +1232,11 @@ architecture: mainNetwork
 
 </code></pre>
 
-<h3 id="augmentation">augmentation</h3>
-<p><strong>type</strong>: ```` </p>
-<p>TODO: isnt that a property from segmentation/classification, not generic pipeline?</p>
-<p><strong>type</strong>: <code>complex</code> </p>
-<p><a href="https://imgaug.readthedocs.io">IMGAUG</a> transformations sequence.
-Each object is mapped on <a href="https://imgaug.readthedocs.io">IMGAUG</a> transformer by name, parameters are mapped too.</p>
-<p>Example:</p>
-<pre><code class="yaml">augmentation:
- Fliplr: 0.5
- Affine:
-   translate_px:
-     x:
-       - -50
-       - +50
-     y:
-       - -50
-       - +50
-</code></pre>
-
-<p>In this example, <code>Fliplr</code> key is automatically mapped on <a href="https://imgaug.readthedocs.io/en/latest/source/api_augmenters_flip.html">Fliplr agugmenter</a>,
-their <code>0.5</code> parameter is mapped on the first <code>p</code> parameter of the augmenter.
-Named parameters are also mapped, in example <code>translate_px</code> key of <code>Affine</code> is mapped on <code>translate_px</code> parameter of <a href="https://imgaug.readthedocs.io/en/latest/source/augmenters.html?highlight=affine#affine">Affine augmenter</a>.</p>
 <h3 id="batch">batch</h3>
 <p><strong>type</strong>: <code>integer</code> </p>
 <p>Sets up training batch size.</p>
 <p>Example:</p>
 <pre><code class="yaml">batch: 512
-</code></pre>
-
-<h3 id="classes">classes</h3>
-<p><strong>type</strong>: ```` </p>
-<p>TODO: does it have any use in generic pipeline?</p>
-<p>Example:</p>
-<pre><code class="yaml">
 </code></pre>
 
 <h3 id="callbacks">callbacks</h3>
@@ -1151,25 +1298,6 @@ Value is an array of parameters to pass to a function.</p>
     getTest: [false,false]
 </code></pre>
 
-<h3 id="dataset_augmenter">dataset_augmenter</h3>
-<p><strong>type</strong>: <code>complex object</code> </p>
-<p>Sets up a custom augmenter function to be applied to a dataset.
-Object must have a name property, whic will be used as a name of the python function in scope.
-Other object properties are mapped as function arguments.
-TODO: check that description and example are correct?</p>
-<p>Example:</p>
-<pre><code class="yaml">dataset_augmenter:
-    name: TheAugmenter
-    parameter: test
-</code></pre>
-
-<h3 id="dropout">dropout</h3>
-<p><strong>type</strong>: <code>float</code> </p>
-<p>TODO: does it have any use in generic pipeline root?</p>
-<p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
 <h3 id="declarations">declarations</h3>
 <p><strong>type</strong>: <code>complex</code> </p>
 <p>Sets up network layer building blocks. </p>
@@ -1201,10 +1329,10 @@ come directly inside layer definition.</p>
 
 <h3 id="extra_train_data">extra_train_data</h3>
 <p><strong>type</strong>: <code>string</code> </p>
-<p>Name of the additional dataset that will be added (per element) to the training dataset before train launching.
-TODO is that correct?</p>
+<p>Name of the additional dataset that will be added (per element) to the training dataset before train launching.</p>
 <p>Example:</p>
 <pre><code class="yaml">
+extra_train_data: more_people
 </code></pre>
 
 <h3 id="folds_count">folds_count</h3>
@@ -1212,19 +1340,7 @@ TODO is that correct?</p>
 <p>Number of folds to train. Default is 5.</p>
 <p>Example:</p>
 <pre><code class="yaml">
-</code></pre>
-
-<h3 id="freeze_encoder">freeze_encoder</h3>
-<p>TODO isnt it for other pipelines?
-<strong>type</strong>: <code>boolean</code> </p>
-<p>Whether to freeze encoder during the training process.</p>
-<p>Example:</p>
-<pre><code class="yaml">freeze_encoder: true
-stages:
-  - epochs: 10 #Let's go for 10 epochs with frozen encoder
-
-  - epochs: 100 #Now let's go for 100 epochs with trainable encoder
-    unfreeze_encoder: true  
+folds_count: 3
 </code></pre>
 
 <h3 id="final_metrics">final_metrics</h3>
@@ -1235,13 +1351,6 @@ stages:
 <p>Example:</p>
 <pre><code class="yaml">final_metrics: [measure]
 
-</code></pre>
-
-<h3 id="holdout">holdout</h3>
-<p><strong>type</strong>: ```` </p>
-<p>TODO what is this?</p>
-<p>Example:</p>
-<pre><code class="yaml">
 </code></pre>
 
 <h3 id="imports">imports</h3>
@@ -1386,29 +1495,10 @@ Function must be reachable on project scope, accept and return numpy array.</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h3 id="transforms">transforms</h3>
-<p><strong>type</strong>: <code>complex</code> </p>
-<p>TODO is that true? 
-If yes, why are we having pure IMGAUG in generic called just "transforms", maybe we should call it "imageTransforms" or simply "imgaug". 
-Btw, isnt it crossing with preprocessing, maybe we should just create "imgaug" preprocessor with all these goodies inside? </p>
-<p><a href="https://imgaug.readthedocs.io">IMGAUG</a> transformations sequence.
-Each object is mapped on <a href="https://imgaug.readthedocs.io">IMGAUG</a> transformer by name, parameters are mapped too.</p>
-<p>Example:</p>
-<pre><code class="yaml">transforms:
- Fliplr: 0.5
- Affine:
-   translate_px:
-     x:
-       - -50
-       - +50
-     y:
-       - -50
-       - +50
-</code></pre>
-
 <h3 id="validationsplit">validationSplit</h3>
 <p><strong>type</strong>: <code>float</code> </p>
-<p>Float 0-1 setting up how much of the training set (after holdout is already cut off) to allocate for validation.</p>
+<p>Float 0-1 setting up how much of the training set (after holdout is already cut off) to allocate for validation.
+This property is only used if fold count is 1.</p>
 <p>Example:</p>
 <pre><code class="yaml">
 </code></pre>
@@ -1493,11 +1583,25 @@ scaling function.</p>
 <li><strong>sin-</strong> - <code>-1 * sin(2x/pi) + 1 for x in [0;1]</code></li>
 <li><strong>sin</strong> - same as 'sin+'</li>
 <li><strong>any positive float or integer value</strong> - x^a for x in [0;1]</li>
+<li><strong>absSize</strong> : - size in batches</li>
+<li><strong>relSize</strong> : - size in fractions of epoch</li>
+<li><strong>periodEpochs</strong> : - period in epochs</li>
+<li><strong>periodSteps</strong> : - period in batches</li>
+<li><strong>then</strong>: - LRVariator that should manage learning rate after this</li>
 </ul>
-<p>TODO: examples from lr_variation_callback.py look strange,
-also it is unclear how to number of steps is being set up.
-Example</p>
-<pre><code class="yaml"></code></pre>
+<p>Example</p>
+<pre><code class="yaml">  LRVariator: 
+     fromVal: 0
+     toVal: 0.00005 
+     style: linear     
+     relSize: 0.05 # lets go for 1/20 of epoch
+     then:
+         LRVariator:
+             fromVal: 0.00005
+             toVal: 0
+             relSize: 2 # lets go for 2 of epochs                
+             style: linear 
+</code></pre>
 
 <h3 id="tensorboard">TensorBoard</h3>
 <p>This callback writes a log for TensorBoard, which allows you to visualize dynamic graphs of your training and test metrics, as well as activation histograms for the different layers in your model.</p>
@@ -1526,7 +1630,7 @@ Example</p>
 
 <h2 id="layer-types">Layer types</h2>
 <h3 id="input">Input</h3>
-<p>TODO: description</p>
+<p>This layer is not intended to be used directly</p>
 <p>Properties:</p>
 <ul>
 <li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
@@ -1549,7 +1653,7 @@ Example</p>
 <pre><code class="yaml">
 </code></pre>
 
-<h3 id="dropout_1">Dropout</h3>
+<h3 id="dropout">Dropout</h3>
 <p>Applies Dropout to the input.</p>
 <p>Properties:</p>
 <ul>
@@ -2269,8 +2373,7 @@ Each child is a separate flow with an input equal to the input of the split oper
 </code></pre>
 
 <h3 id="pass">pass</h3>
-<p>Stops execution of this branch and drops its output.
-TODO check that description is correct.</p>
+<p>Forwards data from this branch</p>
 <p>Properties:</p>
 <ul>
 <li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
@@ -2278,10 +2381,14 @@ TODO check that description is correct.</p>
 </ul>
 <p>Example:</p>
 <pre><code class="yaml">
+transform-concat:
+  - pass
+  - Conv1D: [10,1,&quot;relu&quot;]
+
 </code></pre>
 
 <h3 id="transform-concat">transform-concat</h3>
-<p>TODO</p>
+<p>passes input tensors through layers, and then concatenates outputs</p>
 <p>Properties:</p>
 <ul>
 <li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
@@ -2289,11 +2396,13 @@ TODO check that description is correct.</p>
 <li>**** - </li>
 </ul>
 <p>Example:</p>
-<pre><code class="yaml">
+<pre><code class="yaml">transform-concat:
+  - Conv1D: [10,1,&quot;relu&quot;]
+  - Conv1D: [10,2,&quot;relu&quot;]
 </code></pre>
 
 <h3 id="transform-add">transform-add</h3>
-<p>TODO</p>
+<p>passes input tensors through layers, and then adds outputs</p>
 <p>Properties:</p>
 <ul>
 <li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
@@ -2301,7 +2410,9 @@ TODO check that description is correct.</p>
 <li>**** - </li>
 </ul>
 <p>Example:</p>
-<pre><code class="yaml">
+<pre><code class="yaml">transform-add:
+  - Conv1D: [10,1,&quot;relu&quot;]
+  - Conv1D: [10,2,&quot;relu&quot;]
 </code></pre>
 
 <h2 id="stage-properties">Stage properties</h2>
@@ -2331,20 +2442,7 @@ TODO check that description is correct.</p>
 </code></pre>
 
 <h3 id="extra_callbacks">extra_callbacks</h3>
-<p>TODO</p>
-<h3 id="freeze_encoder_1">freeze_encoder</h3>
-<p>TODO is this for generic?</p>
-<p><strong>type</strong>: <code>boolean</code> </p>
-<p>Whether to freeze encoder during the training process.</p>
-<p>Example:</p>
-<pre><code class="yaml">freeze_encoder: true
-stages:
-  - epochs: 10 #Let's go for 10 epochs with frozen encoder
-
-  - epochs: 100 #Now let's go for 100 epochs with trainable encoder
-    unfreeze_encoder: true  
-</code></pre>
-
+<p>Allows to specify a list of additional callbacks that should be applied to this stage</p>
 <h3 id="initial_weights">initial_weights</h3>
 <p><strong>type</strong>: <code>string</code> </p>
 <p>Fil path to load stage NN initial weights from.</p>
@@ -2393,20 +2491,7 @@ that accepts data set item and returns boolean.</p>
 <p><strong>type</strong>: <code>float</code> </p>
 <p>Learning rate.</p>
 <p>Example:</p>
-<pre><code class="yaml">
-</code></pre>
-
-<h3 id="unfreeze_encoder">unfreeze_encoder</h3>
-<p>TODO is this for generic?</p>
-<p><strong>type</strong>: <code>boolean</code> </p>
-<p>Whether to unfreeze encoder during the training process.</p>
-<p>Example:</p>
-<pre><code class="yaml">freeze_encoder: true
-stages:
-  - epochs: 10 #Let's go for 10 epochs with frozen encoder
-
-  - epochs: 100 #Now let's go for 100 epochs with trainable encoder
-    unfreeze_encoder: true  
+<pre><code class="yaml">lr: 0.01
 </code></pre>
 
 <h3 id="validation_negatives">validation_negatives</h3>
@@ -2454,15 +2539,20 @@ Preprocessing functions should be also marked with <code>@preprocessing.dataset_
 </code></pre>
 
 <h3 id="cache">cache</h3>
-<p>Caches its input.
-TODO what for?</p>
+<p>Caches its input.</p>
+<p>Caches its input in memory, including the full flow.</p>
 <p>Properties:</p>
 <ul>
 <li><strong>name</strong> - string; optionally sets up layer name to refer it from other layers.</li>
 <li><strong>inputs</strong> - array of strings; lists layer inputs.</li>
 </ul>
 <p>Example:</p>
-<pre><code class="yaml">
+<pre><code class="yaml">preprocessing: 
+  - binarize_target: 
+  - tokenize:  
+  - tokens_to_indexes:
+       maxLen: 160
+  - cache:
 </code></pre>
 
 <h3 id="disk-cache">disk-cache</h3>
@@ -2500,7 +2590,7 @@ On subsequent launches if nothing was changed in the flow, takes its output from
 <pre><code class="yaml">
 </code></pre>
 
-<h3 id="augmentation_1">augmentation</h3>
+<h3 id="augmentation">augmentation</h3>
 <p>Preprocessor instruction, which body only runs during the training and is skipped when the inferring.</p>
 <p>Example:</p>
 <pre><code class="yaml">
@@ -2511,73 +2601,68 @@ On subsequent launches if nothing was changed in the flow, takes its output from
 <p><strong>type</strong>: <code>string</code> </p>
 <p>Folder to search for experiments, project root.</p>
 <p>Example:</p>
-<p><code>fit.py --project "path/to/project"</code></p>
+<p><code>-m musket_core.fit --project "path/to/project"</code></p>
 <h3 id="fitpy-name">fit.py name</h3>
 <p><strong>type</strong>: <code>string or comma-separated list of strings</code> </p>
 <p>Name of the experiment to launch, or a list of names.</p>
 <p>Example:</p>
-<p><code>fit.py --name "experiment_name"</code></p>
-<p><code>fit.py --name "experiment_name1, experiment_name2"</code></p>
+<p><code>-m musket_core.fit --name "experiment_name"</code></p>
+<p><code>-m musket_core.fit --name "experiment_name1, experiment_name2"</code></p>
 <h3 id="fitpy-num_gpus">fit.py num_gpus</h3>
 <p><strong>type</strong>: <code>integer</code></p>
 <p>Default: 1</p>
 <p>Number of GPUs to use during experiment launch.</p>
 <p>Example:
-<code>fit.py --num_gpus=1</code></p>
+<code>-m musket_core.fit --num_gpus=1</code></p>
 <h3 id="fitpy-gpus_per_net">fit.py gpus_per_net</h3>
 <p><strong>type</strong>: <code>integer</code> </p>
 <p>Default: 1</p>
 <p>Maximum number of GPUs to use per single experiment.</p>
 <p>Example:
-<code>fit.py --gpus_per_net=1</code></p>
+<code>-m musket_core.fit --gpus_per_net=1</code></p>
 <h3 id="fitpy-num_workers">fit.py num_workers</h3>
 <p><strong>type</strong>: <code>integer</code> </p>
 <p>Default: 1</p>
 <p>Number of workers to use.</p>
 <p>Example:
-<code>fit.py --num_workers=1</code></p>
+<code>-m musket_core.fit --num_workers=1</code></p>
 <h3 id="fitpy-allow_resume">fit.py allow_resume</h3>
 <p><strong>type</strong>: <code>boolean</code> </p>
 <p>Default: False</p>
 <p>Whether to allow resuming of experiments, 
 which will cause unfinished experiments to start from the best saved weights.</p>
 <p>Example:
-<code>fit.py --allow_resume True</code></p>
+<code>-m musket_core.fit --allow_resume True</code></p>
 <h3 id="fitpy-force_recalc">fit.py force_recalc</h3>
 <p><strong>type</strong>: <code>boolean</code> </p>
 <p>Default: False</p>
 <p>Whether to force rebuilding of reports and predictions.</p>
 <p>Example:
-<code>fit.py --force_recalc True</code></p>
+<code>-m musket_core.fit --force_recalc True</code></p>
 <h3 id="fitpy-launch_tasks">fit.py launch_tasks</h3>
 <p><strong>type</strong>: <code>boolean</code> </p>
 <p>Default: False</p>
 <p>Whether to launch associated tasks.</p>
 <p>Example:
-<code>fit.py --launch_tasks True</code></p>
+<code>-m musket_core.fit --launch_tasks True</code></p>
 <h3 id="fitpy-only_report">fit.py only_report</h3>
 <p><strong>type</strong>: <code>boolean</code> </p>
 <p>Default: False</p>
 <p>Whether to only generate reports for cached data, no training occurs.</p>
 <p>Example:
-<code>fit.py --only_report True</code></p>
+<code>-m musket_core.fit --only_report True</code></p>
 <h3 id="fitpy-cache">fit.py cache</h3>
 <p><strong>type</strong>: <code>string</code> </p>
 <p>Path to the cache folder. 
 Cache folder will contain temporary cached data for executed experiments.</p>
 <p>Example:
-<code>fit.py --cache "path/to/cache/folder"</code></p>
+<code>-m musket_core.fit --cache "path/to/cache/folder"</code></p>
 <h3 id="fitpy-folds">fit.py folds</h3>
 <p><strong>type</strong>: <code>integer or comma-separated list of integers</code> </p>
 <p>Folds to launch. By default all folds of experiment will be executed, 
 this argument allows launching only some of them. </p>
 <p>Example:
-<code>fit.py --folds 1,2</code></p>
-<h3 id="fitpy-time">fit.py time</h3>
-<p><strong>type</strong>: <code>string</code> </p>
-<p>TODO </p>
-<p>Example:
-<code>fit.py</code></p>
+<code>-m musket_core.fit --folds 1,2</code></p>
 <h2 id="task-script-arguments">task script arguments</h2>
 <h3 id="taskpy-project">task.py project</h3>
 <p><strong>type</strong>: <code>string</code> </p>
@@ -2693,7 +2778,7 @@ Cache folder will contain temporary cached data for executed experiments.</p>
         <span><a href="../" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../../segmentation/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../../segmentation/getting_started/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

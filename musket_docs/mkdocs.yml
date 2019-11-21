@@ -35,8 +35,13 @@ nav:
 - Classification:
     - 'User guide': 'classification/index.md'
     - 'Reference': 'classification/reference.md'
+- Instance Segmentation (alpha):
+    - 'User guide': 'instance_segmentation/index.md'
+    - 'Reference': 'instance_segmentation/reference.md'    
+- Text:
+    - 'About': 'text/index.md'
+    
 - Musket IDE:
-    - 'Setup': 'ide/getting_started.md'
-#- Instance Segmentation:
-#    - 'User guide': 'instance_segmentation/index.md'
-#    - 'Reference': 'instance_segmentation/reference.md'
+    - 'Getting started': 'ide/getting_started.md'
+#- Docker:
+#    - 'Building docker containers': 'docker/index.md'    

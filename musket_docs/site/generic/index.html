@@ -56,6 +56,24 @@
     <li class="toctree-l2"><a class="reference internal" href="#reasons-to-use-generic-pipeline">Reasons to use Generic Pipeline</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#choosing-your-installation-type">Choosing your installation type</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#global-pip-installation">Global pip installation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#virtual-environment-installation-recommended">Virtual environment installation (recommended)</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#virtualenv-installation-recommended">virtualenv installation (recommended)</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#pipenv-installation">pipenv installation</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#other-packages">Other packages</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#project-structure">Project structure</a>
     </li>
@@ -119,17 +137,11 @@
     <ul>
     <li class="toctree-l2"><a class="reference internal" href="reference/#pipeline-root-properties">Pipeline root properties</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#activation">activation</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#experiment_result">experiment_result</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#architecture">architecture</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#augmentation">augmentation</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#batch">batch</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#classes">classes</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#callbacks">callbacks</a>
     </li>
@@ -143,21 +155,13 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#datasets">datasets</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#dataset_augmenter">dataset_augmenter</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#dropout">dropout</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#declarations">declarations</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#extra_train_data">extra_train_data</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#folds_count">folds_count</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#freeze_encoder">freeze_encoder</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#final_metrics">final_metrics</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#holdout">holdout</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#imports">imports</a>
     </li>
@@ -191,8 +195,6 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#testtimeaugmentation">testTimeAugmentation</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#transforms">transforms</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#validationsplit">validationSplit</a>
     </li>
         </ul>
@@ -217,7 +219,7 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#gaussiannoise">GaussianNoise</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#dropout_1">Dropout</a>
+    <li class="toctree-l3"><a class="reference internal" href="reference/#dropout">Dropout</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#spatialdropout1d">SpatialDropout1D</a>
     </li>
@@ -303,8 +305,6 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#extra_callbacks">extra_callbacks</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#freeze_encoder_1">freeze_encoder</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#initial_weights">initial_weights</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#negatives">negatives</a>
@@ -312,8 +312,6 @@
     <li class="toctree-l3"><a class="reference internal" href="reference/#loss_1">loss</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#lr_1">lr</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#unfreeze_encoder">unfreeze_encoder</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#validation_negatives">validation_negatives</a>
     </li>
@@ -331,7 +329,7 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#seq-preprocessor">seq-preprocessor</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#augmentation_1">augmentation</a>
+    <li class="toctree-l3"><a class="reference internal" href="reference/#augmentation">augmentation</a>
     </li>
         </ul>
     </li>
@@ -358,8 +356,6 @@
     <li class="toctree-l3"><a class="reference internal" href="reference/#fitpy-cache">fit.py cache</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="reference/#fitpy-folds">fit.py folds</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="reference/#fitpy-time">fit.py time</a>
     </li>
         </ul>
     </li>
@@ -404,6 +400,14 @@
                 </ul>
                 <p class="caption"><span class="caption-text">Segmentation</span></p>
                 <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../segmentation/getting_started/">Getting started</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../segmentation/getting_started/#installing-kaggle-stuff">Installing kaggle stuff</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../segmentation/getting_started/#downloading-tgs-salt-competition-dataset">Downloading TGS Salt competition dataset</a>
+    </li>
+    </ul>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="../segmentation/">User guide</a>
     <ul>
     <li class="toctree-l2"><a class="reference internal" href="../segmentation/#reasons-to-use-segmentation-pipeline">Reasons to use Segmentation Pipeline</a>
@@ -483,8 +487,6 @@
     <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#batch">batch</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#classifier">classifier</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#classifier_lr">classifier_lr</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="../segmentation/reference/#classes">classes</a>
     </li>
@@ -715,7 +717,11 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="../classification/#custom-datasets">Custom datasets</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="../classification/#multistage-training">Multistage training</a>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../classification/#multi-output-classification">Multi output classification</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../classification/#preparing-dataset-for-multi-output-classification">preparing dataset for multi output classification:</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="../classification/#balancing-your-data">Balancing your data</a>
     </li>
@@ -911,8 +917,6 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#fitpy-folds">fit.py folds</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="../classification/reference/#fitpy-time">fit.py time</a>
-    </li>
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="../classification/reference/#task-script-arguments">task script arguments</a>
@@ -954,11 +958,185 @@
     </ul>
                     </li>
                 </ul>
+                <p class="caption"><span class="caption-text">Instance Segmentation (alpha)</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../instance_segmentation/">User guide</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../instance_segmentation/#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../instance_segmentation/#launching">Launching</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../instance_segmentation/#launching-experiments">Launching experiments</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/#launching-tasks">Launching tasks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/#launching-project-analysis">Launching project analysis</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../instance_segmentation/#usage-guide">Usage guide</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/#dataset-format">Dataset format</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/#training-a-model">Training a model</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../instance_segmentation/#general-train-properties">General train properties</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../instance_segmentation/reference/">Reference</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../instance_segmentation/reference/#pipeline-root-properties">Pipeline root properties</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#classes">classes</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#configpath">configPath</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#dataset">dataset</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#datasets">datasets</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#folds_count">folds_count</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#holdout">holdout</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#imagespergpu">imagesPerGpu</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#imports">imports</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#multiscalemode">multiscaleMode</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#num_seeds">num_seeds</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#preprocessing">preprocessing</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#random_state">random_state</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#shape">shape</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#stages">stages</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#stratified">stratified</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#testsplit">testSplit</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#testsplitseed">testSplitSeed</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#validationsplit">validationSplit</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#weightspath">weightsPath</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../instance_segmentation/reference/#stage-properties">Stage properties</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#epochs">epochs</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../instance_segmentation/reference/#preprocessors">Preprocessors</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#cache">cache</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#disk-cache">disk-cache</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#split-preprocessor">split-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#split-concat-preprocessor">split-concat-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#seq-preprocessor">seq-preprocessor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#augmentation">augmentation</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../instance_segmentation/reference/#fit-script-arguments">fit script arguments</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#fitpy-project">fit.py project</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#fitpy-name">fit.py name</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#fitpy-num_gpus">fit.py num_gpus</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#fitpy-gpus_per_net">fit.py gpus_per_net</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#fitpy-num_workers">fit.py num_workers</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#fitpy-allow_resume">fit.py allow_resume</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#fitpy-force_recalc">fit.py force_recalc</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#fitpy-launch_tasks">fit.py launch_tasks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#fitpy-only_report">fit.py only_report</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#fitpy-cache">fit.py cache</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#fitpy-folds">fit.py folds</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../instance_segmentation/reference/#task-script-arguments">task script arguments</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#taskpy-project">task.py project</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#taskpy-name">task.py name</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#taskpy-task">task.py task</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#taskpy-num_gpus">task.py num_gpus</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#taskpy-gpus_per_net">task.py gpus_per_net</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#taskpy-num_workers">task.py num_workers</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#taskpy-allow_resume">task.py allow_resume</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#taskpy-force_recalc">task.py force_recalc</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#taskpy-launch_tasks">task.py launch_tasks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#taskpy-cache">task.py cache</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../instance_segmentation/reference/#analyze-script-arguments">analyze script arguments</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#analyzepy-inputfolder">analyze.py inputFolder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#analyzepy-output">analyze.py output</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#analyzepy-onlymetric">analyze.py onlyMetric</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../instance_segmentation/reference/#analyzepy-sortby">analyze.py sortBy</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Text</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../text/">About</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../text/#installation">Installation</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
                 <p class="caption"><span class="caption-text">Musket IDE</span></p>
                 <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../ide/getting_started/">Setup</a>
+                    <li class="toctree-l1"><a class="reference internal" href="../ide/getting_started/">Getting started</a>
     <ul>
     <li class="toctree-l2"><a class="reference internal" href="../ide/getting_started/#download">Download</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../ide/getting_started/#nightly-builds">Nightly builds:</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="../ide/getting_started/#installation">Installation</a>
     </li>
@@ -1094,9 +1272,120 @@ stages:
 </code></pre>
 
 <h2 id="installation">Installation</h2>
-<pre><code>pip install musket_core 
+<h3 id="prerequisites">Prerequisites</h3>
+<p>The package has many prerequisites, but some of them are 
+recommended to be installed manually.</p>
+<p>Tensorflow package of versions of 1.14 and below split into CPU and GPU ones.
+Moreover, Tensorflow may be more or less compatible with the version of 
+CUDA/CUDNN installed.</p>
+<p>Here is the repository containing lots of pre-built Tensorflow 
+wheels for Windows: <a href="https://github.com/fo40225/tensorflow-windows-wheel">tensorflow-windows-wheel</a>.
+It can be used to choose the wheel depending on system architecture, 
+CUDA/CUDNN version, CPU/GPU and Python version.</p>
+<p>Read more in <a href="https://www.tensorflow.org/install/pip">Tensorflow installation guide</a>.</p>
+<p>Keras has no strong dependency on Tensorflow, but in our common setup they run in pair.
+We used the 2.2.4 one.</p>
+<p>Shapely requires compilation on install on Linux/MacOS or pre-built version on Windows.
+Here are the <a href="https://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely">pre-built Shapely wheels for Windows</a>. </p>
+<h3 id="choosing-your-installation-type">Choosing your installation type</h3>
+<p>It is recommended to install to a virtual environment in order to avoid dependency version conflicts.</p>
+<h3 id="global-pip-installation">Global pip installation</h3>
+<p>Install Tensorflow, Keras and Shapely as described in pre-requisites.
+In example, if you have downloaded particular 
+Tensorflow wheel into <code>C:\downloads\tensorflow_gpu-1.12.0-cp36-cp36m-win_amd64.whl</code> 
+and particular Shapely wheel into <code>C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl</code>, run:</p>
+<pre><code>pip install C:\downloads\tensorflow_gpu-1.12.0-cp36-cp36m-win_amd64.whl
+pip install Keras==2.2.4
+pip install C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl
 </code></pre>
 
+<pre><code>pip install musket_ml 
+</code></pre>
+
+<h3 id="virtual-environment-installation-recommended">Virtual environment installation (recommended)</h3>
+<h4 id="virtualenv-installation-recommended">virtualenv installation (recommended)</h4>
+<p>This type of installation uses virtualenv manager for 
+creating your virtual environment.</p>
+<p>Create a new virtual environment:</p>
+<pre><code>virtualenv ./musket
+</code></pre>
+
+<p>This will create <code>musket</code> folder and place a copy of your python, pip and wheel inside.</p>
+<p>Activate the new virtual environment:</p>
+<p>On Posix systems:</p>
+<pre><code>source ./musket/bin/activate
+</code></pre>
+
+<p>On Windows:</p>
+<pre><code>.\musket\Scripts\activate
+</code></pre>
+
+<p>Install Tensorflow, Keras and Shapely as described in pre-requisites.
+In example, if you have downloaded particular 
+Tensorflow wheel into <code>C:\downloads\tensorflow_gpu-1.12.0-cp36-cp36m-win_amd64.whl</code> 
+and particular Shapely wheel into <code>C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl</code>, run:</p>
+<pre><code>pip install C:\downloads\tensorflow_gpu-1.12.0-cp36-cp36m-win_amd64.whl
+pip install Keras==2.2.4
+pip install C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl
+</code></pre>
+
+<p>Now install musket:</p>
+<pre><code>pip install musket_ml 
+</code></pre>
+
+<p>Experiment launches and other activity should be performed when this environment is activated.</p>
+<p>When you are done working with musket, you can deactivate the environment by 
+launching:</p>
+<pre><code>virtualenv deactivate
+</code></pre>
+
+<h4 id="pipenv-installation">pipenv installation</h4>
+<p>This type of installation uses pipenv manager for 
+creating your virtual environment.</p>
+<p>Install pipenv if needed:</p>
+<pre><code>pip install --user pipenv
+</code></pre>
+
+<p>Create new environment by launching:</p>
+<pre><code>mkdir musket
+cd musket
+pipenv --python 3.6
+</code></pre>
+
+<p>Install Tensorflow, Keras and Shapely as described in pre-requisites.
+In example, if you have downloaded particular 
+Tensorflow wheel into <code>C:\downloads\tensorflow_gpu-1.12.0-cp36-cp36m-win_amd64.whl</code> 
+and particular Shapely wheel into <code>C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl</code>, run:</p>
+<pre><code>pipenv install C:\downloads\tensorflow_gpu-1.12.0-cp36-cp36m-win_amd64.whl
+pipenv install Keras==2.2.4
+pipenv install C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl
+</code></pre>
+
+<p>Now install musket:</p>
+<pre><code>pipenv install musket_ml 
+</code></pre>
+
+<p>Experiment launches and other activity should be performed 
+when this environment is activated or using pipenv.</p>
+<p>So, the first approach is to activate the environment by launching</p>
+<pre><code>pipenv shell
+</code></pre>
+
+<p>while inside <code>musket</code> folder.</p>
+<p>Or, alternativelly, prefix all experiment management commands with </p>
+<p><code>pipenv run</code>,</p>
+<p>in example, instead of running</p>
+<p><code>musket fit --project "D:\work\salt" --name "exp01" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "D:\work\salt\data\cache"</code></p>
+<p>run</p>
+<p><code>pipenv run musket fit --project "D:\work\salt" --name "exp01" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "D:\work\salt\data\cache"</code></p>
+<h3 id="other-packages">Other packages</h3>
+<p><code>musket_ml</code> joins all mainstream pipelines that belong to Musket-ML framework.
+In particular, besides <code>musket_core</code> generic pipeline, it includes 
+<code>classification_pipeline</code> <a href="../classification/">classification pipeline</a>,
+<code>segmentation_pipeline</code> <a href="../segmentation/">segmentation pipeline</a>
+ and <code>musket_text</code> <a href="../text/">text support</a>.</p>
+<p>To install only the generic pipeline, follow the same instructions, 
+but use <code>musket_core</code> wheel instead of <code>musket_ml</code>.</p>
 <h2 id="project-structure">Project structure</h2>
 <p>Each experiment is simply a folder with YAML file inside, it is easy to store and run experiment.</p>
 <p>Project is a folder with the following structure inside:</p>
@@ -1134,12 +1423,10 @@ onto python classes and functions defined inside such files. all modules in this
 <p>There are more potential files, like intermediate results cache files etc.</p>
 <h2 id="launching">Launching</h2>
 <h3 id="launching-experiments">Launching experiments</h3>
-<p><code>fit.py</code> script is designed to launch experiment training.
- It is located in the <code>musket_core</code> root folder.</p>
-<p>Working directory <em>must</em> point to the <code>musket_core</code> root folder.</p>
+<p><code>fit.py</code> script is designed to launch experiment training.</p>
 <p>In order to run the experiment or a number of experiments,   </p>
 <p>A typical command line may look like this:</p>
-<p><code>python ./fit.py --project "path/to/project" --name "experiment_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"</code></p>
+<p><code>musket fit --project "path/to/project" --name "experiment_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"</code></p>
 <p><a href="reference/#fitpy-project">--project</a> points to the root of the <a href="#project-structure">project</a></p>
 <p><a href="reference/#fitpy-name">--name</a> is the name of the project sub-folder containing experiment yaml file.</p>
 <p><a href="reference/#fitpy-num_gpus">--num_gpus</a> sets number of GPUs to use during experiment launch.</p>
@@ -1148,8 +1435,7 @@ onto python classes and functions defined inside such files. all modules in this
 <p><a href="reference/#fitpy-cache">--cache</a> points to a cache folder to store the temporary data.</p>
 <p>Other parameters can be found in the <a href="reference/#fit-script-arguments">fit script reference</a></p>
 <h3 id="launching-tasks">Launching tasks</h3>
-<p><code>task.py</code> script is designed to launch experiment training.
- It is located in the <code>musket_core</code> root folder.</p>
+<p><code>task.py</code> script is designed to launch experiment training.</p>
 <p>Tasks must be defined in the project python scope and marked by an 
 annotation like this:</p>
 <pre><code class="python">from musket_core import tasks, model
@@ -1158,10 +1444,9 @@ def measure2(m: model.ConnectedModel):
     return result
 </code></pre>
 
-<p>Working directory <em>must</em> point to the <code>musket_core</code> root folder.</p>
 <p>In order to run the experiment or a number of experiments,   </p>
 <p>A typical command line may look like this:</p>
-<p><code>python ./task.py --project "path/to/project" --name "experiment_name" --task "task_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"</code></p>
+<p><code>python -m musket_core.task --project "path/to/project" --name "experiment_name" --task "task_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"</code></p>
 <p><a href="reference/#taskpy-project">--project</a> points to the root of the <a href="#project-structure">project</a></p>
 <p><a href="reference/#taskpy-name">--name</a> is the name of the project sub-folder containing experiment yaml file.</p>
 <p><a href="reference/#taskpy-name">--task</a> is the name of the task function.</p>
@@ -1171,10 +1456,9 @@ def measure2(m: model.ConnectedModel):
 <p><a href="reference/#taskpy-cache">--cache</a> points to a cache folder to store the temporary data.</p>
 <p>Other parameters can be found in the <a href="reference/#task-script-arguments">task script reference</a></p>
 <h3 id="launching-project-analysis">Launching project analysis</h3>
-<p><code>analize.py</code> script is designed to launch project-scope analysis.
-It is located in the <code>musket_core</code> root folder.</p>
+<p><code>analize.py</code> script is designed to launch project-scope analysis.</p>
 <p>Note that only experiments, which training is already finished will be covered.</p>
-<p><code>python ./analize.py --inputFolder "path/to/project"</code></p>
+<p><code>musket analize --inputFolder "path/to/project"</code></p>
 <p><a href="reference/#analyzepy-inputfolder">--inputFolder</a> points to a folder to search for finished experiments in. Typically, project root.</p>
 <p>Other parameters can be found in the <a href="reference/#analyze-script-arguments">analyze script reference</a></p>
 <h2 id="general-train-properties">General train properties</h2>

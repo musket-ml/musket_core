@@ -31,5 +31,5 @@ Then invoke `unzip train.zip -d train` to unzip `train.zip` files in to `train` 
 
 ### Running the experiment
 
-`python -m musket_core.fit --project "D:\work\salt" --name "exp01" --num_gpus=2 --gpus_per_net=2 --num_workers=1 --cache "D:\work\salt\data"`
+`musket fit --project "D:\work\salt" --name "exp01" --num_gpus=2 --gpus_per_net=2 --num_workers=1 --cache "D:\work\salt\data"`
 

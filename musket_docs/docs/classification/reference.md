@@ -303,16 +303,18 @@ Learning rate.
 
 Example:
 ```yaml
+lr: 0.01
 
 ```
 
 ### manualResize
 **type**: `boolean` 
 
-TODO
+Setting this property to true, will disable auto resize that is performed by pipeline
 
 Example:
 ```yaml
+manualResize: true
 
 ```
 
@@ -1044,14 +1046,7 @@ this argument allows launching only some of them.
 Example:
 `-m musket_core.fit --folds 1,2`
 
-### fit.py time
 
-**type**: ``string`` 
-
-TODO 
-
-Example:
-`-m musket_core.fit `
 
 ## task script arguments
 

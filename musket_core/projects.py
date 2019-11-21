@@ -177,6 +177,11 @@ class WrappedAnalizer:
         self.name=clazz.__name__
         self.clazz=clazz
         self.isClass=inspect.isclass(clazz)
+        
+    def isApplicable(self,dataset):
+        if hasattr(self.clazz, "checker"):
+            return self.clazz.checker(dataset)
+        return True    
 
     def introspect(self):
         return  introspector.record(self.clazz,"analizer")
@@ -186,6 +191,11 @@ class WrappedDataAnalizer:
         self.name=clazz.__name__
         self.isClass = inspect.isclass(clazz)
         self.clazz=clazz
+        
+    def isApplicable(self,dataset):
+        if hasattr(self.clazz, "checker"):
+            return self.clazz.checker(dataset)
+        return True
 
     def introspect(self):
         return  introspector.record(self.clazz,"data_analizer")

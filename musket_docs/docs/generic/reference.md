@@ -1,7 +1,6 @@
 # Generic pipeline reference
 ## Pipeline root properties
-### activation
-TODO: does it have any use in the root of the file?
+
 ### experiment_result
 
 **type**: ``string`` 
@@ -36,34 +35,6 @@ architecture: mainNetwork
 
 ```
 
-### augmentation
-
-**type**: ```` 
-
-TODO: isnt that a property from segmentation/classification, not generic pipeline?
-
-**type**: ``complex`` 
-
-[IMGAUG](https://imgaug.readthedocs.io) transformations sequence.
-Each object is mapped on [IMGAUG](https://imgaug.readthedocs.io) transformer by name, parameters are mapped too.
-
-Example:
-```yaml
-augmentation:
- Fliplr: 0.5
- Affine:
-   translate_px:
-     x:
-       - -50
-       - +50
-     y:
-       - -50
-       - +50
-```
-
-In this example, `Fliplr` key is automatically mapped on [Fliplr agugmenter](https://imgaug.readthedocs.io/en/latest/source/api_augmenters_flip.html),
-their `0.5` parameter is mapped on the first `p` parameter of the augmenter.
-Named parameters are also mapped, in example `translate_px` key of `Affine` is mapped on `translate_px` parameter of [Affine augmenter](https://imgaug.readthedocs.io/en/latest/source/augmenters.html?highlight=affine#affine).
 
 ### batch
 
@@ -75,17 +46,7 @@ Example:
 ```yaml
 batch: 512
 ```
-### classes
 
-**type**: ```` 
-
-TODO: does it have any use in generic pipeline?
-
-
-Example:
-```yaml
-
-```
 ### callbacks
 
 **type**: ``array of callback instances`` 
@@ -164,31 +125,8 @@ datasets:
   test:
     getTest: [false,false]
 ```
-### dataset_augmenter
 
-**type**: ``complex object`` 
 
-Sets up a custom augmenter function to be applied to a dataset.
-Object must have a name property, whic will be used as a name of the python function in scope.
-Other object properties are mapped as function arguments.
-TODO: check that description and example are correct?
-
-Example:
-```yaml
-dataset_augmenter:
-    name: TheAugmenter
-    parameter: test
-```
-### dropout
-
-**type**: ``float`` 
-
-TODO: does it have any use in generic pipeline root?
-
-Example:
-```yaml
-
-```
 ### declarations
 
 **type**: ``complex`` 
@@ -229,11 +167,11 @@ declarations:
 **type**: ``string`` 
 
 Name of the additional dataset that will be added (per element) to the training dataset before train launching.
-TODO is that correct?
 
 Example:
 ```yaml
 
+extra_train_data: more_people
 ```
 ### folds_count
 
@@ -244,22 +182,9 @@ Number of folds to train. Default is 5.
 Example:
 ```yaml
 
+folds_count: 3
 ```
-### freeze_encoder
-TODO isnt it for other pipelines?
-**type**: ``boolean`` 
 
-Whether to freeze encoder during the training process.
-
-Example:
-```yaml
-freeze_encoder: true
-stages:
-  - epochs: 10 #Let's go for 10 epochs with frozen encoder
-
-  - epochs: 100 #Now let's go for 100 epochs with trainable encoder
-    unfreeze_encoder: true  
-```
 ### final_metrics
 
 **type**: ``array of strings`` 
@@ -275,16 +200,7 @@ Example:
 final_metrics: [measure]
 
 ```
-### holdout
 
-**type**: ```` 
-
-TODO what is this?
-
-Example:
-```yaml
-
-```
 ### imports
 
 **type**: ``array of strings`` 
@@ -485,35 +401,13 @@ Example:
 ```yaml
 
 ```
-### transforms
 
-**type**: ``complex`` 
-
-TODO is that true? 
-If yes, why are we having pure IMGAUG in generic called just "transforms", maybe we should call it "imageTransforms" or simply "imgaug". 
-Btw, isnt it crossing with preprocessing, maybe we should just create "imgaug" preprocessor with all these goodies inside? 
-
-[IMGAUG](https://imgaug.readthedocs.io) transformations sequence.
-Each object is mapped on [IMGAUG](https://imgaug.readthedocs.io) transformer by name, parameters are mapped too.
-
-Example:
-```yaml
-transforms:
- Fliplr: 0.5
- Affine:
-   translate_px:
-     x:
-       - -50
-       - +50
-     y:
-       - -50
-       - +50
-```
 ### validationSplit
 
 **type**: ``float`` 
 
 Float 0-1 setting up how much of the training set (after holdout is already cut off) to allocate for validation.
+This property is only used if fold count is 1.
 
 Example:
 ```yaml
@@ -667,7 +561,7 @@ callbacks:
 
 ### Input
 
-TODO: description
+This layer is not intended to be used directly
 
 Properties:
 
@@ -1515,8 +1409,7 @@ input: [firstRef, secondRef]
 
 ### pass
 
-Stops execution of this branch and drops its output.
-TODO check that description is correct.
+Forwards data from this branch
 
 Properties:
 
@@ -1525,11 +1418,15 @@ Properties:
 
 Example:
 ```yaml
+
+transform-concat:
+  - pass
+  - Conv1D: [10,1,"relu"]
 
 ```
 ### transform-concat
 
-TODO
+passes input tensors through layers, and then concatenates outputs
 
 Properties:
 
@@ -1539,11 +1436,13 @@ Properties:
 
 Example:
 ```yaml
-
+transform-concat:
+  - Conv1D: [10,1,"relu"]
+  - Conv1D: [10,2,"relu"]
 ```
 ### transform-add
 
-TODO
+passes input tensors through layers, and then adds outputs
 
 Properties:
 
@@ -1553,7 +1452,9 @@ Properties:
 
 Example:
 ```yaml
-
+transform-add:
+  - Conv1D: [10,1,"relu"]
+  - Conv1D: [10,2,"relu"]
 ``` 
 
 ## Stage properties
@@ -1589,24 +1490,9 @@ Example:
 
 ```
 ### extra_callbacks
-TODO
 
-### freeze_encoder
-TODO is this for generic?
+Allows to specify a list of additional callbacks that should be applied to this stage
 
-**type**: ``boolean`` 
-
-Whether to freeze encoder during the training process.
-
-Example:
-```yaml
-freeze_encoder: true
-stages:
-  - epochs: 10 #Let's go for 10 epochs with frozen encoder
-
-  - epochs: 100 #Now let's go for 100 epochs with trainable encoder
-    unfreeze_encoder: true  
-```
 
 ### initial_weights
 **type**: ``string`` 
@@ -1670,24 +1556,7 @@ Learning rate.
 
 Example:
 ```yaml
-
-```
-
-### unfreeze_encoder
-TODO is this for generic?
-
-**type**: ``boolean`` 
-
-Whether to unfreeze encoder during the training process.
-
-Example:
-```yaml
-freeze_encoder: true
-stages:
-  - epochs: 10 #Let's go for 10 epochs with frozen encoder
-
-  - epochs: 100 #Now let's go for 100 epochs with trainable encoder
-    unfreeze_encoder: true  
+lr: 0.01
 ```
 
 ### validation_negatives
@@ -1746,7 +1615,8 @@ preprocessing:
 ### cache
 
 Caches its input.
-TODO what for?
+
+Caches its input in memory, including the full flow.
 
 Properties:
 
@@ -1755,7 +1625,12 @@ Properties:
 
 Example:
 ```yaml
-
+preprocessing: 
+  - binarize_target: 
+  - tokenize:  
+  - tokens_to_indexes:
+       maxLen: 160
+  - cache:
 ```
 ### disk-cache
 
@@ -1936,14 +1811,7 @@ this argument allows launching only some of them.
 Example:
 `-m musket_core.fit --folds 1,2`
 
-### fit.py time
 
-**type**: ``string`` 
-
-TODO 
-
-Example:
-`-m musket_core.fit `
 
 ## task script arguments
 

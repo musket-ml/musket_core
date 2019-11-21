@@ -111,7 +111,7 @@ pip install C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl
 ```
 
 ```
-pip install musket_core 
+pip install musket_ml 
 ```
 
 ### Virtual environment installation (recommended)
@@ -153,7 +153,7 @@ pip install C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl
 
 Now install musket:
 ```
-pip install musket_core 
+pip install musket_ml 
 ```
 
 Experiment launches and other activity should be performed when this environment is activated.
@@ -195,7 +195,7 @@ pipenv install C:\downloads\Shapely-1.6.4.post1-cp36-cp36m-win_amd64.whl
 
 Now install musket:
 ```
-pipenv install musket_core 
+pipenv install musket_ml 
 ```
 
 Experiment launches and other activity should be performed 
@@ -213,12 +213,24 @@ Or, alternativelly, prefix all experiment management commands with
  
 in example, instead of running
 
-`python -m musket_core.fit --project "D:\work\salt" --name "exp01" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "D:\work\salt\data\cache"`
+`musket fit --project "D:\work\salt" --name "exp01" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "D:\work\salt\data\cache"`
  
  run
  
-`pipenv run python -m musket_core.fit --project "D:\work\salt" --name "exp01" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "D:\work\salt\data\cache"`
+`pipenv run musket fit --project "D:\work\salt" --name "exp01" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "D:\work\salt\data\cache"`
 
+### Other packages
+
+`musket_ml` joins all mainstream pipelines that belong to Musket-ML framework.
+In particular, besides `musket_core` generic pipeline, it includes 
+`classification_pipeline` [classification pipeline](../classification/index.md),
+`segmentation_pipeline` [segmentation pipeline](../segmentation/index.md)
+ and `musket_text` [text support](../text/index.md).
+
+To install only the generic pipeline, follow the same instructions, 
+but use `musket_core` wheel instead of `musket_ml`.
+
+ 
 
 ## Project structure
 
@@ -266,7 +278,7 @@ In order to run the experiment or a number of experiments,
 
 A typical command line may look like this:
 
-`python -m musket_core.fit --project "path/to/project" --name "experiment_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"`
+`musket fit --project "path/to/project" --name "experiment_name" --num_gpus=1 --gpus_per_net=1 --num_workers=1 --cache "path/to/cache/folder"`
 
 [--project](reference.md#fitpy-project) points to the root of the [project](#project-structure)
 
@@ -324,7 +336,7 @@ Other parameters can be found in the [task script reference](reference.md#task-s
 
 Note that only experiments, which training is already finished will be covered.
 
-`python -m musket_core.analize --inputFolder "path/to/project"`
+`musket analize --inputFolder "path/to/project"`
 
 [--inputFolder](reference.md#analyzepy-inputfolder) points to a folder to search for finished experiments in. Typically, project root.
 

@@ -7,6 +7,7 @@ from musket_core.utils import save_yaml,ensure
 from musket_core import projects
 from musket_core.experiment import Experiment
 from musket_core import dataset_analizers
+from musket_core import context
 import numpy as np
 import tempfile
 from tqdm import tqdm
@@ -262,8 +263,8 @@ class AnalizeOptionsRequest(yaml.YAMLObject):
 
         rs={
             "visualizers":[v.introspect() for v in project.get_visualizers()],
-            "analizers": [v.introspect() for v in project.get_analizers()],
-            "data_analizers": [v.introspect() for v in project.get_data_analizers()],
+            "analizers": [v.introspect() for v in project.get_analizers() if v.isApplicable(ds)],
+            "data_analizers": [v.introspect() for v in project.get_data_analizers() if v.isApplicable(ds)],
             "datasetStages": datasets.get_stages(ds),
             "datasetFilters":[v.introspect() for v in project.get_data_filters()],
         }
@@ -406,7 +407,7 @@ class AnalizePredictions(yaml.YAMLObject):
                 pr=predictions[i]
                 if analizerFunc.usePredictionItem:
                     gr = analizerFunc(i,ds[i],pr, **self.analzierArgs)
-                else: gr=analizerFunc(gt,pr.prediction,**self.analzierArgs)
+                else: gr=analizerFunc(pr.y,pr.prediction,**self.analzierArgs)
                 if gr in res:
                     res[gr].append(i)
                 else:
@@ -439,6 +440,52 @@ class Validate(yaml.YAMLObject):
         e.parse_config().validate()
         print("Model validated successfully!")
         return None
+    
+class ExportForWeb(yaml.YAMLObject):
+    yaml_tag = u'!com.onpositive.musket_core.ExportForWeb'
+
+    def __init__(self):
+        self.path=None
+        self.resultPath=None
+
+    def perform(self,server,reporter:ProgressMonitor):
+        path=self.path
+        e:Experiment= server.experiment(path)
+        files=os.listdir(path)
+        print("Preparing for export as web service...")
+        
+        lm=os.path.join(path,"config.yaml.ncx")
+        cfg=e.parse_config()
+        context.context.projectPath=cfg.get_project_path()
+        rp=os.path.join(self.resultPath,"assets");
+        if not os.path.exists(lm):
+            cfg.createNet()
+        import shutil
+        shutil.copy(lm, rp)    
+        ds=cfg.get_dataset()
+        stages=datasets.get_preprocessors(ds)
+        lastDeploy=None
+        for s in stages:
+            if hasattr(s, "func"):
+                func=s.func
+                if hasattr(func, "deployHandler"):
+                    func.deployHandler(s,cfg,self.resultPath)
+            if hasattr(s, "deployHandler"):
+                lastDeploy=s
+                
+        args=lastDeploy.deployHandler(cfg,self.resultPath)
+        lm=os.path.join(path,"init.py")
+        with open(lm, "w",encoding="utf-8") as f:
+            f.write("""
+from musket_core import inference
+import os
+
+@inference.inference_service_factory
+def createEngine():
+    """+args)                            
+        print("Done.")    
+        return None
+        
 
 class Launch(yaml.YAMLObject):
     yaml_tag = u'!com.onpositive.dside.ui.LaunchConfiguration'

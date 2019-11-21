@@ -31,6 +31,8 @@ class Cache(DataSet):
 
     def __len__(self):
         return len(self.parent)
+    
+    
 
 
 class CachedPredictionItem(PredictionItem):
@@ -45,6 +47,8 @@ class CachedPredictionItem(PredictionItem):
     def rootItem(self):
         return self.original().rootItem()
 
+    def item_id(self):
+        return self.original().item_id()
 
 class DiskCache(DataSet):
 
@@ -105,6 +109,8 @@ def get_cache_dir():
     if CACHE_DIR is not None:
         return CACHE_DIR
     cp=context.get_current_project_path()
+    if cp is None:
+        cp=os.getcwd()
     d=os.path.join(cp,".cache/")
     utils.ensure(d)
     return d
@@ -352,6 +358,8 @@ def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
 
     def ccc1(input):       
         try:
+            if hasattr(context.context,"no_cache"):
+                return input
             name = "data"
             id = "dataset"
             l = len(input)
