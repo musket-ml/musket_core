@@ -462,14 +462,7 @@ this argument allows launching only some of them.
 Example:
 `-m musket_core.fit --folds 1,2`
 
-### fit.py time
 
-**type**: ``string`` 
-
-TODO 
-
-Example:
-`-m musket_core.fit `
 
 ## task script arguments
 
