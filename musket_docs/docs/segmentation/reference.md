@@ -113,36 +113,14 @@ Sets up training batch size.
 
 Example:
 ```yaml
-batch: 512
+batch: 8
 ```
 
 ### classifier
 **type**: `string` 
 
 
-TODO description
 
-Supported values:
-- [ResNet](https://arxiv.org/abs/1512.03385)
-    - resnet50
-[DenseNet](https://arxiv.org/abs/1608.06993)
-    - densenet121
-    - densenet169
-    - densenet201
-
-Example:
-```yaml
-
-```
-### classifier_lr
-**type**: `float` 
-
-TODO description
-
-Example:
-```yaml
-
-```
 ### classes
 **type**: `integer` 
 
@@ -177,8 +155,8 @@ callbacks:
 ### compressPredictionsAsInts
 **type**: `boolean` 
 
-Whether to represent predictions as integers (up to 4 channels)
-TODO check this is correct
+Whether to represent predictions as int8 (0..255). This settings allows to trade amount of space that is consumbed by prediction to a little bit of accuracy 
+
 
 Example:
 ```yaml
@@ -390,16 +368,17 @@ Learning rate.
 
 Example:
 ```yaml
-
+lr: 0.01
 ```
 
 ### manualResize
 **type**: `boolean` 
 
-TODO
+Setting this property to true, will disable auto resize that is performed by pipeline
 
 Example:
 ```yaml
+manualResize: true
 
 ```
 
@@ -1124,7 +1103,7 @@ Example:
 
 **type**: ``string`` 
 
-TODO 
+This setting is not intented to be used directly.  
 
 Example:
 `-m musket_core.fit `

@@ -64,6 +64,8 @@ def get_current_project_path():
 def get_current_project_data_path():
     if not hasattr(context,"projectPath"):
         context.projectPath=_find_path();
+    if hasattr(context,"dataPath"):
+        return context.dataPath    
     return os.path.join(context.projectPath,"data")
 
 def get_kaggle_input_root():

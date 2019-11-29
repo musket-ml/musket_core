@@ -2,6 +2,27 @@
 
 ## Pipeline root properties
 
+### augmentation
+
+**type**: ``complex`` 
+
+[IMGAUG](https://imgaug.readthedocs.io) transformations sequence.
+Each object is mapped on [IMGAUG](https://imgaug.readthedocs.io) transformer by name, parameters are mapped too.
+
+Example:
+```yaml
+transforms:
+ Fliplr: 0.5
+ Affine:
+   translate_px:
+     x:
+       - -50
+       - +50
+     y:
+       - -50
+       - +50
+```
+
 ### classes
 **type**: `integer` 
 
@@ -225,7 +246,13 @@ Example:
 
 **type**: ``string``
 
-Path to the model pretreined weights. Should be absolute or relative to the musket config file.
+Path to the model pretrained weights. Should be absolute or relative to the musket config file.
+
+### resetHeads
+
+Whether to refuse adopting pretrained weights for mask head and bounding box head.   
+
+Defaults to 'True'.
 
 ## Stage properties
 
@@ -462,14 +489,7 @@ this argument allows launching only some of them.
 Example:
 `-m musket_core.fit --folds 1,2`
 
-### fit.py time
 
-**type**: ``string`` 
-
-TODO 
-
-Example:
-`-m musket_core.fit `
 
 ## task script arguments
 

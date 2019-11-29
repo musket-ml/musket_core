@@ -1,9 +1,11 @@
 import sys
 import os
+from musket_core import musket_client
 
 FIT = "fit"
 ANALYZE = "analyze"
 DOWNLOAD_DEPS = "deps_download"
+CLIENT = "client"
 
 def is_experiment(root):
     config_path = os.path.join(root, "config.yaml")
@@ -47,16 +49,18 @@ def main():
         print("musket " + FIT)
         print("musket " + ANALYZE)
         print("musket " + DOWNLOAD_DEPS)
+        print("musket " + CLIENT)
 
         return
 
     task_name = sys.argv[1]
 
-    if task_name not in [FIT, ANALYZE, DOWNLOAD_DEPS]:
+    if task_name not in [FIT, ANALYZE, DOWNLOAD_DEPS, CLIENT]:
         print("unknown task: " + task_name + ", command should be one of:")
         print("musket " + FIT)
         print("musket " + ANALYZE)
         print("musket " + DOWNLOAD_DEPS)
+        print("musket " + CLIENT)
 
         return
 
@@ -70,6 +74,8 @@ def main():
         analize.main()
     elif task_name == DOWNLOAD_DEPS:
         deps_download.main(sys.argv)
+    elif task_name == CLIENT:
+        musket_client.main()
 
 def experiment_name():
     cwd = os.getcwd()

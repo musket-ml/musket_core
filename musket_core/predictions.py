@@ -3,7 +3,7 @@ from musket_core.utils import ensure
 import os
 import numpy as np
 from musket_core.structure_constants import constructPredictionsDirPath
-from musket_core.datasets import DataSet, PredictionItem,PredictionBlend
+from musket_core.datasets import DataSet, PredictionItem
 from musket_core.preprocessing import PreprocessedDataSet
 from typing import Union
 import keras
@@ -48,7 +48,7 @@ class Prediction:
         if self.cfg.separatePredictions:
             if isinstance(self.fold, list) and len(self.fold)>1:
                 prs=[Prediction(self.cfg,v,self.stage,self.name,self.srcDataset).calculate() for v in self.fold]
-                vls=PredictionBlend(prs)    
+                vls= self.cfg.createPredictionsBlend(prs)
                 wd=self.cfg.create_writeable_dataset(vls,path)
                 for i in tqdm(vls,"Blending"):
                     wd.append(i.prediction)
@@ -56,7 +56,7 @@ class Prediction:
                 return self.cfg.load_writeable_dataset(ds, path)
             if isinstance(self.stage, list) and len(self.stage)>1:
                 prs=[Prediction(self.cfg,self.fold,v,self.name,self.srcDataset).calculate() for v in self.stage]
-                vls=PredictionBlend(prs)
+                vls= self.cfg.createPredictionsBlend(prs)
                 wd=self.cfg.create_writeable_dataset(vls,path)
                 for i in tqdm(vls,"Blending"):
                     wd.append(i.prediction)

@@ -3,16 +3,16 @@
 Instance Segmentation Pipeline was developed in order to enable using the [MMDetection](https://github.com/open-mmlab/mmdetection)
 framework by means of Musket ML.
 
+*This package is not yet completely ready for production use*
+
 ## Installation
 
 ```
-pip install instance_segmentation_pipeline
+pip install git+https://github.com/musket_ml/instance_segmentation_pipeline
 ```
 *Note: this package requires python 3.6*
 
-This package is a part of [Musket ML](https://musket-ml.com/) framework,
- it is recommended to install the whole collection of the framework
- packages at once using instructions [here](../generic/index.md#installation).
+This package is not a part of [Musket ML](https://musket-ml.com/) framework yet,
 
 
 ## Launching
@@ -152,3 +152,39 @@ The following ones are optional, but commonly used:
 [shape](reference.md#shape) set the desired shape of the input picture and mask, in the form heigth, width, number of channels. Input will be resized to fit.
 
 [weightsPath](reference.md#weightspath) path to initial weights of the model.
+
+[resetHeads](reference.md#resetheads) whether to refuse adopting pretrained weights for mask head and bounding box head.
+
+#### Image and Mask Augmentations
+
+Framework uses awesome [imgaug](https://github.com/aleju/imgaug) library for augmentation, so you only need to configure your augmentation process in declarative way like in the following example:
+ 
+```yaml
+augmentation:  
+  Fliplr: 0.5
+  Flipud: 0.5
+  Affine:
+    scale: [0.8, 1.5] #random scalings
+    translate_percent:
+      x: [-0.2,0.2] #random shifts
+      y: [-0.2,0.2]
+    rotate: [-16, 16] #random rotations on -16,16 degrees
+    shear: [-16, 16] #random shears on -16,16 degrees
+```
+[augmentation](reference.md#augmentation) property defines [IMGAUG](https://imgaug.readthedocs.io) transformations sequence.
+Each object is mapped on [IMGAUG](https://imgaug.readthedocs.io) transformer by name, parameters are mapped too.
+
+In this example, `Fliplr` and `Flipud` keys are automatically mapped on [Flip agugmenters](https://imgaug.readthedocs.io/en/latest/source/api_augmenters_flip.html),
+their `0.5` parameter is mapped on the first `p` parameter of the augmenter.
+Named parameters are also mapped, in example `scale` key of `Affine` is mapped on `scale` parameter of [Affine augmenter](https://imgaug.readthedocs.io/en/latest/source/augmenters.html?highlight=affine#affine).
+
+One interesting augementation option when doing background removal task is replacing backgrounds with random 
+images. We support this with `BackgroundReplacer` augmenter:
+
+```yaml
+augmentation:
+  BackgroundReplacer:
+    path: ./bg #path to folder with backgrounds
+    rate: 0.5 #fraction of original backgrounds to preserve
+
+```
