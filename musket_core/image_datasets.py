@@ -13,7 +13,10 @@ import imgaug
 import math
 from musket_core.coders import classes_from_vals,rle2mask_relative,mask2rle_relative,rle_decode,rle_encode,\
     classes_from_vals_with_sep
+from musket_core.utils import load_yaml
 
+LABELS_PATH = "LABELS_PATH"
+INHERIT_CLASSES_FROM_LABELS = "INHERIT_CLASSES_FROM_LABELS"
 
 class NegativeDataSet:
     def __init__(self, path):
@@ -643,7 +646,19 @@ class AbstractImagePathDataSet(DataSet):
     def __getitem__(self, item)->PredictionItem:
         raise ValueError()
     
-class CSVReferencedDataSet(AbstractImagePathDataSet):        
+class CSVReferencedDataSet(AbstractImagePathDataSet):
+
+    def readSettings(self,csvPath)->dict:
+        if os.path.isabs(csvPath):
+            absPath = csvPath
+        else:
+            absPath = os.path.join(context.get_current_project_data_path(), csvPath)
+
+        fDir = os.path.dirname(absPath)
+        fName = "." + os.path.basename(absPath) + ".dataset_desc"
+        settingsPath = os.path.join(fDir, fName)
+        settingsObj = load_yaml(settingsPath)
+        return settingsObj
     
     def readCSV(self,csvPath):
         try:
@@ -902,9 +917,16 @@ class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
             if "_" in str(x):
                 return x[:x.index("_")]
             else:
-                return x
+                return str(x)
 
-        self.classes = sorted(list(set([ refineClass(x) for x in rawClasses ])))
+        settings = self.readSettings(csvPath)
+        if LABELS_PATH in settings and INHERIT_CLASSES_FROM_LABELS in settings and settings[INHERIT_CLASSES_FROM_LABELS]:
+            labelsPath = settings[LABELS_PATH]
+            labels = pd.read_csv(labelsPath)
+            classes = labels["Clazz"]
+            self.classes = [refineClass(x) for x in sorted(list(classes))]
+        else:
+            self.classes = sorted(list(set([ refineClass(x) for x in rawClasses ])))
         self.class2Num = {}
         self.num2class = {}
         num = 0
@@ -954,10 +976,13 @@ class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
                 else:
                     vl = q.prediction
                 labels = vl[0]
-                masks = vl[2]
+                probs = vl[1]
+                masks = vl[3]
                 if len(labels) != len(masks):
                     raise Exception(f"{imageId} does not have same ammount of masks and labels")
                 for i in range(len(masks)):
+                    if probs[i] < treshold:
+                        continue
                     mask = masks[i]
                     label = str(int(labels[i] + 0.5))
                     if label in self.classes:
