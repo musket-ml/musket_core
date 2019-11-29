@@ -4,6 +4,8 @@ import inspect
 from  keras.layers import Layer
 from  keras.callbacks import Callback
 from musket_core import net_declaration
+from imgaug import augmenters
+from imgaug.augmenters.meta import Augmenter
 
 def parameters(sig):
     if hasattr(sig, "original"):
@@ -73,32 +75,33 @@ def record(m,kind):
     return rs
 
 blackList={'get','deserialize','deserialize_keras_object','serialize','serialize_keras_object','Layer','Callback','Optimizer'}
-def instrospect(m,clazz):
-    d = dir(m)
-    l=[]
-    for c in d:
-        if c[0]=='_':
+def instrospect(module,clazz):
+    lst = dir(module)
+    result=[]
+    for item in lst:
+        if item[0]=='_':
             continue
-        if c in blackList:
+        if item in blackList:
             continue
-        v=getattr(m,c)
+        attribute=getattr(module,item)
 
-        if inspect.isclass(v):
+        if inspect.isclass(attribute):
             try:
-                if isinstance(clazz,type) and issubclass(v, clazz):
-                    l.append(record(v,clazz.__name__))
+                if isinstance(clazz,type) and issubclass(attribute, clazz):
+                    result.append(record(attribute,clazz.__name__))
             except:                
-                print("Can not inspect",v)
+                print("Can not inspect",attribute)
 
-        if inspect.isfunction(v) and isinstance(clazz,str):
-            l.append(record(v, clazz))
-    return l
+        if inspect.isfunction(attribute) and isinstance(clazz,str):
+            result.append(record(attribute, clazz))
+    return result
 
 losses=instrospect(keras.losses,"losses")
 metrics=instrospect(keras.metrics,"metrics")
 optimizer=instrospect(keras.optimizers,keras.optimizers.Optimizer)
 layers=instrospect(keras.layers,Layer)
 callbacks=instrospect(keras.callbacks,Callback)
+augmenters_model = instrospect(augmenters, Augmenter)
 bs=[]
 
 
@@ -168,4 +171,4 @@ for m in objects:
         record(objects[m],Layer)
 
 def builtins():
-    return losses+metrics+optimizer+layers+callbacks+bs
+    return losses+metrics+optimizer+layers+callbacks+bs+augmenters_model
