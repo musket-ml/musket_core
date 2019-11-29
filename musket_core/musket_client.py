@@ -11,6 +11,8 @@ import time
 
 import argparse
 
+import tqdm
+
 def publish_local_project(host, project, **kwargs):
     destination = os.path.expanduser("~/.musket_core/zip_assembly")
 
@@ -103,11 +105,93 @@ def clone_from_repo(host, git_url, **kwargs):
     if response.status_code == 200:
         project_fit(host, lambda data: print(data), project=response.text, **kwargs)
 
+def task_status(host, task_id):
+    url = host + "/task_status?task_id=" + task_id
+
+    response = requests.get(url)
+
+    return response.text
+
+def get_results(host, project, task_id):
+    url = host + "/download_delta?project_id=" + os.path.basename(project)
+
+    response = requests.get(url, stream=True)
+
+    size = int(response.headers.get("Content-Length"))
+
+    destination = os.path.expanduser("~/.musket_core/delta_zip_download")
+
+    if os.path.exists(destination):
+        shutil.rmtree(destination)
+
+    utils.ensure(destination)
+
+    zip_name = os.path.join(destination, "project")
+
+    with open(zip_name + ".zip", "wb") as f:
+        pbar = tqdm.tqdm(total=size)
+
+        for item in response.iter_content(1024):
+            f.write(item)
+
+            pbar.update(1024)
+
+    if os.path.exists(zip_name + ".zip"):
+        shutil.unpack_archive(zip_name + ".zip", os.path.dirname(zip_name), "zip")
+
+        os.remove(zip_name + ".zip")
+
+        delta_list = delta_files(destination)
+
+        for item in delta_list:
+            rel_path = os.path.relpath(item, destination)
+
+            src = os.path.join(destination, rel_path)
+            dst = os.path.join(project, rel_path)
+
+            utils.ensure(os.path.dirname(dst))
+
+            if os.path.exists(dst):
+                os.remove(dst)
+
+            shutil.copy(src, dst)
+
+def delta_files(src, all_files = []):
+    src_list = [item for item in os.listdir(src) if not item.startswith(".")]
+
+    for item in src_list:
+        full_path = os.path.join(src, item)
+
+        if os.path.isdir(full_path):
+            delta_files(full_path, all_files)
+        else:
+            all_files.append(full_path)
+
+    return all_files
+
+
+
+
+
+def collect_results(host, project):
+    url = host + "/collect_delta?project=" + os.path.basename(project)
+
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        task_id = response.text
+
+        while not task_status(host, task_id) == "complete":
+            time.sleep(5)
+
+        get_results(host, project, task_id)
+
 def main():
     parser = argparse.ArgumentParser(description='Analize experiment metrics.')
     parser.add_argument('--host', type=str, required=True, help='server URL')
     parser.add_argument('--git', type=str, default=None, help='project on git URL')
     parser.add_argument('--report', type=str, default=None, help='task_id')
+    parser.add_argument('--results', type=bool, default=None, help='results')
 
     parser.add_argument('--name', type=str, default="", help='name of the experiment')
     parser.add_argument('--num_gpus', type=int, default=1, help='number of gpus')
@@ -131,10 +215,9 @@ def main():
         clone_from_repo(args.host, args.git, **client_args)
     elif args.report:
         get_report(args.host, args.report, lambda data: print(data), True)
+    elif args.results:
+        collect_results(args.host, os.getcwd())
     else:
         publish_local_project(args.host, os.getcwd(), **client_args)
 
-    print(args)
-
-# publish_local_project("http://127.0.0.1:9393", "/Users/dreamflyer/Desktop/exp")
 
