@@ -441,6 +441,46 @@ class Validate(yaml.YAMLObject):
         print("Model validated successfully!")
         return None
     
+from musket_core import caches
+class Cleanup(yaml.YAMLObject):
+    yaml_tag = u'!com.onpositive.musket_core.Cleanup'
+
+    def __init__(self,paths,clean_cache):
+        self.path=paths
+        self.cleanCache=True
+        self.cleanPredictions=True
+        self.cleanWeights=True
+
+    def perform(self,server,reporter:ProgressMonitor):
+        path=self.path
+        import shutil
+        for e in self.path:
+            e:Experiment= server.experiment(e)
+            print("Cleaning: "+e.path+" ...")
+            shutil.rmtree(os.path.join(e.path,"weights"), ignore_errors=True, onerror=None)
+            shutil.rmtree(os.path.join(e.path,"predictions"), ignore_errors=True, onerror=None)
+            shutil.rmtree(os.path.join(e.path,"metrics"), ignore_errors=True, onerror=None)
+            shutil.rmtree(os.path.join(e.path,"examples"), ignore_errors=True, onerror=None)
+            shutil.rmtree(os.path.join(e.path,".history"), ignore_errors=True, onerror=None)
+            if os.path.exists(os.path.join(e.path,"summary.yaml")):
+                os.remove(os.path.join(e.path,"summary.yaml"), dir_fd=None)
+            if os.path.exists(os.path.join(e.path,"inProgress.yaml")):
+                os.remove(os.path.join(e.path,"inProgress.yaml"), dir_fd=None)    
+            if os.path.exists(os.path.join(e.path,"config.yaml.folds_split")):
+                os.remove(os.path.join(e.path,"config.yaml.folds_split"), dir_fd=None)    
+            if os.path.exists(os.path.join(e.path,"config.yaml.contibution")):
+                os.remove(os.path.join(e.path,"config.yaml.contibution"), dir_fd=None)
+            if os.path.exists(os.path.join(e.path,"config.yaml.shapes")):
+                os.remove(os.path.join(e.path,"config.yaml.shapes"), dir_fd=None)        
+            if os.path.exists(os.path.join(e.path,"config.yaml.holdout_split")):
+                os.remove(os.path.join(e.path,"config.yaml.holdout_split"), dir_fd=None)
+            if self.cleanCache:       
+                shutil.rmtree(os.path.join(e.project.path,".cache"), ignore_errors=True, onerror=None)    
+            
+        print("All is cleaned up")
+        return None
+    
+    
 class ExportForWeb(yaml.YAMLObject):
     yaml_tag = u'!com.onpositive.musket_core.ExportForWeb'
 

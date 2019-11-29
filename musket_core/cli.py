@@ -6,6 +6,7 @@ FIT = "fit"
 ANALYZE = "analyze"
 DOWNLOAD_DEPS = "deps_download"
 CLIENT = "client"
+CLEAN = "clean"
 
 def is_experiment(root):
     config_path = os.path.join(root, "config.yaml")
@@ -64,10 +65,11 @@ def main():
 
         return
 
-    from musket_core import fit, analize, deps_download
+    from musket_core import fit, analize, deps_download,clean
 
     convert_args(os.getcwd(), task_name)
-
+    if task_name == CLEAN:
+        clean.main()
     if task_name == FIT:
         fit.main()
     elif task_name == ANALYZE:
