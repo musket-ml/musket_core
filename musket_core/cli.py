@@ -65,11 +65,11 @@ def main():
 
         return
 
-    from musket_core import fit, analize, deps_download,clean
+    from musket_core import fit, analize, deps_download,cleanup
 
     convert_args(os.getcwd(), task_name)
     if task_name == CLEAN:
-        clean.main()
+        cleanup.main()
     if task_name == FIT:
         fit.main()
     elif task_name == ANALYZE:
