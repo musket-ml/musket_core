@@ -909,7 +909,7 @@ class MultiClassSegmentationDataSet(BinarySegmentationDataSet):
 
 class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
 
-    def __init__(self, imagePath, csvPath, imColumn, rleColumn, clazzColumn, maskShape=None, rMask=True, isRel=False, len=-1):
+    def __init__(self, imagePath, csvPath, imColumn, rleColumn, clazzColumn, maskShape=None, rMask=True, isRel=False, len=-1,classes=None):
         super().__init__(imagePath,csvPath,imColumn,rleColumn,clazzColumn,maskShape,rMask,isRel,len)
 
         rawClasses = self.data[clazzColumn].values
@@ -918,13 +918,8 @@ class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
                 return x[:x.index("_")]
             else:
                 return str(x)
-
-        settings = self.readSettings(csvPath)
-        if LABELS_PATH in settings and INHERIT_CLASSES_FROM_LABELS in settings and settings[INHERIT_CLASSES_FROM_LABELS]:
-            labelsPath = settings[LABELS_PATH]
-            labels = pd.read_csv(labelsPath)
-            classes = labels["Clazz"]
-            self.classes = [refineClass(x) for x in sorted(list(classes))]
+        if classes is not None:
+            self.classes = classes
         else:
             self.classes = sorted(list(set([ refineClass(x) for x in rawClasses ])))
         self.class2Num = {}
@@ -978,6 +973,8 @@ class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
                 labels = vl[0]
                 probs = vl[1]
                 masks = vl[3]
+                if masks.shape[1] != self.maskShape[0] or masks.shape[2] != self.maskShape[1]:
+                    masks = imgaug.imresize_many_images(masks.astype(np.uint16),self.maskShape,cv.INTER_CUBIC)
                 if len(labels) != len(masks):
                     raise Exception(f"{imageId} does not have same ammount of masks and labels")
                 for i in range(len(masks)):
