@@ -829,7 +829,8 @@ class MultiClassSegmentationDataSet(BinarySegmentationDataSet):
     
     def __init__(self,imagePath,csvPath,imColumn,rleColumn,clazzColumn,maskShape=None,rMask=True,isRel=False,len=-1):
         super().__init__(imagePath,csvPath,imColumn,rleColumn,maskShape,rMask,isRel,len)
-        self.clazzColumn=clazzColumn    
+        self.clazzColumn=clazzColumn
+        self.__patch_frame__()
         self.classes=sorted(list(set(self.data[clazzColumn].values)))
         self.class2Num={}
         self.num2class={}
@@ -905,6 +906,18 @@ class MultiClassSegmentationDataSet(BinarySegmentationDataSet):
         image=self.get_value(imageId)
         prediction = self.get_mask(imageId,image.shape)
         return PredictionItem(imageId,image,prediction)
+
+    def __patch_frame__(self):
+        if not ':' in self.clazzColumn:
+            return
+        colonInd = self.clazzColumn.index(':')
+        originalClazzColumn = self.clazzColumn[:colonInd]
+        ind = int(self.clazzColumn[colonInd+1:])
+        if ind == 0:
+            vl = [x[0] for x in self.data[originalClazzColumn].str.split("_")]
+            self.data.insert(0, self.clazzColumn, value=vl)
+        else:
+            raise RuntimeError("Not implemented")
 
 
 class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
@@ -1015,7 +1028,7 @@ class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
             bboxes.append(getBB(mask, True))
 
         labelsArr = np.array(labels, dtype=np.int64) + 1
-        bboxesArr = np.array(bboxes, dtype=np.float32)
+        bboxesArr = np.array(bboxes, dtype=np.float32).reshape((-1,4))
         masksArr = np.array(masks, dtype=np.int16)
 
         y = (labelsArr, bboxesArr, masksArr)
