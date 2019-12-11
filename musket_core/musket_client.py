@@ -63,7 +63,7 @@ def get_report(host, task_id, on_report, is_last = False):
                     if line == "empty_string":
                         break
 
-                    if line == "report_not_awailable_yet":
+                    if line == "report_not_available_yet":
                         print("awaiting report...")
 
                         break
@@ -169,10 +169,6 @@ def delta_files(src, all_files = []):
 
     return all_files
 
-
-
-
-
 def collect_results(host, project):
     url = host + "/collect_delta?project=" + os.path.basename(project)
 
@@ -208,7 +204,7 @@ def main():
 
     client_args = dict(args.__dict__)
 
-    for key in ["git", "host", "report"]:
+    for key in ["git", "host", "report", "results"]:
         client_args.pop(key, None)
 
     if args.git:

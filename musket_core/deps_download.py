@@ -70,6 +70,17 @@ def downloadCompetitionFiles(id, dest):
 
     api.competition_download_files(id, dest, True, False)
 
+    unpack_all_zips(dest)
+
+    print("download complete")
+
+def unpack_all_zips(dest):
+    if not os.path.exists(dest):
+        return
+
+    if not os.path.isdir(dest):
+        return
+
     for item in os.listdir(dest):
         path = os.path.join(dest, item)
 
@@ -81,9 +92,9 @@ def downloadCompetitionFiles(id, dest):
 
                 print("removing: " + path)
 
-            os.remove(path)
+            unpack_all_zips(new_dir)
 
-    print("download complete")
+            os.remove(path)
 
 def parse_url(url):
     if HTTP in url and url.index(HTTP) == 0:
