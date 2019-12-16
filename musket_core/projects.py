@@ -353,11 +353,11 @@ class Project:
 
     def introspect(self):
         self._elements=None
-        for x in self.__module_cache:
-            importlib.reload(self.__module_cache[x])
-        res=[x.introspect() for x in self.elements()]
-        for x in res:
-            x["custom"]=True
+        for model_object in self.__module_cache:
+            importlib.reload(self.__module_cache[model_object])
+        res=[model_object.introspect() for model_object in self.elements()]
+        for model_object in res:
+            model_object["custom"]=True
         res=res+introspector.builtins()
         return {"features":res}
 
