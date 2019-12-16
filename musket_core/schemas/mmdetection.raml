@@ -14,4 +14,9 @@ types:
       multiscaleMode?:
       resetHeads?: boolean
       dropSemanticHead?: boolean
-      threshold?: number
+      threshold?:
+        type: number
+        default: 0.5
+      storage_threshold:
+        type: number
+        default: 0.1
