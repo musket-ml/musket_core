@@ -10,7 +10,10 @@ def _find_path():
     last=-1
     st=inspect.stack()
     for frm in st:        
-        file=frm.filename;        
+        file=frm.filename;
+
+        print("STACK FILE: " + str(file))
+
         dn=os.path.dirname(file)
         while len(dn)>0 :
             if os.path.exists(os.path.join(dn,"modules")):
