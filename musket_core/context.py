@@ -9,11 +9,11 @@ context=local()
 def _find_path():
     last=-1
     st=inspect.stack()
+
+    print("STACK FILES: " + str(st))
+
     for frm in st:        
-        file=frm.filename;
-
-        print("STACK FILE: " + str(file))
-
+        file=frm.filename
         dn=os.path.dirname(file)
         while len(dn)>0 :
             if os.path.exists(os.path.join(dn,"modules")):
