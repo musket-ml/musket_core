@@ -36,10 +36,27 @@ def publish_local_project(host, project, **kwargs):
     if response.status_code == 200:
         project_fit(host, lambda data: print(data), project=response.text, **kwargs)
 
+def filter_kwargs(kwargs):
+    result = {}
+
+    for item in kwargs.keys():
+        if kwargs[item] == "":
+            continue
+
+        if kwargs[item] == False:
+            continue
+
+        if kwargs[item] == None:
+            continue
+
+        result[item] = kwargs[item]
+
+    return result
+
 def project_fit(host, on_report, **kwargs):
     url = host + "/project_fit"
 
-    response = requests.get(url, kwargs)
+    response = requests.get(url, filter_kwargs(kwargs))
 
     if response.status_code == 200:
         task_id = response.text
@@ -54,21 +71,27 @@ def get_report(host, task_id, on_report, is_last = False):
 
     reporting = True
 
+    max_tries = 30
+
+    tries = 0
+
     while reporting:
         try:
             response = requests.get(url, params={"task_id": task_id, "from_line": from_line})
 
+            tries = 0
+
             if response.status_code == 200:
                 for line in io.TextIOWrapper(io.BytesIO(response.content), encoding="utf-8"):
-                    if line == "empty_string":
+                    if "empty_string" in line:
                         break
 
-                    if line == "report_not_available_yet":
+                    if "report_not_available_yet" in line:
                         print("awaiting report...")
 
                         break
 
-                    if line == "report_task_scheduled":
+                    if "report_task_scheduled" in line:
                         print("task sheduled but not started yet. request later:")
                         print(host + "/last_report?task_id=" + task_id)
                         print("or use terminal cmd:")
@@ -85,19 +108,24 @@ def get_report(host, task_id, on_report, is_last = False):
                     if is_last:
                         reporting = False
 
-                    if line == "report_end":
+                    if "report_end" in line:
                         reporting = False
 
             else:
                 reporting = False
 
-            time.sleep(5)
+            time.sleep(3)
         except Exception as e:
-            print(e)
+            if tries < max_tries:
+                tries += 1
 
-            reporting = False
+                print("connection error, try: " + str(tries) / str(max_tries))
+            else:
+                print(e)
 
-            on_report("something wrong. abort.")
+                reporting = False
+
+                on_report("something wrong. client stop tracking. task_id: " + task_id)
 
 def clone_from_repo(host, git_url, **kwargs):
     response = requests.get(host + "/gitclone", params={"git_url": git_url})
