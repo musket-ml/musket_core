@@ -159,10 +159,10 @@ def get_results(host, project, task_id):
     with open(zip_name + ".zip", "wb") as f:
         pbar = tqdm.tqdm(total=size)
 
-        for item in response.iter_content(1024):
+        for item in response.iter_content(20480):
             f.write(item)
 
-            pbar.update(1024)
+            pbar.update(20480)
 
     if os.path.exists(zip_name + ".zip"):
         shutil.unpack_archive(zip_name + ".zip", os.path.dirname(zip_name), "zip")
