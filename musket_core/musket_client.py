@@ -13,6 +13,17 @@ import argparse
 
 import tqdm
 
+def do_request(method, url, retries, **kwargs):
+    if retries > 0:
+        try:
+            return requests.__getattribute__(method)(url, **kwargs)
+        except:
+            time.sleep(1)
+
+            return do_request(method, url, retries - 1, **kwargs)
+
+    return None
+
 def publish_local_project(host, project, **kwargs):
     destination = os.path.expanduser("~/.musket_core/zip_assembly")
 
@@ -30,8 +41,10 @@ def publish_local_project(host, project, **kwargs):
 
     utils.archive(destination, archive_path)
 
+    do_request("get", host + "/all_state", 100, timeout=1)
+
     with open(archive_path + ".zip", 'rb') as zf:
-        response = requests.post(host + "/zipfile", files={'file': ('file.zip', zf, 'application/zip')})
+        response = do_request("post", host + "/zipfile", 10, timeout=5, files={'file': ('file.zip', zf, 'application/zip')})
 
     if response.status_code == 200:
         project_fit(host, lambda data: print(data), project=response.text, **kwargs)
@@ -71,7 +84,7 @@ def get_report(host, task_id, on_report, is_last = False):
 
     reporting = True
 
-    max_tries = 30
+    max_tries = 100
 
     tries = 0
 
@@ -119,7 +132,7 @@ def get_report(host, task_id, on_report, is_last = False):
             if tries < max_tries:
                 tries += 1
 
-                print("connection error, try: " + str(tries) / str(max_tries))
+                print("connection error, retry: " + str(tries) + "/" + str(max_tries))
             else:
                 print(e)
 
