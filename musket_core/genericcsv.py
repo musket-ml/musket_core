@@ -2,6 +2,7 @@ from musket_core import coders,datasets,utils
 from musket_core.datasets import PredictionItem
 from musket_core import context
 import pandas as pd
+import numpy as np
 import os
 class GenericCSVDataSet(datasets.DataSet):
     
@@ -113,5 +114,15 @@ class GenericCSVDataSet(datasets.DataSet):
         if isinstance(outputs, list) and len(outputs)==1:
             outputs=outputs[0]    
         return PredictionItem(item,inputs,outputs)
-    
+
+    def isPositive(self, item:int)->bool:
+        if(len(self.outputs) == 1):
+            return self.outputs[0][item] > 0
+        else:
+            outputs = [i[item] for i in self.outputs]
+            if isinstance(outputs, list) and len(outputs) == 1:
+                outputs = outputs[0]
+            else:
+                outputs = np.array(outputs)
+        return np.sum(outputs) > 0
     
