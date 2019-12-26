@@ -1207,11 +1207,10 @@ def _to_int(vls):
     return vls==mn[1],mn
             
 class MultiClassClassificationDataSet(BinaryClassificationDataSet): 
-    
-    
-    def initClasses(self, clazzColumn):
-        if clazzColumn not in self.data.columns:
-            cls=clazzColumn.split("|")
+        
+    def initClasses(self, clazz_column):
+        if clazz_column not in self.data.columns:
+            cls=clazz_column.split("|")
             if len(cls)>1:
                 allVls=[]
                 self.columnCls={}
@@ -1230,8 +1229,8 @@ class MultiClassClassificationDataSet(BinaryClassificationDataSet):
                     return pd.DataFrame(items,columns=tuple([self.imColumn]+self.classes))
                 self._create_dataframe=_cr
                 return cls                 
-        tc=self.data[clazzColumn].values
-        clz,sep=classes_from_vals_with_sep(tc)
+        clazz_col_vals=self.data[clazz_column].values
+        clz,sep=classes_from_vals_with_sep(clazz_col_vals, multi_dataset=True)
         self.sep=sep
         return clz
         
@@ -1249,29 +1248,29 @@ class MultiClassClassificationDataSet(BinaryClassificationDataSet):
         return self.sep.join(res)            
     
     def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
-        super().__init__(imagePath,csvPath,imColumn,clazzColumn)
-
-    def get_target(self, item):
-        imageId = self.imageIds[item]
-        vl = self.get_all_about(imageId)
-        result = np.zeros((len(self.classes)), dtype=np.bool)
+        super().__init__(imagePath,csvPath,imColumn,clazzColumn)                
+            
+    def get_target(self,item):    
+        imageId=self.imageIds[item]
+        vl = self.get_all_about(imageId)        
+        result=np.zeros((len(self.classes)),dtype=np.bool)                
         for i in range(len(vl)):
-
+            
             clazz = vl[self.clazzColumn].values[i]
-
+            
             if isinstance(clazz, numbers.Number):
                 if math.isnan(clazz):
                     continue
             else:
-                clazz = clazz.strip()
-                if len(clazz) == 0:
+                clazz=clazz.strip()    
+                if len(clazz)==0:
                     continue
             if self.sep is not None:
                 for w in clazz.split(self.sep):
-                    result[self.class2Num[w]] = 1
+                    result[self.class2Num[w]]=1
             else:
-                result[self.class2Num[clazz]] = 1
-
+                result[self.class2Num[clazz]]=1        
+                        
         return result
 
 
