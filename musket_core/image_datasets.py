@@ -1289,8 +1289,8 @@ class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet):
             num2Class={}
             num=0
             for c in cls:
-                class2Num[c]=num
-                num2Class[num]=c
+                class2Num[str(c)]=num
+                num2Class[num]=str(c)
                 num=num+1
             self.class2Num.append(class2Num)
             self.num2Class.append(num2Class)
@@ -1304,7 +1304,7 @@ class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet):
             result=np.zeros((len(self.classes[num])),dtype=np.bool)
             for i in range(len(vl)):
 
-                clazz = vl[clazzColumn].values[i]
+                clazz = str(vl[clazzColumn].values[i])
                 if isinstance(clazz, float):
                     if math.isnan(clazz):
                         continue

@@ -100,6 +100,9 @@ class PreprocessedDataSet(AbstractPreprocessedDataSet):
         newPi = result if self.expectsItem else PreproccedPredictionItem(pi.id, result, pi.y, pi)
         return newPi
 
+    def isPositive(self, item:int):
+        return self.parent.isPositive(item)
+
 
 def dataset_transformer(func):
     def wrapper(input,*args,**kwargs):
