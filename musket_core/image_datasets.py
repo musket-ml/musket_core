@@ -11,6 +11,7 @@ import scipy
 import tqdm
 import imgaug
 import math
+import numbers
 from musket_core.coders import classes_from_vals,rle2mask_relative,mask2rle_relative,rle_decode,rle_encode,\
     classes_from_vals_with_sep
 from musket_core.utils import load_yaml
@@ -1248,28 +1249,29 @@ class MultiClassClassificationDataSet(BinaryClassificationDataSet):
         return self.sep.join(res)            
     
     def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
-        super().__init__(imagePath,csvPath,imColumn,clazzColumn)                
-            
-    def get_target(self,item):    
-        imageId=self.imageIds[item]
-        vl = self.get_all_about(imageId)        
-        result=np.zeros((len(self.classes)),dtype=np.bool)                
+        super().__init__(imagePath,csvPath,imColumn,clazzColumn)
+
+    def get_target(self, item):
+        imageId = self.imageIds[item]
+        vl = self.get_all_about(imageId)
+        result = np.zeros((len(self.classes)), dtype=np.bool)
         for i in range(len(vl)):
-            
+
             clazz = vl[self.clazzColumn].values[i]
-            
-            if isinstance(clazz, float):
+
+            if isinstance(clazz, numbers.Number):
                 if math.isnan(clazz):
                     continue
-            clazz=clazz.strip()    
-            if len(clazz)==0:
-                continue
+            else:
+                clazz = clazz.strip()
+                if len(clazz) == 0:
+                    continue
             if self.sep is not None:
                 for w in clazz.split(self.sep):
-                    result[self.class2Num[w]]=1
+                    result[self.class2Num[w]] = 1
             else:
-                result[self.class2Num[clazz]]=1        
-                        
+                result[self.class2Num[clazz]] = 1
+
         return result
 
 

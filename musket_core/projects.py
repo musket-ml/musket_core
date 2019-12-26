@@ -15,8 +15,6 @@ import inspect
 
 from musket_core import introspector
 
-
-
 def _all_experiments(path,e:[experiment.Experiment]):
     if structure_constants.isExperimentDir(path):
         e.append(experiment.Experiment(path))
