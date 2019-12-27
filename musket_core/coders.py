@@ -13,46 +13,46 @@ def coder(name):
         return func        
     return inner #this is the fun_obj mentioned in the above content
 
-def classes_from_vals_with_sep(tc,sep=" |_",emptyIs=None):
+def classes_from_vals_with_sep(clazz_col_vals,separators=" |_",emptyIs=None, multi_dataset=False):
     realC=set()
-    hasMulti=False
+    has_multi=False
     nan=None
-    usedSep=None
-    for v in set(tc):
-            if isinstance(v, float):
-                if math.isnan(v):
-                    nan=v
+    used_sep=None
+    for value in set(clazz_col_vals):
+            if isinstance(value, float):
+                if math.isnan(value):
+                    nan=value
                     continue
             bs=False    
-            if isinstance(v, str):
-                v=v.strip()    
-                if len(v)==0:
+            if isinstance(value, str):
+                value=value.strip()    
+                if len(value)==0:
                     if emptyIs is None:
                         continue
                     else:
-                        realC.add(v)
+                        realC.add(value)
                         continue
-                if usedSep is None:     
-                    for s in sep:
-                        if s in v:
+                if used_sep is None:     
+                    for separator in separators:
+                        if separator in value:
                             bs=True
-                            usedSep=s
-                            hasMulti=True
-                            for w in v.split(s):
-                                realC.add(w.strip())
+                            used_sep=separator
+                            has_multi=True
+                            for part in value.split(separator):
+                                realC.add(part.strip())
                 else:
-                    if usedSep in v:
+                    if used_sep in value:
                             bs=True
                             
-                            hasMulti=True
-                            for w in v.split(usedSep):
-                                realC.add(w.strip())                  
+                            has_multi=True
+                            for part in value.split(used_sep):
+                                realC.add(part.strip())                  
             if not bs:
-                realC.add(v)
+                realC.add(value)
     realC=sorted(list(realC))            
-    if nan is not None and not hasMulti:
+    if not multi_dataset and (nan is not None and not has_multi):
         realC.append("nan")                                      
-    return realC,usedSep 
+    return realC,used_sep 
 
 def classes_from_vals(tc,sep=" |_",emptyIs=None):
     cl,sep=classes_from_vals_with_sep(tc, sep, emptyIs);

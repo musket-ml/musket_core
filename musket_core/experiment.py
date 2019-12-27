@@ -161,27 +161,32 @@ class Experiment:
             return float(m)
         else:
             m = self.metrics()
-            if isinstance(m,dict) and "primary_metric" in self.config():
-                pm = self.config()["primary_metric"]
-                if "val_" in pm:
-                    pm = pm[4:]
-                mv=pm
-                if pm + "_holdout" in m["allStages"]:
-                    mv = m["allStages"][pm + "_holdout"]
+            if isinstance(m,dict):
+                pm = None
+                if "primary_metric" in self.config():
+                    pm = self.config()["primary_metric"]
+                else:
+                    cfg = self.parse_config()
+                    if cfg.final_metrics is not None and len(cfg.final_metrics) > 0:
+                        pm = cfg.final_metrics[0]
+
+                if pm is not None:
+                    if "val_" in pm:
+                        pm = pm[4:]
+                    mv=pm
+                    if pm + "_holdout" in m["allStages"]:
+                        mv = m["allStages"][pm + "_holdout"]
+                        return mv
+                    elif "experiment_result" in self.config():
+                        am=self.config()["experiment_result"]
+                        if am in m["allStages"]:
+                            return m["allStages"][am]
+                    elif True:
+
+                        if pm in m["allStages"]:
+                            return m["allStages"][pm]["mean"]
                     return mv
-                elif "experiment_result" in self.config():
-                    am=self.config()["experiment_result"]
-                    if am in m["allStages"]:
-                        return m["allStages"][am]
-                elif True:
-                      
-                    if pm in m["allStages"]:
-                        return m["allStages"][pm]["mean"]
 
-
-
-
-                return mv
             if isinstance(m,float):
                 return m
             if isinstance(m,int):

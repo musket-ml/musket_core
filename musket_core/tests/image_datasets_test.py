@@ -6,6 +6,9 @@ import pandas as pd
 import numpy as np
 import math
 
+if __name__ == '__main__':
+    unittest.main()
+
 fl=__file__
 
 fl=os.path.dirname(fl)
@@ -295,16 +298,49 @@ class TestCoders(unittest.TestCase):
         a4, y ,
             """)
 
-        df = pd.read_csv(TESTDATA, sep=",") 
+        df = pd.read_csv(TESTDATA, sep=",")
         ds=image_datasets.MultiClassClassificationDataSet([],df,"Image","A|B")
         ds.get_value=dummyImage
-        
+
         self.assertEqual(ds[0].y[0],False)
         self.assertEqual(ds[2].y[1],True)
-        
+
         encoded=ds.encode(ds, True)
         df['A'] = df['A']
         df['A'] = df['A'].str.strip()
         rs=encoded["A"].values==df["A"].values
         self.assertEqual(rs.sum(), 4, "")
+        pass
+
+    def test_multi_class7(self):  #Test based on small piece of Severstal dataset
+        TESTDATA = StringIO("""ImageId,ClassId
+        ff6e35e0a.jpg,1
+        ff6e35e0a.jpg,2
+        ff933e271.jpg,3
+        ff96dfa95.jpg,3
+        ff9923932.jpg,3
+        ff9d46e95.jpg,4
+        ffb48ee43.jpg,3
+        ffbd081d5.jpg,3
+        ffc9fdf70.jpg,3
+        ffcf72ecf.jpg,3
+        fff02e9c5.jpg,3
+        fffe98443.jpg,3
+        ffff4eaa8.jpg,3
+        ffffd67df.jpg,3
+        00031f466.jpg,
+        000418bfc.jpg,
+        000789191.jpg,
+            """)
+
+        df = pd.read_csv(TESTDATA, sep=",")
+        ds=image_datasets.MultiClassClassificationDataSet([],df,"ImageId","ClassId")
+        ds.get_value=dummyImage
+
+        self.assertEqual(len(ds.classes),4)
+
+        encoded=ds.encode(ds, True)
+        df['ClassId'] = df['ClassId']
+        #df['ClassId'] = df['ClassId'].str.strip()
+        rs=encoded['ClassId'].values==df['ClassId'].values
         pass

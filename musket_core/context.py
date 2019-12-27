@@ -10,7 +10,7 @@ def _find_path():
     last=-1
     st=inspect.stack()
 
-    print("STACK FILES: " + str(st))
+    # print("STACK FILES: " + str(st))
 
     for frm in st:        
         file=frm.filename

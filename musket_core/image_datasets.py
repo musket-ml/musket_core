@@ -11,9 +11,13 @@ import scipy
 import tqdm
 import imgaug
 import math
+import numbers
 from musket_core.coders import classes_from_vals,rle2mask_relative,mask2rle_relative,rle_decode,rle_encode,\
     classes_from_vals_with_sep
+from musket_core.utils import load_yaml
 
+LABELS_PATH = "LABELS_PATH"
+INHERIT_CLASSES_FROM_LABELS = "INHERIT_CLASSES_FROM_LABELS"
 
 class NegativeDataSet:
     def __init__(self, path):
@@ -643,7 +647,19 @@ class AbstractImagePathDataSet(DataSet):
     def __getitem__(self, item)->PredictionItem:
         raise ValueError()
     
-class CSVReferencedDataSet(AbstractImagePathDataSet):        
+class CSVReferencedDataSet(AbstractImagePathDataSet):
+
+    def readSettings(self,csvPath)->dict:
+        if os.path.isabs(csvPath):
+            absPath = csvPath
+        else:
+            absPath = os.path.join(context.get_current_project_data_path(), csvPath)
+
+        fDir = os.path.dirname(absPath)
+        fName = "." + os.path.basename(absPath) + ".dataset_desc"
+        settingsPath = os.path.join(fDir, fName)
+        settingsObj = load_yaml(settingsPath)
+        return settingsObj
     
     def readCSV(self,csvPath):
         try:
@@ -657,9 +673,10 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
     def ordered_vals(self, imColumn):
         return sorted(list(set(self.get_values(imColumn))))
 
-    def __init__(self,imagePath,csvPath,imColumn):
+    def __init__(self,imagePath,csvPath,imColumn,len=-1):
         super().__init__(imagePath)
         self.imColumn=imColumn
+        self.len=len
         if isinstance(csvPath, str):
             self.readCSV(csvPath)
         else:
@@ -687,7 +704,10 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
         return self.data[col]
             
     def __len__(self):
-        return len(self.imageIds)
+        l = len(self.imageIds)
+        if self.len >= 0 and self.len <= l:
+            return self.len
+        return l
     
     def get_all_about(self,item):
         return self.data[self.data[self.imColumn]==item]
@@ -719,8 +739,8 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
 
 class BinarySegmentationDataSet(CSVReferencedDataSet):    
     
-    def __init__(self,imagePath,csvPath,imColumn,rleColumn=None,maskShape=None,rMask=True,isRel=False):   
-        super().__init__(imagePath,csvPath,imColumn)
+    def __init__(self,imagePath,csvPath,imColumn,rleColumn=None,maskShape=None,rMask=True,isRel=False,len=-1):
+        super().__init__(imagePath,csvPath,imColumn,len)
         self.rleColumn=rleColumn
         self.maskShape=maskShape
         self.rMask=rMask
@@ -808,9 +828,10 @@ class BinarySegmentationDataSet(CSVReferencedDataSet):
 
 class MultiClassSegmentationDataSet(BinarySegmentationDataSet):    
     
-    def __init__(self,imagePath,csvPath,imColumn,rleColumn,clazzColumn,maskShape=None,rMask=True,isRel=False):   
-        super().__init__(imagePath,csvPath,imColumn,rleColumn,maskShape,rMask,isRel)
-        self.clazzColumn=clazzColumn    
+    def __init__(self,imagePath,csvPath,imColumn,rleColumn,clazzColumn,maskShape=None,rMask=True,isRel=False,len=-1):
+        super().__init__(imagePath,csvPath,imColumn,rleColumn,maskShape,rMask,isRel,len)
+        self.clazzColumn=clazzColumn
+        self.__patch_frame__()
         self.classes=sorted(list(set(self.data[clazzColumn].values)))
         self.class2Num={}
         self.num2class={}
@@ -887,20 +908,34 @@ class MultiClassSegmentationDataSet(BinarySegmentationDataSet):
         prediction = self.get_mask(imageId,image.shape)
         return PredictionItem(imageId,image,prediction)
 
+    def __patch_frame__(self):
+        if not ':' in self.clazzColumn:
+            return
+        colonInd = self.clazzColumn.index(':')
+        originalClazzColumn = self.clazzColumn[:colonInd]
+        ind = int(self.clazzColumn[colonInd+1:])
+        if ind == 0:
+            vl = [x[0] for x in self.data[originalClazzColumn].str.split("_")]
+            self.data.insert(0, self.clazzColumn, value=vl)
+        else:
+            raise RuntimeError("Not implemented")
+
 
 class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
 
-    def __init__(self, imagePath, csvPath, imColumn, rleColumn, clazzColumn, maskShape=None, rMask=True, isRel=False):
-        super().__init__(imagePath,csvPath,imColumn,rleColumn,clazzColumn,maskShape,rMask,isRel)
+    def __init__(self, imagePath, csvPath, imColumn, rleColumn, clazzColumn, maskShape=None, rMask=True, isRel=False, len=-1,classes=None):
+        super().__init__(imagePath,csvPath,imColumn,rleColumn,clazzColumn,maskShape,rMask,isRel,len)
 
         rawClasses = self.data[clazzColumn].values
         def refineClass(x):
             if "_" in str(x):
                 return x[:x.index("_")]
             else:
-                return x
-
-        self.classes = sorted(list(set([ refineClass(x) for x in rawClasses ])))
+                return str(x)
+        if classes is not None:
+            self.classes = classes
+        else:
+            self.classes = sorted(list(set([ refineClass(x) for x in rawClasses ])))
         self.class2Num = {}
         self.num2class = {}
         num = 0
@@ -945,18 +980,23 @@ class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
             for i in tqdm.tqdm(range(len(item)), "Encoding dataset"):
                 q = item[i]
                 imageId = q.id
-                for j in range(len(self.classes)):
-                    if encode_y:
-                        vl = q.y[:, :, j:j + 1] > treshold
-                    else:
-                        vl = q.prediction[:, :, j:j + 1] > treshold
-                    labels = vl[0]
-                    masks = vl[2]
-                    if len(labels) != len(masks):
-                        raise Exception(f"{imageId} does not have same ammount of masks and labels")
-                    for i in range(len(masks)):
-                        mask = masks[i]
-                        label = labels[i]
+                if encode_y:
+                    vl = q.y
+                else:
+                    vl = q.prediction
+                labels = vl[0]
+                probs = vl[1]
+                masks = vl[3]
+                if masks.shape[1] != self.maskShape[0] or masks.shape[2] != self.maskShape[1]:
+                    masks = imgaug.imresize_many_images(masks.astype(np.uint16),self.maskShape,cv.INTER_CUBIC)
+                if len(labels) != len(masks):
+                    raise Exception(f"{imageId} does not have same ammount of masks and labels")
+                for i in range(len(masks)):
+                    if probs[i] < treshold:
+                        continue
+                    mask = masks[i]
+                    label = str(int(labels[i] + 0.5))
+                    if label in self.classes:
                         rle = self._to_rle(mask)
                         res.append({self.imColumn: imageId, self.rleColumn: rle, self.clazzColumn: label})
             res = self._recode(res)
@@ -989,7 +1029,7 @@ class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
             bboxes.append(getBB(mask, True))
 
         labelsArr = np.array(labels, dtype=np.int64) + 1
-        bboxesArr = np.array(bboxes, dtype=np.float32)
+        bboxesArr = np.array(bboxes, dtype=np.float32).reshape((-1,4))
         masksArr = np.array(masks, dtype=np.int16)
 
         y = (labelsArr, bboxesArr, masksArr)
@@ -1167,11 +1207,10 @@ def _to_int(vls):
     return vls==mn[1],mn
             
 class MultiClassClassificationDataSet(BinaryClassificationDataSet): 
-    
-    
-    def initClasses(self, clazzColumn):
-        if clazzColumn not in self.data.columns:
-            cls=clazzColumn.split("|")
+        
+    def initClasses(self, clazz_column):
+        if clazz_column not in self.data.columns:
+            cls=clazz_column.split("|")
             if len(cls)>1:
                 allVls=[]
                 self.columnCls={}
@@ -1190,8 +1229,8 @@ class MultiClassClassificationDataSet(BinaryClassificationDataSet):
                     return pd.DataFrame(items,columns=tuple([self.imColumn]+self.classes))
                 self._create_dataframe=_cr
                 return cls                 
-        tc=self.data[clazzColumn].values
-        clz,sep=classes_from_vals_with_sep(tc)
+        clazz_col_vals=self.data[clazz_column].values
+        clz,sep=classes_from_vals_with_sep(clazz_col_vals, multi_dataset=True)
         self.sep=sep
         return clz
         
@@ -1219,12 +1258,13 @@ class MultiClassClassificationDataSet(BinaryClassificationDataSet):
             
             clazz = vl[self.clazzColumn].values[i]
             
-            if isinstance(clazz, float):
+            if isinstance(clazz, numbers.Number):
                 if math.isnan(clazz):
                     continue
-            clazz=clazz.strip()    
-            if len(clazz)==0:
-                continue
+            else:
+                clazz=clazz.strip()    
+                if len(clazz)==0:
+                    continue
             if self.sep is not None:
                 for w in clazz.split(self.sep):
                     result[self.class2Num[w]]=1
@@ -1250,8 +1290,8 @@ class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet):
             num2Class={}
             num=0
             for c in cls:
-                class2Num[c]=num
-                num2Class[num]=c
+                class2Num[str(c)]=num
+                num2Class[num]=str(c)
                 num=num+1
             self.class2Num.append(class2Num)
             self.num2Class.append(num2Class)
@@ -1265,7 +1305,7 @@ class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet):
             result=np.zeros((len(self.classes[num])),dtype=np.bool)
             for i in range(len(vl)):
 
-                clazz = vl[clazzColumn].values[i]
+                clazz = str(vl[clazzColumn].values[i])
                 if isinstance(clazz, float):
                     if math.isnan(clazz):
                         continue

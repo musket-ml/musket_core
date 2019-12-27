@@ -28,7 +28,7 @@ class DataSetProxy:
         return len(self.ds)
 
     def config(self):
-        return self.ds.w.name+"("+str(self.ds.parameters)[1:-1]+")"
+        return self.ds.workspace.name+"("+str(self.ds.parameters)[1:-1]+")"
 
     def get_name(self):
         return self.ds.name
@@ -77,7 +77,7 @@ class Server(projects.Workspace):
 
     def __init__(self):
         super().__init__()
-        self.w=projects.Workspace()
+        self.workspace=projects.Workspace()
         pass
 
     def project(self,path):
@@ -90,14 +90,14 @@ class Server(projects.Workspace):
     def performTask(self,config:str,reporter:tools.ProgressMonitor):
         try:
             config=config[1:].replace("!!com.onpositive","!com.onpositive")
-            for d in dir(tools):
-                clz=getattr(tools, d);
+            for cur_class in dir(tools):
+                clz=getattr(tools, cur_class);
                 if hasattr(clz, "yaml_tag"):
                     tg=getattr(clz, "yaml_tag");
                     ld=getattr(clz, "from_yaml")
                     yaml.FullLoader.add_constructor(tg, ld)                
             obj=yaml.load(config,Loader=yaml.FullLoader)
-            results=obj.perform(self.w,reporter)
+            results=obj.perform(self.workspace,reporter)
             return results
         except:
             parralel.Error()

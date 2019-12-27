@@ -1,4 +1,4 @@
-from musket_core import parralel
+from musket_core import parralel, configloader
 from musket_core import hyper
 from musket_core import model
 from musket_core import datasets
@@ -8,12 +8,16 @@ from musket_core import projects
 from musket_core.experiment import Experiment
 from musket_core import dataset_analizers
 from musket_core import context
+from musket_core.visualization import context as visualization_ctx
+from imgaug import augmenters as iaa
+from imgaug.augmenters import Augmenter
 import numpy as np
 import tempfile
 from tqdm import tqdm
 import inspect
+import imageio
 import os
-from musket_core.datasets import DataSet, SubDataSet
+from musket_core.datasets import DataSet, SubDataSet, PredictionItem
 
 class ProgressMonitor:
 
@@ -192,8 +196,8 @@ def _exactValue(x,y):
 
 
 class AnalizeResults:
-    def __init__(self,ds,visualSpec=None):
-        self._results=ds
+    def __init__(self,dataset,visualSpec=None):
+        self._results=dataset
         self._visualSpec=visualSpec
         pass
 
@@ -211,7 +215,6 @@ class AnalizeResults:
 
     def visualizationSpec(self):
         return yaml.dump(self._visualSpec)
-
 
 class LastDataSetCache:
 
@@ -427,7 +430,50 @@ class AnalizePredictions(yaml.YAMLObject):
                 r._visualizer.args=self.visualizerArgs
             _results.append(r)
         return AnalizeResults(_results,visualizationHints)
+    
+class AnalizeAugmentations(yaml.YAMLObject):
 
+    yaml_tag = u'!com.onpositive.dside.dto.ImageDataSetAugmentRequest'
+
+    def __init__(self,**kwargs):
+        self.spec=None
+        self.experimentPath=None
+        self.datasetName=None
+        self.analizer=_exactValue
+        self.augmentationConfig=None       
+        pass
+
+
+    def perform(self, server, reporter: ProgressMonitor):
+        ms=ModelSpec(**self.spec)
+        exp:Experiment=server.experiment(self.experimentPath)
+        cf=exp.parse_config()
+
+        ds = _cache.get_dataset(exp, self.datasetName)
+        wrappedModel = ms.wrap(cf, exp)
+
+        targets=_cache.get_targets(exp,self.datasetName)       
+        settings = yaml.load(self.augmentationConfig)  
+        augmenters_lst = configloader.parse("augmenters", settings)
+        
+        if len(augmenters_lst) > 0:
+            augmenter = iaa.Sequential(augmenters_lst)
+    
+            def augmented_image_visializer(predictionItem:PredictionItem):
+                cache_path=visualization_ctx().path
+                path = cache_path + str(predictionItem.id) + ".png"
+                if os.path.exists(path):
+                    return path    
+                img = augmenter.augment_image(predictionItem.x) # Augment segmantation map also
+                imageio.imwrite(path,img)    
+                return path
+            
+            wrapped_dataset=WrappedDS(ds,list(range(len(ds))),"sample",None,None)
+            sig=inspect.signature(augmented_image_visializer)
+            visualizerFunc = projects.WrappedVisualizer("augmented", augmented_image_visializer, sig)
+            wrapped_dataset._visualizer=visualizerFunc.create(wrapped_dataset,tempfile.mkdtemp())
+            return AnalizeResults([wrapped_dataset],None)
+        
 class Validate(yaml.YAMLObject):
     yaml_tag = u'!com.onpositive.musket_core.ValidateTask'
 
