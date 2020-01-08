@@ -462,7 +462,6 @@ class AnalizeAugmentations(yaml.YAMLObject):
     
             def augmented_image_visializer(predictionItem:PredictionItem):
                 cache_path=visualization_ctx().path
-                path = cache_path + str(predictionItem.id)
                 path = cache_path + str(predictionItem.id) + ".png"
                 if os.path.exists(path):
                     return path    
