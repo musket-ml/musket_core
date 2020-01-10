@@ -11,7 +11,6 @@ from musket_core import utils, download_callbacks
 
 from urllib.parse import urlparse
 import importlib
-from jedi.evaluate import sys_path
 
 try:
     from kaggle.api.kaggle_api_extended import KaggleApi
