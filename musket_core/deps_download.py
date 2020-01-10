@@ -7,9 +7,11 @@ import zipfile
 
 import urllib
 
-from musket_core import utils
+from musket_core import utils, download_callbacks
 
 from urllib.parse import urlparse
+import importlib
+from jedi.evaluate import sys_path
 
 try:
     from kaggle.api.kaggle_api_extended import KaggleApi
@@ -161,6 +163,12 @@ def load_item(url, dest):
 def download(root, force_all=False):
     full_path = os.path.join(root, "project.yaml")
 
+    modules_dir = os.path.join(root, "modules")
+    sys.path.insert(0, modules_dir)
+    modules = [file[:-3] for file in os.listdir(modules_dir) if file.endswith('.py')]
+    for module in modules: #We need this to make decoration happen
+        importlib.import_module(module)
+
     try:
         loadedYaml = load_yaml(full_path)
     except:
@@ -210,6 +218,9 @@ def download(root, force_all=False):
         load_item(url, data_path)
 
         mark_loaded(root, url)
+    
+    for callback in download_callbacks.get_after_download_callbacks():
+        callback()   
 
 def main(*args):
     root = args[0][1]

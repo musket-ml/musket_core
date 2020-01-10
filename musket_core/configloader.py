@@ -2,7 +2,6 @@ import importlib
 import os
 import yaml
 import inspect
-import keras
 from musket_core import utils
 
 builtIns = {
