@@ -221,8 +221,13 @@ def download(root, force_all=False):
     for callback in download_callbacks.get_after_download_callbacks():
         callback()   
 
-def main(*args):
-    root = args[0][1]
+
+def main(*args):       
+    idx = args[0].index('--project')
+    if idx >= 0 and idx < len(args[0]) - 1:
+        root = args[0][idx + 1]
+    else:
+        root = os.getcwd()
 
     download(root, "--force" in args[0])
 

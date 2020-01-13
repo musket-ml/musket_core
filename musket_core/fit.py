@@ -9,7 +9,7 @@ os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0" #,1,2"
 import argparse
 from musket_core.projects import Workspace
-from musket_core import caches
+from musket_core import caches, deps_download
 from musket_core.tools import Launch,ProgressMonitor
 import tensorflow as tf
 
@@ -46,6 +46,8 @@ def main():
 
     parser.add_argument('--time', type=int, default=-1,
                         help='time to work')
+    parser.add_argument('-d','--download_deps', action='store_true',
+                    help='download dependencies (e.g. dataset) prior to fitting')
 
     args = parser.parse_args()
     if len(args.cache)>0:
@@ -74,6 +76,9 @@ def main():
 
     if folds:
         folds = [int(item) for item in folds.split(',')]
+        
+    if args.download_deps:
+        deps_download.main(sys.argv)
 
     l=Launch(args.gpus_per_net,args.num_gpus,args.num_workers,[x.path for x in experiments],args.allow_resume,args.only_report,args.launch_tasks, folds, args.time)
     l.perform(w,ProgressMonitor())
