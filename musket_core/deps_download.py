@@ -16,7 +16,7 @@ try:
     from kaggle.api.kaggle_api_extended import KaggleApi
     from kaggle.api_client import ApiClient
 except:
-    print("can't import kaggle!")
+    print("Can't import kaggle! Please check kaggle package is installed and ${USER_HOME}/.kaggle/kaggle.json is present.")
 
 KAGGLE_COMPETITION = "kaggle.competition"
 KAGGLE_DATASET = "kaggle.dataset"
@@ -203,7 +203,7 @@ def download(root, force_all=False):
                 continue
 
             dst = item.get("destination", data_path)
-            force = item.get("force", False)
+            force = item.get("force", False) or not os.path.exists(dst)
 
             data_path = os.path.abspath(os.path.join(data_path, dst))
 
