@@ -187,10 +187,13 @@ def download(root, force_all=False):
 
         return
 
+    data_dir = os.path.join(root, "data")
+    force_all = force_all or not os.path.exists(data_dir)
+
     for item in deps:
         url = item
 
-        data_path = os.path.join(root, "data")
+        data_path = data_dir
 
         force = False
 
