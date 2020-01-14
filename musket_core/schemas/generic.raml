@@ -28,6 +28,9 @@ types:
     type: HasLoss
     discriminator: architecture
     properties:
+      experiment_result:
+        type: string
+        (meta.custom): true
       imports:
         (meta.custom): true
         type: string[]

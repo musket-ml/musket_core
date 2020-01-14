@@ -1323,6 +1323,34 @@ class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet):
             num=num+1
         return results
 
+    def _encode_item(self, item:PredictionItem, encode_y=False, treshold=0.5):
+        imageId=self._encode_x(item)
+        if encode_y:
+            o=item.y
+        else:
+            o=item.prediction
+        result = {self.imColumn: imageId}
+        for i in range(len(o)):
+            oo = o[i]
+            cc = self.clazzColumns[i]
+            result[cc] = self._encode_class(oo, treshold)
+        return result
+
+    def _encode_class(self, o, treshold):
+        o = o > treshold
+        res = []
+        for i in range(len(o)):
+            if o[i] == True:
+                res.append(i)
+        if self.sep is None:
+            if len(res) == 0:
+                return ""
+            return res[0]
+        return self.sep.join(res)
+
+    def _create_dataframe(self, items):
+        return pd.DataFrame(items,columns=[self.imColumn] + self.clazzColumns)
+
 def getBB(mask,reverse=False):
     a = np.where(mask != 0)
     bbox = np.min(a[0]), np.max(a[0]), np.min(a[1]), np.max(a[1])
