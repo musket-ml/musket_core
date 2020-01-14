@@ -341,6 +341,6 @@ class TestCoders(unittest.TestCase):
 
         encoded=ds.encode(ds, True)
         df['ClassId'] = df['ClassId']
-        df['ClassId'] = df['ClassId'].str.strip()
+        #df['ClassId'] = df['ClassId'].str.strip()
         rs=encoded['ClassId'].values==df['ClassId'].values
         pass

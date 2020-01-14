@@ -2,7 +2,6 @@ import importlib
 import os
 import yaml
 import inspect
-import keras
 from musket_core import utils
 
 builtIns = {
@@ -55,37 +54,40 @@ class Module:
         self.register_module(pyMod)
 
     def register_module(self, pyMod,override=True):
-        for x in dir(pyMod):
+        for name in dir(pyMod):
             if not override:
-                if x.lower() in self.catalog:
+                if name.lower() in self.catalog:
                     continue
-            tp = getattr(pyMod, x)
-            if inspect.isclass(tp):
-                if x in self.catalog:
-                    tp = self.catalog[x]
-                else:
-                    init = getattr(tp, "__init__")
-                    try:
-                        gignature = inspect.signature(init)
-                        typeName = x
-                        tp = PythonType(typeName, gignature, tp)
-                        self.catalog[typeName.lower()] = tp
-                        self.catalog[typeName] = tp
-                        self.orig[typeName.lower()] = typeName
-                    except:
-                        e: ValueError
-
-            if inspect.isfunction(tp):
-                if x.lower() in self.catalog:
-                    continue
-                gignature = inspect.signature(tp)
-                typeName = x
-                tp = PythonFunction(gignature, tp)
-                self.catalog[typeName.lower()] = tp
-                self.catalog[typeName] = tp
-                self.orig[typeName.lower()] = typeName
+            member = getattr(pyMod, name)
+            self.register_member(name,member)
             pass
         pass
+    
+    def register_member(self, name:str, member):
+        if inspect.isclass(member):
+            if name in self.catalog:
+                member = self.catalog[name]
+            else:
+                init = getattr(member, "__init__")
+                try:
+                    signature = inspect.signature(init)
+                    typeName = name
+                    member = PythonType(typeName, signature, member)
+                    self.catalog[typeName.lower()] = member
+                    self.catalog[typeName] = member
+                    self.orig[typeName.lower()] = typeName
+                except:
+                    e: ValueError
+
+        if inspect.isfunction(member):
+            if name.lower() in self.catalog:
+                return
+            signature = inspect.signature(member)
+            typeName = name
+            member = PythonFunction(signature, member)
+            self.catalog[typeName.lower()] = member
+            self.catalog[typeName] = member
+            self.orig[typeName.lower()] = typeName
 
     def instantiate(self, dct, clear_custom=False, with_args=None):
         if with_args is None:

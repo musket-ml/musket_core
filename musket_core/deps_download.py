@@ -7,15 +7,16 @@ import zipfile
 
 import urllib
 
-from musket_core import utils
+from musket_core import utils, download_callbacks
 
 from urllib.parse import urlparse
+import importlib
 
 try:
     from kaggle.api.kaggle_api_extended import KaggleApi
     from kaggle.api_client import ApiClient
 except:
-    print("can't import kaggle!")
+    print("Can't import kaggle! Please check kaggle package is installed and ${USER_HOME}/.kaggle/kaggle.json is present.")
 
 KAGGLE_COMPETITION = "kaggle.competition"
 KAGGLE_DATASET = "kaggle.dataset"
@@ -161,6 +162,12 @@ def load_item(url, dest):
 def download(root, force_all=False):
     full_path = os.path.join(root, "project.yaml")
 
+    modules_dir = os.path.join(root, "modules")
+    sys.path.insert(0, modules_dir)
+    modules = [file[:-3] for file in os.listdir(modules_dir) if file.endswith('.py')]
+    for module in modules: #We need this to make decoration happen
+        importlib.import_module(module)
+
     try:
         loadedYaml = load_yaml(full_path)
     except:
@@ -180,10 +187,13 @@ def download(root, force_all=False):
 
         return
 
+    data_dir = os.path.join(root, "data")
+    force_all = force_all or not os.path.exists(data_dir)
+
     for item in deps:
         url = item
 
-        data_path = os.path.join(root, "data")
+        data_path = data_dir
 
         force = False
 
@@ -196,7 +206,7 @@ def download(root, force_all=False):
                 continue
 
             dst = item.get("destination", data_path)
-            force = item.get("force", False)
+            force = item.get("force", False) or not os.path.exists(dst)
 
             data_path = os.path.abspath(os.path.join(data_path, dst))
 
@@ -210,9 +220,17 @@ def download(root, force_all=False):
         load_item(url, data_path)
 
         mark_loaded(root, url)
+    
+    for callback in download_callbacks.get_after_download_callbacks():
+        callback()   
 
-def main(*args):
-    root = args[0][1]
+
+def main(*args):       
+    idx = args[0].index('--project')
+    if idx >= 0 and idx < len(args[0]) - 1:
+        root = args[0][idx + 1]
+    else:
+        root = os.getcwd()
 
     download(root, "--force" in args[0])
 

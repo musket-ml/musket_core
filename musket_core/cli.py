@@ -82,3 +82,6 @@ def main():
 def experiment_name():
     cwd = os.getcwd()
     return os.path.basename(cwd)
+
+if __name__ == '__main__':
+    main()
