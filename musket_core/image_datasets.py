@@ -1063,15 +1063,12 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
             num=num+1            
             
     def get_target(self,item):    
-        imageId=self.imageIds[item]
-        vl = self.get_all_about(imageId)        
-        result=np.zeros((1),dtype=np.bool)
-        for i in range(len(vl)):
-            clazz = vl[self.clazzColumn].values[i]
-            if isinstance(clazz,str):
-                clazz=clazz.strip()
-            if clazz in self.class2Num and self.class2Num[clazz]==1:
-                result[0]=1                
+        clazz = self.data[self.clazzColumn].values[item]        
+        result=np.zeros((1),dtype=np.bool)   
+        if isinstance(clazz,str):
+            clazz=clazz.strip()
+        if clazz in self.class2Num and self.class2Num[clazz]==1:
+            result[0]=1                
         return result        
             
     def __getitem__(self, item)->PredictionItem:
@@ -1084,9 +1081,7 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
         o=o>treshold
         if o[0]:
             return self.num2Class[1]
-        return self.num2Class[0]
-    
-    
+        return self.num2Class[0]        
 
     def _encode_x(self, item):
         return item.id
@@ -1123,17 +1118,14 @@ class CategoryClassificationDataSet(BinaryClassificationDataSet):
         return self.num2Class[(np.where(o==o.max()))[0][0]]           
             
     def get_target(self,item):    
-        imageId=self.imageIds[item]
-        vl = self.get_all_about(imageId)        
-        result=np.zeros((len(self.classes)),dtype=np.bool)                
-        for i in range(len(vl)):
-            clazz = vl[self.clazzColumn].values[i]
-            if isinstance(clazz, str):
-                clazz=clazz.strip()
-            result[self.class2Num[clazz]]=1            
-        return result
-
-import math
+        clazz = self.data[self.clazzColumn].values[item]        
+        result=np.zeros((1),dtype=np.bool)   
+        if isinstance(clazz,str):
+            clazz=clazz.strip()
+        if clazz in self.class2Num and self.class2Num[clazz]==1:
+            result[0]=1                
+        return result        
+                  
 
 class FolderClassificationDataSet(CategoryClassificationDataSet):
     def __init__(self,imagePath,folder,imColumn,clazzColumn):
@@ -1251,29 +1243,23 @@ class MultiClassClassificationDataSet(BinaryClassificationDataSet):
         super().__init__(imagePath,csvPath,imColumn,clazzColumn)                
             
     def get_target(self,item):    
-        imageId=self.imageIds[item]
-        vl = self.get_all_about(imageId)        
-        result=np.zeros((len(self.classes)),dtype=np.bool)                
-        for i in range(len(vl)):
+        clazz = self.data[self.clazzColumn].values[item]        
+        result=np.zeros((1),dtype=np.bool)                   
             
-            clazz = vl[self.clazzColumn].values[i]
-            
-            if isinstance(clazz, numbers.Number):
-                if math.isnan(clazz):
-                    continue
-            else:
-                clazz=clazz.strip()    
-                if len(clazz)==0:
-                    continue
-            if self.sep is not None:
-                for w in clazz.split(self.sep):
-                    result[self.class2Num[w]]=1
-            else:
-                result[self.class2Num[clazz]]=1        
+        if isinstance(clazz, numbers.Number):
+            if math.isnan(clazz):
+                continue
+        else:
+            clazz=clazz.strip()    
+            if len(clazz)==0:
+                continue
+        if self.sep is not None:
+            for w in clazz.split(self.sep):
+                result[self.class2Num[w]]=1
+        else:
+            result[self.class2Num[clazz]]=1        
                         
         return result
-
-
 
 class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet):
 
