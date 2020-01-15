@@ -1248,11 +1248,11 @@ class MultiClassClassificationDataSet(BinaryClassificationDataSet):
             
         if isinstance(clazz, numbers.Number):
             if math.isnan(clazz):
-                continue
+                return result
         else:
             clazz=clazz.strip()    
             if len(clazz)==0:
-                continue
+                return result
         if self.sep is not None:
             for w in clazz.split(self.sep):
                 result[self.class2Num[w]]=1
@@ -1284,27 +1284,22 @@ class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet):
 
     def get_target(self,item):
         imageId=self.imageIds[item]
-        vl = self.get_all_about(imageId)
         num=0
         results=[]
         for clazzColumn in self.clazzColumns:
             result=np.zeros((len(self.classes[num])),dtype=np.bool)
-            for i in range(len(vl)):
-
-                clazz = str(vl[clazzColumn].values[i])
-                if isinstance(clazz, float):
-                    if math.isnan(clazz):
-                        continue
-                if len(clazz.strip())==0:
-                    continue
-                if " " in clazz:
-                    for w in clazz.split(" "):
-                        result[self.class2Num[num][w]]=1
-                elif "|" in clazz:
-                    for w in clazz.split("|"):
-                        result[self.class2Num[num][w]]=1
-                else:
-                    result[self.class2Num[num][clazz.strip()]]=1
+            clazz = str(self.data[clazzColumn].values[item])
+            if len(clazz.strip()) == 0:
+                results.append(result)
+                continue
+            if " " in clazz:
+                for w in clazz.split(" "):
+                    result[self.class2Num[num][w]] = 1
+            elif "|" in clazz:
+                for w in clazz.split("|"):
+                    result[self.class2Num[num][w]] = 1
+            else:
+                result[self.class2Num[num][clazz.strip()]] = 1
             results.append(result)
             num=num+1
         return results

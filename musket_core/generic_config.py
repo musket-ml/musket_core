@@ -693,7 +693,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             context.net_cx=[]
 
     def createNet1(self, forInference):
-        return createNet(self);
+        return self.createNet();
 
     def createNet(self):
         raise ValueError("Not implemented")
