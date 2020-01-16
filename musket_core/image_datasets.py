@@ -1041,11 +1041,17 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
         return self.data[imColumn].values
 
     def initClasses(self, clazzColumn):
+        missing_cols = not clazzColumn in self.data.columns
+        if missing_cols:
+            print('WARNING! Column {} is not present in dataset. Creating empty one'.format(clazzColumn))
+            self.data[clazzColumn] = 0;
         self.hasNa=self.data[clazzColumn].isna().sum()>0        
         vals=self.data[clazzColumn][self.data[clazzColumn].notna()].values
         if isinstance(vals[0],str):
             return sorted(list(set([x.strip() for x in set(vals)])))
         ss=set(vals)
+        if missing_cols:
+            ss.add(1)
         if self.hasNa:
             return [""]+list(ss)
         return sorted(list(ss))
