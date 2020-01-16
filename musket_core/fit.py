@@ -84,7 +84,7 @@ def main():
         deps_download.main(sys.argv)
         
     if args.one_process or len(experiments) == 1:
-        perform_experiments(args.gpus_per_net,args.num_gpus,args.num_workers,[x.path for x in experiments],args.allow_resume,args.only_report,args.launch_tasks, folds, args.time)
+        perform_experiments(workspace, args.gpus_per_net,args.num_gpus,args.num_workers,[x.path for x in experiments],args.allow_resume,args.only_report,args.launch_tasks, folds, args.time)
     else:
         for x in experiments:
             p = Process(target=perform_experiments, args=(workspace,args.gpus_per_net,args.num_gpus,args.num_workers,[x.path],args.allow_resume,args.only_report,args.launch_tasks, folds, args.time))           
