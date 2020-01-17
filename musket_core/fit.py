@@ -1,5 +1,6 @@
 import sys
 import os
+from musket_core.project_paths import *
 from musket_core.fit_callbacks import after_fit_callbacks
 print("Adding " + os.path.dirname(sys.path[0]))
 #sys.path.append(os.path.dirname(sys.path[0]))
@@ -51,7 +52,13 @@ def main():
                         help='Start all experiments in one process. Good to use for several small experiments')
     parser.add_argument('-d','--download_deps', action='store_true',
                     help='download dependencies (e.g. dataset) prior to fitting')
-
+    
+    if not "--project" in sys.argv:
+        proj_path = project_path()
+        print("No --project parameter specified, will use following folder as project: {}".format(proj_path))
+        sys.argv.append("--project")
+        sys.argv.append(proj_path)
+    
     args = parser.parse_args()
     if len(args.cache)>0:
         caches.CACHE_DIR = args.cache

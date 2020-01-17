@@ -1,25 +1,12 @@
 import sys
-import os
 from musket_core import musket_client
+from musket_core.project_paths import *
 
 FIT = "fit"
 ANALYZE = "analyze"
 DOWNLOAD_DEPS = "deps_download"
 CLIENT = "client"
 CLEAN = "clean"
-
-def is_experiment(root):
-    config_path = os.path.join(root, "config.yaml")
-
-    return os.path.exists(config_path)
-
-def project_path():
-    cwd = os.getcwd()
-
-    if is_experiment(cwd):
-        return os.path.abspath(os.path.join(cwd, "../../"))
-
-    return cwd
 
 def convert_args(root, task_name):
     args = sys.argv
