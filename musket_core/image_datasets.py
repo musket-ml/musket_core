@@ -1324,16 +1324,8 @@ class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet):
         return result
 
     def _encode_class(self, o, treshold):
-        o = o > treshold
-        res = []
-        for i in range(len(o)):
-            if o[i] == True:
-                res.append(i)
-        if self.sep is None:
-            if len(res) == 0:
-                return ""
-            return res[0]
-        return self.sep.join(res)
+        ind = np.argmax(o)
+        return ind
 
     def _create_dataframe(self, items):
         return pd.DataFrame(items,columns=[self.imColumn] + self.clazzColumns)
