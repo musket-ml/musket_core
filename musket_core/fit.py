@@ -82,17 +82,23 @@ def main():
         
     if args.download_deps:
         deps_download.main(sys.argv)
-        
-    if args.one_process or len(experiments) == 1:
+    if len(experiments) == 0:
+        print("No experiments or all experiments already finished, nothing to launch")    
+    elif args.one_process or len(experiments) == 1:
         perform_experiments(workspace, args.gpus_per_net,args.num_gpus,args.num_workers,[x.path for x in experiments],args.allow_resume,args.only_report,args.launch_tasks, folds, args.time)
+        print("===== All experiments finished =====")
     else:
         for x in experiments:
             p = Process(target=perform_experiments, args=(workspace,args.gpus_per_net,args.num_gpus,args.num_workers,[x.path],args.allow_resume,args.only_report,args.launch_tasks, folds, args.time))           
             p.start()
             p.join()               
+        print("===== All experiments finished =====")
     
     callbacks = fit_callbacks.get_after_fit_callbacks()
+    if (len(callbacks) > 0):
+        print("Running {} after-fit callbacks".format(len(callbacks)))
     for func in callbacks:
+        print("Callback {}".format(func.__name__))        
         func()
     
     exit(0)
