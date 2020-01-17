@@ -1,12 +1,11 @@
 import sys
 import os
 from musket_core.project_paths import *
-from musket_core.fit_callbacks import after_fit_callbacks
-print("Adding " + os.path.dirname(sys.path[0]))
+print(("Adding " + os.path.dirname(sys.path[0]).replace('\\', '/')).encode('ascii', 'replace'))
 #sys.path.append(os.path.dirname(sys.path[0]))
 sys.path[0] = os.path.dirname(sys.path[0])
 print("sys.path:")
-print(sys.path)
+print(str(sys.path).replace('\\', '/').encode('ascii', 'replace'))
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0" #,1,2"
 import argparse
@@ -55,7 +54,7 @@ def main():
     
     if not "--project" in sys.argv:
         proj_path = project_path()
-        print("No --project parameter specified, will use following folder as project: {}".format(proj_path))
+        print("No --project parameter specified, will use following folder as project: {}".format(proj_path.replace('\\', '/')).encode('ascii', 'replace'))
         sys.argv.append("--project")
         sys.argv.append(proj_path)
     
