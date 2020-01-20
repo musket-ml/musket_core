@@ -13,5 +13,7 @@ def project_path():
 
     if is_experiment(cwd):
         return os.path.abspath(os.path.join(cwd, "../../"))
-
+    elif 'experiments' == os.path.basename(os.path.normpath(cwd)):
+        return os.path.abspath(os.path.join(cwd, "../"))
+    
     return cwd
