@@ -617,6 +617,7 @@ class Launch(yaml.YAMLObject):
 
         for projectPath in workPerProject:
             project=server.project(projectPath)
+            project.introspect()
             experiments=[project.byFullPath(e) for e in workPerProject[projectPath]]
             reporter.task("Launching:" + str(len(experiments)), len(experiments))
             allTasks=[]

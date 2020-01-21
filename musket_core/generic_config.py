@@ -111,14 +111,14 @@ def maxEpoch(file):
     if not os.path.exists(file):
         return -1;
     with open(file, 'r') as csvfile:
-         spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
-         epoch=-1;
-         num=0;
-         for row in spamreader:
-             if num>0:
+        spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
+        epoch=-1;
+        num=0;
+        for row in spamreader:
+            if num>0:
                 epoch=max(epoch,int(row[0])+1)
-             num = num + 1;
-         return epoch;
+            num = num + 1;
+        return epoch;
 
 
 class ExecutionConfig:
@@ -173,18 +173,18 @@ def ansemblePredictions(sourceFolder, folders:[str], cb, data, weights=None):
         for f in folders:
             weights.append(1.0)
     for i in os.listdir(sourceFolder):
-       a=None
-       num = 0
-       sw = 0
-       for f in folders:
-           sw=sw+weights[num]
-           if a is None:
-            a=np.load(f+i[0:i.index(".")]+".npy")*weights[num]
-           else:
-            a=a+np.load(f+i[0:i.index(".")]+".npy")*weights[num]
-           num=num+1
-       a=a/sw
-       cb(i, a, data)
+        a=None
+        num = 0
+        sw = 0
+        for f in folders:
+            sw=sw+weights[num]
+            if a is None:
+                a=np.load(f+i[0:i.index(".")]+".npy")*weights[num]
+            else:
+                a=a+np.load(f+i[0:i.index(".")]+".npy")*weights[num]
+            num=num+1
+        a=a/sw
+        cb(i, a, data)
 
 def dir_list(spath):
     if isinstance(spath, datasets.ConstrainedDirectory):
