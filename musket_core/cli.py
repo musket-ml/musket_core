@@ -1,5 +1,4 @@
 import sys
-from musket_core import musket_client
 from musket_core.project_paths import *
 
 FIT = "fit"
@@ -7,6 +6,7 @@ ANALYZE = "analyze"
 DOWNLOAD_DEPS = "deps_download"
 CLIENT = "client"
 CLEAN = "clean"
+KAGGLE_UPLOAD = "kaggle_upload"
 
 def convert_args(root, task_name):
     args = sys.argv
@@ -38,36 +38,57 @@ def main():
         print("musket " + ANALYZE)
         print("musket " + DOWNLOAD_DEPS)
         print("musket " + CLIENT)
+        print("musket " + KAGGLE_UPLOAD)
 
         return
 
     task_name = sys.argv[1]
 
-    if task_name not in [FIT, ANALYZE, DOWNLOAD_DEPS, CLIENT]:
+    if task_name not in [FIT, ANALYZE, DOWNLOAD_DEPS, CLIENT, KAGGLE_UPLOAD]:
         print("unknown task: " + task_name + ", command should be one of:")
         print("musket " + FIT)
         print("musket " + ANALYZE)
         print("musket " + DOWNLOAD_DEPS)
         print("musket " + CLIENT)
+        print("musket " + KAGGLE_UPLOAD)
 
         return
 
-    from musket_core import fit, analize, deps_download,cleanup
-
     convert_args(os.getcwd(), task_name)
+
     if task_name == CLEAN:
+        from musket_core import cleanup
+
         cleanup.main()
+
     if task_name == FIT:
+        from musket_core import fit
+
         fit.main()
+
     elif task_name == ANALYZE:
+        from musket_core import analize
+
         analize.main()
+
     elif task_name == DOWNLOAD_DEPS:
+        from musket_core import deps_download
+
         deps_download.main(sys.argv)
+
     elif task_name == CLIENT:
+        from musket_core import musket_client
+
         musket_client.main()
+
+    elif task_name == KAGGLE_UPLOAD:
+        from musket_core import publish_as_dataset
+
+        publish_as_dataset.main()
 
 def experiment_name():
     cwd = os.getcwd()
+
     return os.path.basename(cwd)
 
 if __name__ == '__main__':

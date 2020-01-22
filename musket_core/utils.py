@@ -123,7 +123,19 @@ def copy_file(src, dst):
 def archive(target_folder, output_path):
     shutil.make_archive(output_path, 'zip', target_folder)
 
-def collect_project(src, dst):
+def visit_tree(dir, visitor):
+    for item in os.listdir(dir):
+        item_path = os.path.join(dir, item)
+
+        if os.path.isdir(item_path):
+            visit_tree(item_path, visitor)
+        else:
+            visitor(item_path)
+
+def throw(message):
+    raise Exception(message)
+
+def collect_project(src, dst, disable_data=True, config_only=True, experiments=None):
     project_dst = os.path.join(dst, os.path.basename(src))
 
     ensure(project_dst)
@@ -135,7 +147,7 @@ def collect_project(src, dst):
         if item == "kaggle":
             return False
 
-        if item == "data":
+        if disable_data and item == "data":
             return False
 
         if item == ".metadata":
@@ -157,12 +169,18 @@ def collect_project(src, dst):
         else:
             copy_file(src_path, dst_path)
 
-    experiments = [item for item in os.listdir(os.path.join(src, "experiments")) if not item.startswith('.')]
+    exp_items = experiments if experiments else [item for item in os.listdir(os.path.join(src, "experiments")) if not item.startswith('.')]
 
-    for item in experiments:
-        src_path = os.path.join(src, "experiments", item, "config.yaml")
-        dst_path = os.path.join(project_dst, "experiments", item, "config.yaml")
+    for item in exp_items:
+        if config_only:
+            src_path = os.path.join(src, "experiments", item, "config.yaml")
+            dst_path = os.path.join(project_dst, "experiments", item, "config.yaml")
 
-        ensure(os.path.dirname(dst_path))
+            ensure(os.path.dirname(dst_path))
 
-        copy_file(src_path, dst_path)
+            copy_file(src_path, dst_path)
+        else:
+            src_path = os.path.join(src, "experiments", item)
+            dst_path = os.path.join(project_dst, "experiments", item)
+
+            copy_tree(src_path, dst_path)
