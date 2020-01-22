@@ -407,6 +407,37 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         if isinstance(self.final_metrics, str):
             self.final_metrics = [self.final_metrics]
 
+        self.final_metrics_for_validation = []
+        for i in range(len(self.final_metrics)):
+
+            fm = self.final_metrics[i]
+            for_validation = False
+            if isinstance(fm, dict) and len(fm) > 0:
+                for mName in fm:
+                    self.final_metrics[i] = mName
+                    mBody = fm[mName]
+                    for_validation = mBody is not None and 'for_validation' in mBody and mBody['for_validation'] == True
+                    break
+
+            self.final_metrics_for_validation.append(for_validation)
+
+        if self.primary_metric is not None:
+            pm = self.primary_metric
+            if pm.startswith('val_'):
+                pm = pm[len('val_'):]
+            if pm in self.final_metrics:
+                ind = self.final_metrics.index(pm)
+                self.final_metrics_for_validation[ind] = True
+
+    def get_final_metrics_for_validation(self)->[str]:
+        result = []
+        l = len(self.final_metrics)
+        for i in range(l):
+            if self.final_metrics_for_validation[i]:
+                result.append(self.final_metrics[i])
+        return result
+
+
     def _update_from_config(self, v, val):
         if v == 'callbacks':
             cs = []
@@ -1331,6 +1362,54 @@ class ReporterCallback(keras.callbacks.Callback):
             self.model.stop_training = True
         super().on_batch_end(batch, logs)
 
+class FinalMetricsOnValidationCallback(keras.callbacks.Callback):
+
+    def __init__(self, cfg:GenericTaskConfig, metrics,ec:ExecutionConfig):
+        super().__init__()
+        self.cfg = cfg
+        self.metrics = metrics
+        self.ec = ec
+        self.alternate_model = None
+
+    def setAlternateModel(self, model):
+        self.alternate_model = model
+
+    def on_epoch_end(self, epoch, logs=None):
+
+        mdl = self.alternate_model if self.alternate_model is not None else self.model
+
+        fold = self.ec.fold
+        stage = self.ec.stage
+        fa = model.FoldsAndStages(self.cfg, fold, stage)
+
+        isInCfg = hasattr(self.cfg,'mdl')
+        oldMdl = self.cfg.mdl if isInCfg else None
+
+        self.cfg.mdl = mdl
+
+        ds = self.cfg.validation(None, fold)
+        predDir = predictions.constructPredictionsDirPath(self.cfg.directory())
+        predictions.ensure(predDir)
+        dsPath = os.path.join(predDir, 'tmp-validation.npy')
+        preds = self.cfg.predict_all_to_dataset(ds, fold, stage, -1, None, False, dsPath, True)
+
+        if isInCfg:
+            self.cfg.mdl = oldMdl
+
+        print('Final metrics:')
+        for m in self.metrics:
+            fnc = configloader.loadMetric(m)
+            val = fnc(fa, preds)
+            logs[f'val_{m}'] = val
+            print(f'val_{m}: {val}')
+
+    def create_session(self):
+        config = tf.ConfigProto(
+            gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
+        )
+        config.gpu_options.allow_growth = True
+        sess = tf.Session(config=config)
+        return sess
 
 class Stage:
 
@@ -1449,6 +1528,13 @@ class Stage:
         if "logAll" in self.dict and self.dict["logAll"]:
             cb=cb+[AllLogger(ec.metricsPath()+"all.csv")]
         cb.append(KFoldCallback(kf))
+
+        final_metrics_for_validation = self.cfg.get_final_metrics_for_validation()
+        finalMetricsCallBack = None
+        if len(final_metrics_for_validation) > 0:
+            finalMetricsCallBack = FinalMetricsOnValidationCallback(self.cfg, final_metrics_for_validation, ec)
+            cb.append(finalMetricsCallBack)
+
         kepoch = self._addLogger(model, ec, cb, kepoch)
         md = self.cfg.primary_metric_mode
 
@@ -1492,6 +1578,9 @@ class Stage:
                 amcp.best = prevInfo.best
 
             cb.append(amcp)
+            if finalMetricsCallBack is not None:
+                finalMetricsCallBack.setAlternateModel(mda)
+
         else:
             self.loadBestWeightsFromPrevStageIfExists(ec, model)
         self._doTrain(kf, model, ec, cb, kepoch)

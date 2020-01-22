@@ -22,7 +22,7 @@ class Prediction:
         self.name=name        
         self.srcDataset=srcDataset
 
-    def calculate(self)->DataSet:    
+    def calculate(self)->DataSet:
         ds = self.srcDataset
         nm = self.name
         if ds is None:
@@ -129,9 +129,7 @@ def cross_validation_stat(cfg:IGenericTaskConfig, metric, stage=None, threshold=
         if hasattr(cfg, "_folds"):
             folds=cfg._folds()
     if isFinal(metric):
-        fnc=configloader.load("layers").catalog[metric]
-        if hasattr(fnc, "func"):
-            fnc=fnc.func    
+        fnc=configloader.loadMetric(metric)
         for i in folds:
             fa=FoldsAndStages(cfg,i,stage)
             val=cfg.predictions("validation",i,stage)
