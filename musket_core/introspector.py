@@ -9,7 +9,7 @@ from imgaug.augmenters.meta import Augmenter
 
 def parameters(sig):
     if hasattr(sig, "original"):
-       sig=getattr(sig, "original")
+        sig=getattr(sig, "original")
     cs = inspect.signature(sig)
     
     pars=[]
@@ -46,7 +46,7 @@ def extra_params(parameters):
 def record(m,kind):
     rs={}
     if hasattr(m, "original"):
-       m=getattr(m, "original")
+        m=getattr(m, "original")
     rs["doc"]=inspect.getdoc(m)
     if hasattr(m,"__name__"):
         rs["name"]=getattr(m,"__name__")

@@ -111,14 +111,14 @@ def maxEpoch(file):
     if not os.path.exists(file):
         return -1;
     with open(file, 'r') as csvfile:
-         spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
-         epoch=-1;
-         num=0;
-         for row in spamreader:
-             if num>0:
+        spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
+        epoch=-1;
+        num=0;
+        for row in spamreader:
+            if num>0:
                 epoch=max(epoch,int(row[0])+1)
-             num = num + 1;
-         return epoch;
+            num = num + 1;
+        return epoch;
 
 
 class ExecutionConfig:
@@ -173,18 +173,18 @@ def ansemblePredictions(sourceFolder, folders:[str], cb, data, weights=None):
         for f in folders:
             weights.append(1.0)
     for i in os.listdir(sourceFolder):
-       a=None
-       num = 0
-       sw = 0
-       for f in folders:
-           sw=sw+weights[num]
-           if a is None:
-            a=np.load(f+i[0:i.index(".")]+".npy")*weights[num]
-           else:
-            a=a+np.load(f+i[0:i.index(".")]+".npy")*weights[num]
-           num=num+1
-       a=a/sw
-       cb(i, a, data)
+        a=None
+        num = 0
+        sw = 0
+        for f in folders:
+            sw=sw+weights[num]
+            if a is None:
+                a=np.load(f+i[0:i.index(".")]+".npy")*weights[num]
+            else:
+                a=a+np.load(f+i[0:i.index(".")]+".npy")*weights[num]
+            num=num+1
+        a=a/sw
+        cb(i, a, data)
 
 def dir_list(spath):
     if isinstance(spath, datasets.ConstrainedDirectory):
@@ -548,14 +548,18 @@ class GenericTaskConfig(model.IGenericTaskConfig):
 
 
     def load_writeable_dataset(self, ds, path)->DataSet:
-        rr = np.load(path)
+        allowPickle = self.isMultiOutput()
+        if allowPickle:
+            rr = utils.load(path)
+        else:
+            rr = np.load(path)
         resName = (ds.name if hasattr(ds, "name") else "") + "_predictions"
-        result = BufferedWriteableDS(ds, resName, path, rr)
+        result = BufferedWriteableDS(ds, resName, path, rr, allowPickle)
         return result
 
     def create_writeable_dataset(self, dataset:DataSet, dsPath:str)->WriteableDataSet:
         resName = (dataset.name if hasattr(dataset, "name") else "") + "_predictions"
-        result = BufferedWriteableDS(dataset, resName, dsPath)
+        result = BufferedWriteableDS(dataset, resName, dsPath, pickle=self.isMultiOutput())
         return result
     
     def isMultiOutput(self):
@@ -679,14 +683,17 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         try:
             if os.path.exists(self.path+".ncx"):
                 context.net_cx=utils.load(self.path+".ncx")
-            model=self.createNet()
+            model=self.createNet1(True)
             if not os.path.exists(ec.weightsPath()):
                 return None
             model.load_weights(ec.weightsPath(),False)
             return model
         finally:
             context.train_mode=True  
-            context.net_cx=[]  
+            context.net_cx=[]
+
+    def createNet1(self, forInference):
+        return self.createNet();
 
     def createNet(self):
         raise ValueError("Not implemented")

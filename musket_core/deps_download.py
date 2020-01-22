@@ -7,15 +7,16 @@ import zipfile
 
 import urllib
 
-from musket_core import utils
+from musket_core import utils, download_callbacks
 
 from urllib.parse import urlparse
+import importlib
 
 try:
     from kaggle.api.kaggle_api_extended import KaggleApi
     from kaggle.api_client import ApiClient
 except:
-    print("can't import kaggle!")
+    print("Can't import kaggle! Please check kaggle package is installed and ${USER_HOME}/.kaggle/kaggle.json is present.")
 
 KAGGLE_COMPETITION = "kaggle.competition"
 KAGGLE_DATASET = "kaggle.dataset"
@@ -44,8 +45,8 @@ def download_url(url, dest):
         if zipfile.is_zipfile(path):
             new_dir = path[0: path.rindex(".")]
 
-            with zipfile.ZipFile(path) as zip:
-                zip.extractall(new_dir)
+            with zipfile.ZipFile(path) as zip_file:
+                zip_file.extractall(new_dir)
 
                 print("removing: " + path)
 
@@ -53,22 +54,22 @@ def download_url(url, dest):
 
     print("download complete")
 
-def downloadDataset(id, dest):
+def downloadDataset(dataset_id, dest):
     api = KaggleApi(ApiClient())
 
     api.authenticate()
 
-    api.dataset_download_files(id, dest, quiet=False, unzip=True)
+    api.dataset_download_files(dataset_id, dest, quiet=False, unzip=True)
 
     print("download complete")
 
 
-def downloadCompetitionFiles(id, dest):
+def downloadCompetitionFiles(dataset_id, dest):
     api = KaggleApi(ApiClient())
 
     api.authenticate()
 
-    api.competition_download_files(id, dest, True, False)
+    api.competition_download_files(dataset_id, dest, True, False)
 
     unpack_all_zips(dest)
 
@@ -81,20 +82,36 @@ def unpack_all_zips(dest):
     if not os.path.isdir(dest):
         return
 
+    has_zips = True
+    while has_zips:
+        has_zips = False
+        for item in os.listdir(dest):
+            path = os.path.join(dest, item)
+    
+            if zipfile.is_zipfile(path):
+                has_zips = True
+                safe_unzip(path,dest)
+    #             new_dir = path[0: path.rindex(".")]
+    # 
+    #             with zipfile.ZipFile(path) as zip_file:
+    #                 zip_file.extractall(new_dir)
+    # 
+    #                 print("removing: " + path)
+    
+                os.remove(path)
+                
     for item in os.listdir(dest):
-        path = os.path.join(dest, item)
-
-        if zipfile.is_zipfile(path):
-            new_dir = path[0: path.rindex(".")]
-
-            with zipfile.ZipFile(path) as zip:
-                zip.extractall(new_dir)
-
-                print("removing: " + path)
-
-            unpack_all_zips(new_dir)
-
-            os.remove(path)
+        if os.path.isdir(item):
+            unpack_all_zips(item)
+            
+def safe_unzip(zip_file, dest):
+    with zipfile.ZipFile(zip_file, 'r') as zf:
+        use_subfolder = False 
+        for member in zf.infolist():
+            abspath = os.path.abspath(os.path.join(dest, member.filename))
+            use_subfolder = use_subfolder or os.path.exists(abspath)
+        extractpath = dest if not use_subfolder else os.path.join(dest, zf.filename[0: zf.filename.rindex(".")]) 
+        zf.extractall(extractpath)
 
 def parse_url(url):
     if HTTP in url and url.index(HTTP) == 0:
@@ -112,13 +129,13 @@ def parse_url(url):
 
 def build_loader(parsed_url):
     if parsed_url["type"] == KAGGLE_DATASET:
-        return Loader(lambda id, dest: downloadDataset(id, dest))
+        return Loader(lambda dataset_id, dest: downloadDataset(dataset_id, dest))
 
     if parsed_url["type"] == KAGGLE_COMPETITION:
-        return Loader(lambda id, dest: downloadCompetitionFiles(id, dest))
+        return Loader(lambda dataset_id, dest: downloadCompetitionFiles(dataset_id, dest))
 
     if parsed_url["type"] == HTTP:
-        return Loader(lambda id, dest: download_url(id, dest))
+        return Loader(lambda dataset_id, dest: download_url(dataset_id, dest))
 
 def is_loaded(root, url):
     try:
@@ -161,6 +178,12 @@ def load_item(url, dest):
 def download(root, force_all=False):
     full_path = os.path.join(root, "project.yaml")
 
+    modules_dir = os.path.join(root, "modules")
+    sys.path.insert(0, modules_dir)
+    modules = [file[:-3] for file in os.listdir(modules_dir) if file.endswith('.py')]
+    for module in modules: #We need this to make decoration happen
+        importlib.import_module(module)
+
     try:
         loadedYaml = load_yaml(full_path)
     except:
@@ -180,10 +203,13 @@ def download(root, force_all=False):
 
         return
 
+    data_dir = os.path.join(root, "data")
+    force_all = force_all or not os.path.exists(data_dir)
+
     for item in deps:
         url = item
 
-        data_path = os.path.join(root, "data")
+        data_path = data_dir
 
         force = False
 
@@ -196,7 +222,7 @@ def download(root, force_all=False):
                 continue
 
             dst = item.get("destination", data_path)
-            force = item.get("force", False)
+            force = item.get("force", False) or not os.path.exists(dst)
 
             data_path = os.path.abspath(os.path.join(data_path, dst))
 
@@ -210,9 +236,17 @@ def download(root, force_all=False):
         load_item(url, data_path)
 
         mark_loaded(root, url)
+    
+    for callback in download_callbacks.get_after_download_callbacks():
+        callback()   
 
-def main(*args):
-    root = args[0][1]
+
+def main(*args):       
+    idx = args[0].index('--project')
+    if idx >= 0 and idx < len(args[0]) - 1:
+        root = args[0][idx + 1]
+    else:
+        root = os.getcwd()
 
     download(root, "--force" in args[0])
 

@@ -18,6 +18,7 @@ import inspect
 import imageio
 import os
 from musket_core.datasets import DataSet, SubDataSet, PredictionItem
+import imgaug
 
 class ProgressMonitor:
 
@@ -464,7 +465,12 @@ class AnalizeAugmentations(yaml.YAMLObject):
                 path = cache_path + str(predictionItem.id) + ".png"
                 if os.path.exists(path):
                     return path    
-                img = augmenter.augment_image(predictionItem.x) # Augment segmantation map also
+                if len(predictionItem.y.shape) > 1: #Should be a segmentation mask in this case, better to refactor this later
+                    batch = imgaug.Batch(images=[predictionItem.x], segmentation_maps=[imgaug.SegmentationMapsOnImage(predictionItem.y, shape=predictionItem.y.shape)])
+                    aug_batch = augmenter.augment_batch(batch)
+                    img = aug_batch.segmentation_maps_aug[0].draw_on_image(aug_batch.images_aug[0], alpha=0.5)[0]
+                else: 
+                    img = augmenter.augment_image(predictionItem.x) # Augment segmantation map also                             
                 imageio.imwrite(path,img)    
                 return path
             
@@ -611,6 +617,7 @@ class Launch(yaml.YAMLObject):
 
         for projectPath in workPerProject:
             project=server.project(projectPath)
+            project.introspect()
             experiments=[project.byFullPath(e) for e in workPerProject[projectPath]]
             reporter.task("Launching:" + str(len(experiments)), len(experiments))
             allTasks=[]

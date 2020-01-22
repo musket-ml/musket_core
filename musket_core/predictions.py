@@ -189,7 +189,11 @@ def considerThreshold(predictionDS, metric, threshold)->DataSet:
     need_threshold = generic_config.need_threshold(metric)
     if need_threshold:
         def applyThreshold(dsItem: PredictionItem) -> PredictionItem:
-            thresholded = dsItem.prediction > threshold
+            prediction = dsItem.prediction
+            if isinstance(prediction,list):
+                thresholded = [ x > threshold for x in prediction ]
+            else:
+                thresholded = prediction > threshold
             result = PredictionItem(dsItem.id, dsItem.x, dsItem.y, thresholded)
             return result
 
