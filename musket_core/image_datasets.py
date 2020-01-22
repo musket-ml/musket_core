@@ -2,22 +2,23 @@ import imageio
 import cv2 as cv
 import pandas as pd
 from musket_core import datasources as datasources, dsconfig as dsconfig
-from musket_core.datasets import PredictionItem, ImageKFoldedDataSet, DataSetLoader, NullTerminatable,DataSet
+from musket_core.datasets import PredictionItem, ImageKFoldedDataSet, DataSetLoader, NullTerminatable, DataSet
 from musket_core import context
 import os
-import  numpy as np
+import numpy as np
 import random
 import scipy
 import tqdm
 import imgaug
 import math
 import numbers
-from musket_core.coders import classes_from_vals,rle2mask_relative,mask2rle_relative,rle_decode,rle_encode,\
+from musket_core.coders import classes_from_vals, rle2mask_relative, mask2rle_relative, rle_decode, rle_encode, \
     classes_from_vals_with_sep
 from musket_core.utils import load_yaml
 
 LABELS_PATH = "LABELS_PATH"
 INHERIT_CLASSES_FROM_LABELS = "INHERIT_CLASSES_FROM_LABELS"
+
 
 class NegativeDataSet:
     def __init__(self, path):
@@ -46,11 +47,9 @@ class NegativeDataSet:
 
         out = np.expand_dims(out, axis=2)
 
-        #out = out / np.max(out)
+        # out = out / np.max(out)
 
         return PredictionItem(self.ids[item] + str(), image, out)
-    
-    
 
 
 class BlendedDataSet:
@@ -65,7 +64,7 @@ class BlendedDataSet:
 
         self.rnd = random.Random(23232)
 
-    def item(self,item,isTrain):
+    def item(self, item, isTrain):
         if not isTrain:
             return self.child[item]
 
@@ -90,8 +89,9 @@ class BlendedDataSet:
 
         return cv.addWeighted(new_image, 0.6, bland_image, 0.4, 0)
 
+
 class TextMaskGenerator:
-    def __init__(self, textures, band = False):
+    def __init__(self, textures, band=False):
         self.fonts = [x for x in dir(cv) if x.startswith('FONT_')]
 
         self.letters = list(" abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
@@ -169,7 +169,8 @@ class TextMaskGenerator:
 
             linePos += lineHeight
 
-            cv.putText(image, line, org=(0, linePos), fontFace=font, fontScale=scale, color=(255,255,255), lineType=cv.LINE_8, thickness=thickness)
+            cv.putText(image, line, org=(0, linePos), fontFace=font, fontScale=scale, color=(255, 255, 255),
+                       lineType=cv.LINE_8, thickness=thickness)
 
             linePos += baseLine
 
@@ -181,7 +182,7 @@ class TextMaskGenerator:
         initialMask = []
 
         if self.band:
-            initialMask = np.ones(( random.randint(100, 200),random.randint(500, 1000), 3), np.uint8)
+            initialMask = np.ones((random.randint(100, 200), random.randint(500, 1000), 3), np.uint8)
         else:
             initialMask = self.getInitialMask()
 
@@ -233,7 +234,7 @@ class TextMaskGenerator:
 
 
 class DropItemsDataset:
-    def __init__(self, child, drop_items,times=5):
+    def __init__(self, child, drop_items, times=5):
         self.child = child
 
         self.drop_items = drop_items
@@ -247,7 +248,7 @@ class DropItemsDataset:
     def __len__(self):
         return len(self.child)
 
-    def item(self,item,isTrain):
+    def item(self, item, isTrain):
         if not isTrain:
             return self.child[item]
 
@@ -265,7 +266,8 @@ class DropItemsDataset:
 
             rescaled_drop_item, rescaled_drop_mask = self.rescale_drop_item(input, drop_item, drop_mask, self.drop_size)
 
-            self.apply_drop_item(input, mask, rescaled_drop_item, rescaled_drop_mask, original_item.id + "_" + str(time))
+            self.apply_drop_item(input, mask, rescaled_drop_item, rescaled_drop_mask,
+                                 original_item.id + "_" + str(time))
 
         return PredictionItem(original_item.id, input, mask.astype(np.bool))
 
@@ -300,8 +302,8 @@ class DropItemsDataset:
         temp_mask = mask * 0
         temp_item = item * 0
 
-        temp_mask[down:up, left:right] = drop_mask[drop_down:drop_up,drop_left:drop_right]
-        temp_item[down:up, left:right]= drop_item[drop_down:drop_up,drop_left:drop_right]
+        temp_mask[down:up, left:right] = drop_mask[drop_down:drop_up, drop_left:drop_right]
+        temp_item[down:up, left:right] = drop_item[drop_down:drop_up, drop_left:drop_right]
 
         temp_mask = np.where(np.sum(temp_mask, 2))
 
@@ -335,7 +337,6 @@ class DropItemsDataset:
 
         return new_drop_item, self.rescale_mask_to_input(new_drop_item, drop_mask)
 
-
     def mask_box_size(self, mask_):
         mask = np.sum(mask_, 2)
 
@@ -350,7 +351,6 @@ class DropItemsDataset:
         rescaled_mask = np.expand_dims(rescaled_mask, 2)
 
         return rescaled_mask
-
 
     def get_drop_item(self):
         drop_item = self.rnd.choice(self.drop_items)
@@ -369,127 +369,129 @@ class DropItemsDataset:
 
         drop_item = drop_item.x * drop_mask
 
-        drop_item = drop_item[vp[0] : vp[-1] + 1, hp[0] : hp[-1] + 1]
+        drop_item = drop_item[vp[0]: vp[-1] + 1, hp[0]: hp[-1] + 1]
 
-        drop_mask = drop_mask[vp[0] : vp[-1] + 1, hp[0] : hp[-1] + 1]
+        drop_mask = drop_mask[vp[0]: vp[-1] + 1, hp[0]: hp[-1] + 1]
 
         return drop_item, drop_mask
 
+
 class Backgrounds:
 
-    def __init__(self,path,erosion=0,augmenters:imgaug.augmenters.Augmenter=None):
-        self.path=path;
-        self.rate=0.5
-        self.augs=augmenters
-        self.erosion=erosion
-        self.options=[os.path.join(path,x) for x in os.listdir(self.path)]
+    def __init__(self, path, erosion=0, augmenters: imgaug.augmenters.Augmenter = None):
+        self.path = path;
+        self.rate = 0.5
+        self.augs = augmenters
+        self.erosion = erosion
+        self.options = [os.path.join(path, x) for x in os.listdir(self.path)]
 
-    def next(self,i,i2):
-        fl=random.choice(self.options)
-        im=imageio.imread(fl)
-        r=cv.resize(im,(i.shape[1],i.shape[0]))
-        if isinstance(self.erosion,list):
-            er=random.randint(self.erosion[0],self.erosion[1])
+    def next(self, i, i2):
+        fl = random.choice(self.options)
+        im = imageio.imread(fl)
+        r = cv.resize(im, (i.shape[1], i.shape[0]))
+        if isinstance(self.erosion, list):
+            er = random.randint(self.erosion[0], self.erosion[1])
             kernel = np.ones((er, er), np.uint8)
             i2 = cv.erode(i2, kernel)
-        elif self.erosion>0:
+        elif self.erosion > 0:
             kernel = np.ones((self.erosion, self.erosion), np.uint8)
-            i2=cv.erode(i2,kernel)
-        i2=i2!=0
-        i2=np.squeeze(i2)
-        if i.shape[2]!=3:
-           zr=np.copy(i)
-           zr[:,:,0:3]=r
-           zr[i2] = i[i2]
-           return zr
+            i2 = cv.erode(i2, kernel)
+        i2 = i2 != 0
+        i2 = np.squeeze(i2)
+        if i.shape[2] != 3:
+            zr = np.copy(i)
+            zr[:, :, 0:3] = r
+            zr[i2] = i[i2]
+            return zr
         else:
             r[i2] = i[i2]
         return r;
 
-    def augment_item(self,i):
-        if self.augs!=None:
-            b=imgaug.Batch(images=[i.x],
-                                segmentation_maps=[imgaug.SegmentationMapOnImage(i.y, shape=i.y.shape)])
+    def augment_item(self, i):
+        if self.augs != None:
+            b = imgaug.Batch(images=[i.x],
+                             segmentation_maps=[imgaug.SegmentationMapOnImage(i.y, shape=i.y.shape)])
             for v in self.augs.augment_batches([b]):
-                bsa:imgaug.Batch=v
+                bsa: imgaug.Batch = v
                 break
-            xa=bsa.images_aug[0]
+            xa = bsa.images_aug[0]
 
-            xa=cv.resize(xa,(i.x.shape[1],i.x.shape[0]))
-            ya=bsa.segmentation_maps_aug[0].arr
-            ya = cv.resize(ya, (i.x.shape[1],  i.x.shape[0]))
+            xa = cv.resize(xa, (i.x.shape[1], i.x.shape[0]))
+            ya = bsa.segmentation_maps_aug[0].arr
+            ya = cv.resize(ya, (i.x.shape[1], i.x.shape[0]))
             r = self.next(xa, ya)
-            return PredictionItem(i.id, r, ya>0.5)
+            return PredictionItem(i.id, r, ya > 0.5)
         else:
-            r=self.next(i.x,i.y)
-            return PredictionItem(i.id,r,i.y)
+            r = self.next(i.x, i.y)
+            return PredictionItem(i.id, r, i.y)
 
 
 class WithBackgrounds:
-    def __init__(self, ds,bg):
-        self.ds=ds
-        self.bg=bg
-        self.rate=bg.rate
+    def __init__(self, ds, bg):
+        self.ds = ds
+        self.bg = bg
+        self.rate = bg.rate
 
     def __len__(self):
         return len(self.ds)
 
-    def item(self,item,isTrain):
+    def item(self, item, isTrain):
         if not isTrain:
             return self.ds[item]
 
         return self[item]
 
     def __getitem__(self, item):
-        i=self.ds[item]
-        if random.random()>self.rate:
+        i = self.ds[item]
+        if random.random() > self.rate:
             return self.bg.augment_item(i)
         return i
 
 
 class CropAndSplit:
-    def __init__(self,orig,n):
-        self.ds=orig
-        self.parts=n
-        self.lastPos=None
+    def __init__(self, orig, n):
+        self.ds = orig
+        self.parts = n
+        self.lastPos = None
 
     def isPositive(self, item):
         pos = item // (self.parts * self.parts);
         return self.ds.isPositive(pos)
 
     def __getitem__(self, item):
-        pos=item//(self.parts*self.parts);
-        off=item%(self.parts*self.parts)
-        if pos==self.lastPos:
-            dm=self.lastImage
+        pos = item // (self.parts * self.parts);
+        off = item % (self.parts * self.parts)
+        if pos == self.lastPos:
+            dm = self.lastImage
         else:
-            dm=self.ds[pos]
-            self.lastPos=pos
-            self.lastImage=dm
-        row=off//self.parts
-        col=off%self.parts
-        x,y=dm.x,dm.y
-        x1,y1= self.crop(row,col,x),self.crop(row,col,y)
+            dm = self.ds[pos]
+            self.lastPos = pos
+            self.lastImage = dm
+        row = off // self.parts
+        col = off % self.parts
+        x, y = dm.x, dm.y
+        x1, y1 = self.crop(row, col, x), self.crop(row, col, y)
 
-        vs=PredictionItem(dm.id,x1,y1)
-        if hasattr(dm, "prediction" ) and dm.prediction is not None:
-            pred=self.crop(row,col,dm.prediction)
-            vs.prediction=pred
-        vs.imageId=dm.id
-        vs.row=row
-        vs.col=col
+        vs = PredictionItem(dm.id, x1, y1)
+        if hasattr(dm, "prediction") and dm.prediction is not None:
+            pred = self.crop(row, col, dm.prediction)
+            vs.prediction = pred
+        vs.imageId = dm.id
+        vs.row = row
+        vs.col = col
         return vs
 
-    def crop(self,y,x,image):
-        h=image.shape[0]//self.parts
+    def crop(self, y, x, image):
+        h = image.shape[0] // self.parts
         w = image.shape[1] // self.parts
-        return image[h*y:h*(y+1),w*x:w*(x+1), :]
+        return image[h * y:h * (y + 1), w * x:w * (x + 1), :]
 
     def __len__(self):
-        return len(self.ds)*self.parts*self.parts
-    
-    def get_train_item(self,item):
+        return len(self.ds) * self.parts * self.parts
+
+    def get_train_item(self, item):
         return self[item]
+
 
 class AspectRatioDataSet:
     def __init__(self, child, target_ratio=(1, 1), strategy="center"):
@@ -509,7 +511,8 @@ class AspectRatioDataSet:
         if self.strategy == "random":
             rnd = random.random();
 
-        return PredictionItem(child_item.id, self.get_new_image(new_size_in, child_item.x, rnd), self.get_new_image(new_size_out, child_item.y, rnd))
+        return PredictionItem(child_item.id, self.get_new_image(new_size_in, child_item.x, rnd),
+                              self.get_new_image(new_size_out, child_item.y, rnd))
 
     def __len__(self):
         return len(self.child)
@@ -582,43 +585,37 @@ class DS_Wrapper:
 
 class NoChangeDataSetImageClassificationImage(ImageKFoldedDataSet):
 
-    def generator_from_indexes(self, indexes,isTrain=True,returnBatch=False):
-        m = DataSetLoader(self.ds, indexes, self.batchSize,isTrain=isTrain).generator
-        #aug = self.augmentor(isTrain)
+    def generator_from_indexes(self, indexes, isTrain=True, returnBatch=False):
+        m = DataSetLoader(self.ds, indexes, self.batchSize, isTrain=isTrain).generator
+
+        # aug = self.augmentor(isTrain)
         def r():
             num = 0;
             while True:
                 for v in m():
                     r = v;
-                    x,y= np.array([x for x in r.images]), np.array([x for x in r.data[1]])
-                    num=num+1
+                    x, y = np.array([x for x in r.images]), np.array([x for x in r.data[1]])
+                    num = num + 1
                     if returnBatch:
-                        yield x,y,r
-                    else: yield x,y
-        return NullTerminatable(),NullTerminatable(),r
-    
-    
+                        yield x, y, r
+                    else:
+                        yield x, y
 
-
-
-
-
-
-
+        return NullTerminatable(), NullTerminatable(), r
 
 
 class AbstractImagePathDataSet(DataSet):
-    
-    def __init__(self,imagePath):
-        self.images={}
+
+    def __init__(self, imagePath):
+        self.images = {}
         if imagePath is None:
             return;
-        if isinstance(imagePath, list): 
+        if isinstance(imagePath, list):
             for v in imagePath:
                 self.addPath(v)
-        else: 
+        else:
             self.addPath(imagePath)
-        self.dim=3 
+        self.dim = 3
 
     def addPath(self, imagePath):
         p0 = os.path.join(context.get_current_project_data_path(), imagePath)
@@ -629,27 +626,27 @@ class AbstractImagePathDataSet(DataSet):
             fp = os.path.join(p0, x)
             self.images[x] = fp
             self.images[x[:-4]] = fp
-        
-    
-    def get_value(self,im_id):
-        im=imageio.imread(self.images[im_id])
-        if len(im.shape)!=3:
-            im=np.expand_dims(im, -1)
-        if im.shape[2]!=self.dim:
-            if self.dim==3:
-                im=np.concatenate([im,im,im],axis=2)
-            elif self.dim==1:         
-                im=np.mean(im,axis=2)
+
+    def get_value(self, im_id):
+        im = imageio.imread(self.images[im_id])
+        if len(im.shape) != 3:
+            im = np.expand_dims(im, -1)
+        if im.shape[2] != self.dim:
+            if self.dim == 3:
+                im = np.concatenate([im, im, im], axis=2)
+            elif self.dim == 1:
+                im = np.mean(im, axis=2)
             else:
-                raise ValueError("Unsupported conversion")    
-        return im 
-        
-    def __getitem__(self, item)->PredictionItem:
+                raise ValueError("Unsupported conversion")
+        return im
+
+    def __getitem__(self, item) -> PredictionItem:
         raise ValueError()
-    
+
+
 class CSVReferencedDataSet(AbstractImagePathDataSet):
 
-    def readSettings(self,csvPath)->dict:
+    def readSettings(self, csvPath) -> dict:
         if os.path.isabs(csvPath):
             absPath = csvPath
         else:
@@ -660,118 +657,119 @@ class CSVReferencedDataSet(AbstractImagePathDataSet):
         settingsPath = os.path.join(fDir, fName)
         settingsObj = load_yaml(settingsPath)
         return settingsObj
-    
-    def readCSV(self,csvPath):
+
+    def readCSV(self, csvPath):
         try:
-            self.data=pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath))
+            self.data = pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath))
         except:
             try:
-                self.data=pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath),encoding="cp1251")
-            except:    
-                self.data=pd.read_csv(csvPath)
+                self.data = pd.read_csv(os.path.join(context.get_current_project_data_path(), csvPath),
+                                        encoding="cp1251")
+            except:
+                self.data = pd.read_csv(csvPath)
 
     def ordered_vals(self, imColumn):
         return sorted(list(set(self.get_values(imColumn))))
 
-    def __init__(self,imagePath,csvPath,imColumn,len=-1):
+    def __init__(self, imagePath, csvPath, imColumn, len=-1):
         super().__init__(imagePath)
-        self.imColumn=imColumn
-        self.len=len
+        self.imColumn = imColumn
+        self.len = len
         if isinstance(csvPath, str):
             self.readCSV(csvPath)
         else:
-            self.data=csvPath    
-        self.splitColumns={}
+            self.data = csvPath
+        self.splitColumns = {}
         for m in self.data.columns:
-            parts=m.split("_")
-            ind=0
-            for col in parts:                
-                if not col in self.data.columns:
+            parts = m.split("_")
+            ind = 0
+            for col in parts:
+                if col not in self.data.columns:
                     try:
-                        vl=[x[ind] for x in self.data[m].str.split("_")]
-                        self.data.insert(0,col,value=vl)
-                        self.splitColumns[col]=m
+                        vl = [x[ind] for x in self.data[m].str.split("_")]
+                        self.data.insert(0, col, value=vl)
+                        self.splitColumns[col] = m
                     except:
-                        pass    
-                ind=ind+1
-        self.imageIds=self.ordered_vals(imColumn)                            
-    
-    def _id(self,item):
-        imageId=self.imageIds[item]
+                        pass
+                ind = ind + 1
+        self.imageIds = self.ordered_vals(imColumn)
+
+    def _id(self, item):
+        imageId = self.imageIds[item]
         return imageId
-    
-    def get_values(self,col):
+
+    def get_values(self, col):
         return self.data[col]
-            
+
     def __len__(self):
         l = len(self.imageIds)
         if self.len >= 0 and self.len <= l:
             return self.len
         return l
-    
-    def get_all_about(self,item):
-        return self.data[self.data[self.imColumn]==item]
-    
-    def __getitem__(self, item)->PredictionItem:
+
+    def get_all_about(self, item):
+        return self.data[self.data[self.imColumn] == item]
+
+    def __getitem__(self, item) -> PredictionItem:
         raise ValueError()
-    
-    def _encode_template(self,template_id,template,val):
-        rs=[]
+
+    def _encode_template(self, template_id, template, val):
+        rs = []
         for q in template:
-            v=val[q]
+            v = val[q]
             rs.append(v)
             del val[q]
-        val[template_id]="_".join(rs)
-        return val    
-    
-    def _recode(self,seq):
-        
-        templates={}
+        val[template_id] = "_".join(rs)
+        return val
+
+    def _recode(self, seq):
+
+        templates = {}
         for q in self.splitColumns:
-            r=self.splitColumns[q]
-            templates[r]=r.split("_")
-            
-        for item in seq:            
+            r = self.splitColumns[q]
+            templates[r] = r.split("_")
+
+        for item in seq:
             for t in templates:
-                self._encode_template(t,templates[t],item)
+                self._encode_template(t, templates[t], item)
         return seq
 
 
-class BinarySegmentationDataSet(CSVReferencedDataSet):    
-    
-    def __init__(self,imagePath,csvPath,imColumn,rleColumn=None,maskShape=None,rMask=True,isRel=False,len=-1):
-        super().__init__(imagePath,csvPath,imColumn,len)
-        self.rleColumn=rleColumn
-        self.maskShape=maskShape
-        self.rMask=rMask
-        self.rle_decode=rle_decode
-        self.rle_encode=rle_encode
+class BinarySegmentationDataSet(CSVReferencedDataSet):
+
+    def __init__(self, imagePath, csvPath, imColumn, rleColumn=None, maskShape=None, rMask=True, isRel=False, len=-1):
+        super().__init__(imagePath, csvPath, imColumn, len)
+        self.rleColumn = rleColumn
+        self.maskShape = maskShape
+        self.rMask = rMask
+        self.rle_decode = rle_decode
+        self.rle_encode = rle_encode
         if isRel:
-            self.rle_decode=rle2mask_relative
-            self.rle_encode=mask2rle_relative
-        
-    def get_target(self,item):    
-        imageId=self.imageIds[item]
+            self.rle_decode = rle2mask_relative
+            self.rle_encode = mask2rle_relative
+
+    def get_target(self, item):
+        imageId = self.imageIds[item]
         vl = self.get_all_about(imageId)
         rleString = vl[self.rleColumn].values[0]
         if isinstance(rleString, str):
-            if rleString.strip() != "-1" and len(rleString.strip())>0:
+            if rleString.strip() != "-1" and len(rleString.strip()) > 0:
                 return 1
-        return 0   
-    
-    def isPositive(self,item):
-        return self.get_target(item)==True 
-    
+        return 0
+
+    def isPositive(self, item):
+        return self.get_target(item) == True
+
     def get_rleString(self, item):
-        imageId=item.id
+        imageId = item.id
         vl = self.get_all_about(imageId)
         rleString = vl[self.rleColumn].values[0]
-        if isinstance(rleString,float):
+        if isinstance(rleString, float):
             if math.isnan(rleString):
                 return ""
         return rleString
-        
-    def get_mask(self, image,imShape):
+
+    def get_mask(self, image, imShape):
         prediction = None
         vl = self.get_all_about(image)
         rleString = vl[self.rleColumn].values[0]
@@ -781,26 +779,23 @@ class BinarySegmentationDataSet(CSVReferencedDataSet):
                 if self.maskShape is not None:
                     shape = self.maskShape
                 if self.rMask:
-                    prediction = self.rle_decode(rleString, (shape[1],shape[0]))
+                    prediction = self.rle_decode(rleString, (shape[1], shape[0]))
                 else:
                     prediction = self.rle_decode(rleString, shape)
-                
-                prediction=np.rot90(prediction)
-                prediction=np.flipud(prediction)
-                prediction = np.expand_dims(prediction,2).astype(np.bool)
-                
+
+                prediction = np.rot90(prediction)
+                prediction = np.flipud(prediction)
+                prediction = np.expand_dims(prediction, 2).astype(np.bool)
+
         if prediction is None:
             prediction = np.zeros((imShape[0], imShape[1], 1), dtype=np.bool)
         return prediction
-    
-    
-    
-    def __getitem__(self, item)->PredictionItem:
-        imageId=self.imageIds[item]
-        image=self.get_value(imageId)
-        prediction = self.get_mask(imageId,image.shape)
-        return PredictionItem(self._id(item),image,prediction)
-    
+
+    def __getitem__(self, item) -> PredictionItem:
+        imageId = self.imageIds[item]
+        image = self.get_value(imageId)
+        prediction = self.get_mask(imageId, image.shape)
+        return PredictionItem(self._id(item), image, prediction)
 
     def _to_rle(self, o):
         o = np.flipud(o)
@@ -808,112 +803,113 @@ class BinarySegmentationDataSet(CSVReferencedDataSet):
         rle = self.rle_encode(o)
         return rle
 
-    def encode(self,item:PredictionItem,encode_y=False,treshold=0.5):
+    def encode(self, item: PredictionItem, encode_y=False, treshold=0.5):
         if isinstance(item, PredictionItem):
-            imageId=item.id
+            imageId = item.id
             if encode_y:
-                o=item.y
-            else:    
-                o=item.prediction
-            if (o.dtype!=np.bool):
-                    o=o>treshold    
+                o = item.y
+            else:
+                o = item.prediction
+            if (o.dtype != np.bool):
+                o = o > treshold
             rle = self._to_rle(o)
-            return { self.imColumn:imageId,self.rleColumn:rle}        
+            return {self.imColumn: imageId, self.rleColumn: rle}
         if isinstance(item, DataSet):
-            res=[]            
-            for i in tqdm.tqdm(range(len(item)),"Encoding dataset"):
-                q=item[i]
-                res.append(self.encode(q,encode_y,treshold))                
-            return pd.DataFrame(res,columns=[self.imColumn,self.rleColumn])     
+            res = []
+            for i in tqdm.tqdm(range(len(item)), "Encoding dataset"):
+                q = item[i]
+                res.append(self.encode(q, encode_y, treshold))
+            return pd.DataFrame(res, columns=[self.imColumn, self.rleColumn])
 
-class MultiClassSegmentationDataSet(BinarySegmentationDataSet):    
-    
-    def __init__(self,imagePath,csvPath,imColumn,rleColumn,clazzColumn,maskShape=None,rMask=True,isRel=False,len=-1):
-        super().__init__(imagePath,csvPath,imColumn,rleColumn,maskShape,rMask,isRel,len)
-        self.clazzColumn=clazzColumn
+
+class MultiClassSegmentationDataSet(BinarySegmentationDataSet):
+
+    def __init__(self, imagePath, csvPath, imColumn, rleColumn, clazzColumn, maskShape=None, rMask=True, isRel=False,
+                 len=-1):
+        super().__init__(imagePath, csvPath, imColumn, rleColumn, maskShape, rMask, isRel, len)
+        self.clazzColumn = clazzColumn
         self.__patch_frame__()
-        self.classes=sorted(list(set(self.data[clazzColumn].values)))
-        self.class2Num={}
-        self.num2class={}
-        num=0
+        self.classes = sorted(list(set(self.data[clazzColumn].values)))
+        self.class2Num = {}
+        self.num2class = {}
+        num = 0
         for c in self.classes:
-            self.class2Num[c]=num
-            self.num2class[num]=c
-            num=num+1
-            
-    def encode(self,item:PredictionItem,encode_y=False,treshold=0.5):
+            self.class2Num[c] = num
+            self.num2class[num] = c
+            num = num + 1
+
+    def encode(self, item: PredictionItem, encode_y=False, treshold=0.5):
         if isinstance(item, PredictionItem):
-            raise NotImplementedError("Multiclass segmentation is only capable to encode datasets")       
+            raise NotImplementedError("Multiclass segmentation is only capable to encode datasets")
         if isinstance(item, DataSet):
-            res=[]            
-            for i in tqdm.tqdm(range(len(item)),"Encoding dataset"):
-                q=item[i]
-                imageId=q.id
+            res = []
+            for i in tqdm.tqdm(range(len(item)), "Encoding dataset"):
+                q = item[i]
+                imageId = q.id
                 for j in range(len(self.classes)):
                     if encode_y:
-                        vl=q.y[:,:,j:j+1]>treshold
+                        vl = q.y[:, :, j:j + 1] > treshold
                     else:
-                        vl=q.prediction[:,:,j:j+1]>treshold
-                    rle=self._to_rle(vl)
-                    res.append({ self.imColumn:imageId,self.rleColumn:rle,self.clazzColumn:self.num2class[j]})
-            res=self._recode(res)
-                    
-            clns=[]
+                        vl = q.prediction[:, :, j:j + 1] > treshold
+                    rle = self._to_rle(vl)
+                    res.append({self.imColumn: imageId, self.rleColumn: rle, self.clazzColumn: self.num2class[j]})
+            res = self._recode(res)
+
+            clns = []
             for c in self.splitColumns:
                 if not self.splitColumns[c] in clns:
                     clns.append(self.splitColumns[c])
-            r=[self.imColumn,self.clazzColumn,self.rleColumn]
+            r = [self.imColumn, self.clazzColumn, self.rleColumn]
             for c in r:
                 if not c in self.splitColumns:
                     clns.append(c)
-            return pd.DataFrame(res,columns=clns)            
-        
-    def get_target(self,item):    
-        imageId=self.imageIds[item]
+            return pd.DataFrame(res, columns=clns)
+
+    def get_target(self, item):
+        imageId = self.imageIds[item]
         vl = self.get_all_about(imageId)
         for i in range(len(vl)):
             rleString = vl[self.rleColumn].values[i]
             if isinstance(rleString, str):
                 if rleString.strip() != "-1":
                     return 1
-        return 0    
-    
-    
-    def get_mask(self, image,imShape):
+        return 0
+
+    def get_mask(self, image, imShape):
         prediction = np.zeros((imShape[0], imShape[1], len(self.classes)), dtype=np.bool)
         vl = self.get_all_about(image)
-        rle=vl[self.rleColumn].values
-        classes=vl[self.clazzColumn].values
+        rle = vl[self.rleColumn].values
+        classes = vl[self.clazzColumn].values
         for i in range(len(vl)):
             rleString = rle[i]
-            clazz=classes[i]
+            clazz = classes[i]
             if isinstance(rleString, str):
                 if rleString.strip() != "-1":
                     shape = (imShape[0], imShape[1])
                     if self.maskShape is not None:
                         shape = self.maskShape
-                    if self.rMask:     
-                        lp = self.rle_decode(rleString, (shape[1],shape[0]))
-                        
+                    if self.rMask:
+                        lp = self.rle_decode(rleString, (shape[1], shape[0]))
+
                     else:
                         lp = self.rle_decode(rleString, shape)
-                    lp=np.rot90(lp)
-                    lp=np.flipud(lp)        
-                    prediction[:,:,self.class2Num[clazz]]=lp        
+                    lp = np.rot90(lp)
+                    lp = np.flipud(lp)
+                    prediction[:, :, self.class2Num[clazz]] = lp
         return prediction
-    
-    def __getitem__(self, item)->PredictionItem:
-        imageId=self.imageIds[item]
-        image=self.get_value(imageId)
-        prediction = self.get_mask(imageId,image.shape)
-        return PredictionItem(imageId,image,prediction)
+
+    def __getitem__(self, item) -> PredictionItem:
+        imageId = self.imageIds[item]
+        image = self.get_value(imageId)
+        prediction = self.get_mask(imageId, image.shape)
+        return PredictionItem(imageId, image, prediction)
 
     def __patch_frame__(self):
         if not ':' in self.clazzColumn:
             return
         colonInd = self.clazzColumn.index(':')
         originalClazzColumn = self.clazzColumn[:colonInd]
-        ind = int(self.clazzColumn[colonInd+1:])
+        ind = int(self.clazzColumn[colonInd + 1:])
         if ind == 0:
             vl = [x[0] for x in self.data[originalClazzColumn].str.split("_")]
             self.data.insert(0, self.clazzColumn, value=vl)
@@ -923,19 +919,22 @@ class MultiClassSegmentationDataSet(BinarySegmentationDataSet):
 
 class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
 
-    def __init__(self, imagePath, csvPath, imColumn, rleColumn, clazzColumn, maskShape=None, rMask=True, isRel=False, len=-1,classes=None):
-        super().__init__(imagePath,csvPath,imColumn,rleColumn,clazzColumn,maskShape,rMask,isRel,len)
+    def __init__(self, imagePath, csvPath, imColumn, rleColumn, clazzColumn, maskShape=None, rMask=True, isRel=False,
+                 len=-1, classes=None):
+        super().__init__(imagePath, csvPath, imColumn, rleColumn, clazzColumn, maskShape, rMask, isRel, len)
 
         rawClasses = self.data[clazzColumn].values
+
         def refineClass(x):
             if "_" in str(x):
                 return x[:x.index("_")]
             else:
                 return str(x)
+
         if classes is not None:
             self.classes = classes
         else:
-            self.classes = sorted(list(set([ refineClass(x) for x in rawClasses ])))
+            self.classes = sorted(list(set([refineClass(x) for x in rawClasses])))
         self.class2Num = {}
         self.num2class = {}
         num = 0
@@ -945,7 +944,7 @@ class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
             num = num + 1
 
     def meta(self):
-        return { 'CLASSES': self.classes }
+        return {'CLASSES': self.classes}
 
     def get_mask(self, image, imShape):
         prediction = []
@@ -988,7 +987,7 @@ class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
                 probs = vl[1]
                 masks = vl[3]
                 if masks.shape[1] != self.maskShape[0] or masks.shape[2] != self.maskShape[1]:
-                    masks = imgaug.imresize_many_images(masks.astype(np.uint16),self.maskShape,cv.INTER_CUBIC)
+                    masks = imgaug.imresize_many_images(masks.astype(np.uint16), self.maskShape, cv.INTER_CUBIC)
                 if len(labels) != len(masks):
                     raise Exception(f"{imageId} does not have same ammount of masks and labels")
                 for i in range(len(masks)):
@@ -1011,10 +1010,10 @@ class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
                     clns.append(c)
             return pd.DataFrame(res, columns=clns)
 
-    def __getitem__(self, item)->PredictionItem:
-        imageId=self.imageIds[item]
-        image=self.get_value(imageId)
-        gt = self.get_mask(imageId,image.shape)
+    def __getitem__(self, item) -> PredictionItem:
+        imageId = self.imageIds[item]
+        image = self.get_value(imageId)
+        gt = self.get_mask(imageId, image.shape)
 
         labels = []
         masks = []
@@ -1029,14 +1028,15 @@ class InstanceSegmentationDataSet(MultiClassSegmentationDataSet):
             bboxes.append(getBB(mask, True))
 
         labelsArr = np.array(labels, dtype=np.int64) + 1
-        bboxesArr = np.array(bboxes, dtype=np.float32).reshape((-1,4))
+        bboxesArr = np.array(bboxes, dtype=np.float32).reshape((-1, 4))
         masksArr = np.array(masks, dtype=np.int16)
 
         y = (labelsArr, bboxesArr, masksArr)
-        return PredictionItem(imageId,image,y)
+        return PredictionItem(imageId, image, y)
+
 
 class BinaryClassificationDataSet(CSVReferencedDataSet):
-    
+
     def ordered_vals(self, imColumn):
         return self.data[imColumn].values
 
@@ -1045,255 +1045,258 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
         if missing_cols:
             print('WARNING! Column {} is not present in dataset. Creating empty one'.format(clazzColumn))
             self.data[clazzColumn] = 0;
-        self.hasNa=self.data[clazzColumn].isna().sum()>0        
-        vals=self.data[clazzColumn][self.data[clazzColumn].notna()].values
-        if isinstance(vals[0],str):
+        self.hasNa = self.data[clazzColumn].isna().sum() > 0
+        vals = self.data[clazzColumn][self.data[clazzColumn].notna()].values
+        if isinstance(vals[0], str):
             return sorted(list(set([x.strip() for x in set(vals)])))
-        ss=set(vals)
+        ss = set(vals)
         if missing_cols:
             ss.add(1)
         if self.hasNa:
-            return [""]+list(ss)
+            return [""] + list(ss)
         return sorted(list(ss))
 
-    def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
-        super().__init__(imagePath,csvPath,imColumn)
-        self.classes=self.initClasses(clazzColumn)
-        self.class2Num={}
-        self.num2Class={}
-        self.clazzColumn=clazzColumn        
-        num=0
+    def __init__(self, imagePath, csvPath, imColumn, clazzColumn):
+        super().__init__(imagePath, csvPath, imColumn)
+        self.classes = self.initClasses(clazzColumn)
+        self.class2Num = {}
+        self.num2Class = {}
+        self.clazzColumn = clazzColumn
+        num = 0
         for c in self.classes:
-            self.class2Num[c]=num
-            self.num2Class[num]=c
-            num=num+1            
-            
-    def get_target(self,item):    
-        clazz = self.data[self.clazzColumn].values[item]        
-        result=np.zeros((1),dtype=np.bool)   
-        if isinstance(clazz,str):
-            clazz=clazz.strip()
-        if clazz in self.class2Num and self.class2Num[clazz]==1:
-            result[0]=1                
-        return result        
-            
-    def __getitem__(self, item)->PredictionItem:
-        imageId=self.imageIds[item]
-        image=self.get_value(imageId)
+            self.class2Num[c] = num
+            self.num2Class[num] = c
+            num = num + 1
+
+    def get_target(self, item):
+        clazz = self.data[self.clazzColumn].values[item]
+        result = np.zeros((1), dtype=np.bool)
+        if isinstance(clazz, str):
+            clazz = clazz.strip()
+        if clazz in self.class2Num and self.class2Num[clazz] == 1:
+            result[0] = 1
+        return result
+
+    def __getitem__(self, item) -> PredictionItem:
+        imageId = self.imageIds[item]
+        image = self.get_value(imageId)
         prediction = self.get_target(item)
-        return PredictionItem(self._id(item),image,prediction)
-    
-    def _encode_class(self,o,treshold=0.5):
-        o=o>treshold
+        return PredictionItem(self._id(item), image, prediction)
+
+    def _encode_class(self, o, treshold=0.5):
+        o = o > treshold
         if o[0]:
             return self.num2Class[1]
-        return self.num2Class[0]        
+        return self.num2Class[0]
 
     def _encode_x(self, item):
         return item.id
-    
-    def _encode_item(self, item:PredictionItem, encode_y=False, treshold=0.5):
-        imageId=self._encode_x(item)
-        if encode_y:
-            o=item.y
-        else:    
-            o=item.prediction
-        return { self.imColumn:imageId,self.clazzColumn:self._encode_class(o,treshold)}
-        
 
-    def encode(self,item:PredictionItem,encode_y=False,treshold=0.5):
+    def _encode_item(self, item: PredictionItem, encode_y=False, treshold=0.5):
+        imageId = self._encode_x(item)
+        if encode_y:
+            o = item.y
+        else:
+            o = item.prediction
+        return {self.imColumn: imageId, self.clazzColumn: self._encode_class(o, treshold)}
+
+    def encode(self, item: PredictionItem, encode_y=False, treshold=0.5):
         if isinstance(item, PredictionItem):
-            return self._encode_item(item, encode_y, treshold)            
+            return self._encode_item(item, encode_y, treshold)
         if isinstance(item, DataSet):
-            res=[]            
-            for i in tqdm.tqdm(range(len(item)),"Encoding dataset"):
-                q=item[i]
-                res.append(self.encode(q,encode_y,treshold))                
-            return self._create_dataframe(res)  
-        
+            res = []
+            for i in tqdm.tqdm(range(len(item)), "Encoding dataset"):
+                q = item[i]
+                res.append(self.encode(q, encode_y, treshold))
+            return self._create_dataframe(res)
+
     def _create_dataframe(self, items):
-        return pd.DataFrame(items,columns=[self.imColumn,self.clazzColumn])
-            
-    
-class CategoryClassificationDataSet(BinaryClassificationDataSet): 
-    
-    def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
-        super().__init__(imagePath,csvPath,imColumn,clazzColumn)
-        
-    def _encode_class(self,o,treshold=0.5):
-        return self.num2Class[(np.where(o==o.max()))[0][0]]           
-            
-    def get_target(self,item):    
-        clazz = self.data[self.clazzColumn].values[item]        
-        result=np.zeros((1),dtype=np.bool)   
-        if isinstance(clazz,str):
-            clazz=clazz.strip()
-        if clazz in self.class2Num and self.class2Num[clazz]==1:
-            result[0]=1                
-        return result        
-                  
+        return pd.DataFrame(items, columns=[self.imColumn, self.clazzColumn])
+
+
+class CategoryClassificationDataSet(BinaryClassificationDataSet):
+
+    def __init__(self, imagePath, csvPath, imColumn, clazzColumn):
+        super().__init__(imagePath, csvPath, imColumn, clazzColumn)
+
+    def _encode_class(self, o, treshold=0.5):
+        return self.num2Class[(np.where(o == o.max()))[0][0]]
+
+    def get_target(self, item):
+        result = np.zeros((len(self.classes)), dtype=np.bool)
+        clazz = self.data[self.clazzColumn].values[item]
+        if isinstance(clazz, str):
+            clazz = clazz.strip()
+        result[self.class2Num[clazz]] = 1
+        return result
 
 class FolderClassificationDataSet(CategoryClassificationDataSet):
-    def __init__(self,imagePath,folder,imColumn,clazzColumn):
-        self.images={}
-        self.data={"ImageId":[],"Clazz":[]} 
+    def __init__(self, imagePath, folder, imColumn, clazzColumn):
+        self.images = {}
+        self.data = {"ImageId": [], "Clazz": []}
         for x in imagePath:
-            self.addPath(os.path.join(folder,x))
-        tmp=self.images
-            
-        super().__init__([],pd.DataFrame(self.data),imColumn,clazzColumn)
-        self.images=tmp
-    
+            self.addPath(os.path.join(folder, x))
+        tmp = self.images
+
+        super().__init__([], pd.DataFrame(self.data), imColumn, clazzColumn)
+        self.images = tmp
+
     def addPath(self, imagePath):
         p0 = os.path.join(context.get_current_project_data_path(), imagePath)
         if not os.path.exists(p0):
             p0 = imagePath
         ld0 = os.listdir(p0)
-        nm=os.path.basename(p0)
+        nm = os.path.basename(p0)
         for x in ld0:
-            ext=x[-4:]
-            if ext==".jpg" or ext==".png" or ext==".gif":
+            ext = x[-4:]
+            if ext == ".jpg" or ext == ".png" or ext == ".gif":
                 fp = os.path.join(p0, x)
                 self.images[x] = fp
                 self.data["ImageId"].append(x)
                 self.data["Clazz"].append(nm)
                 self.images[x[:-4]] = fp
-                
+
 
 class FolderDataSet(FolderClassificationDataSet):
-    def __init__(self,imagePath,folder,imColumn,clazzColumn):
-        self.images={}
-        self.data={"ImageId":[],"Clazz":[]}         
+    def __init__(self, imagePath, folder, imColumn, clazzColumn):
+        self.images = {}
+        self.data = {"ImageId": [], "Clazz": []}
         self.addPath(folder)
-        tmp=self.images            
-        CategoryClassificationDataSet.__init__(self,[],pd.DataFrame(self.data),imColumn,clazzColumn)
-        self.images=tmp
-        
-    
+        tmp = self.images
+        CategoryClassificationDataSet.__init__(self, [], pd.DataFrame(self.data), imColumn, clazzColumn)
+        self.images = tmp
 
-def _join_column_get_trg(trg,values):
+
+def _join_column_get_trg(trg, values):
     def func(item):
-        v=values[item]
+        v = values[item]
         return v
-    return func   
-    
-def _enc(trg):    
-    def _encode_item(item:PredictionItem, encode_y=False, treshold=0.5):
-        
-        imageId=trg._encode_x(item)
-        res={trg.imColumn:imageId}
+
+    return func
+
+
+def _enc(trg):
+    def _encode_item(item: PredictionItem, encode_y=False, treshold=0.5):
+
+        imageId = trg._encode_x(item)
+        res = {trg.imColumn: imageId}
         if encode_y:
-            o=item.y
+            o = item.y
         else:
-            o=item.prediction
-        
-        o=o>treshold        
+            o = item.prediction
+
+        o = o > treshold
         for i in range(len(trg.classes)):
             if trg.classes[i] in trg.columnCls:
-                classes=trg.columnCls[trg.classes[i]]
+                classes = trg.columnCls[trg.classes[i]]
                 if o[i]:
-                    res[trg.classes[i]]=classes[1]
+                    res[trg.classes[i]] = classes[1]
                 else:
-                    res[trg.classes[i]]=classes[0]
-            else: 
-                res[trg.classes[i]]=o[i]
+                    res[trg.classes[i]] = classes[0]
+            else:
+                res[trg.classes[i]] = o[i]
         return res
+
     return _encode_item
 
+
 def _to_int(vls):
-    mn=sorted(list(set(vls)))
-    return vls==mn[1],mn
-            
-class MultiClassClassificationDataSet(BinaryClassificationDataSet): 
-        
+    mn = sorted(list(set(vls)))
+    return vls == mn[1], mn
+
+
+class MultiClassClassificationDataSet(BinaryClassificationDataSet):
+
     def initClasses(self, clazz_column):
         if clazz_column not in self.data.columns:
-            cls=clazz_column.split("|")
-            if len(cls)>1:
-                allVls=[]
-                self.columnCls={}
+            cls = clazz_column.split("|")
+            if len(cls) > 1:
+                allVls = []
+                self.columnCls = {}
                 for c in cls:
                     vls = self.data[c].values
                     if not "int" in str(vls.dtype) and not "bool" in str(vls.dtype):
-                        self.data[c]=self.data[c].fillna("")
-                        vls,column_cls=_to_int(self.data[c].str.strip())
-                        self.columnCls[c]=column_cls
+                        self.data[c] = self.data[c].fillna("")
+                        vls, column_cls = _to_int(self.data[c].str.strip())
+                        self.columnCls[c] = column_cls
                     allVls.append(vls)
-                
-                self.allValues=np.stack(allVls,axis=1)
-                self.get_target=_join_column_get_trg(self,self.allValues)
-                self._encode_item=_enc(self)
+
+                self.allValues = np.stack(allVls, axis=1)
+                self.get_target = _join_column_get_trg(self, self.allValues)
+                self._encode_item = _enc(self)
+
                 def _cr(items):
-                    return pd.DataFrame(items,columns=tuple([self.imColumn]+self.classes))
-                self._create_dataframe=_cr
-                return cls                 
-        clazz_col_vals=self.data[clazz_column].values
-        clz,sep=classes_from_vals_with_sep(clazz_col_vals, multi_dataset=True)
-        self.sep=sep
+                    return pd.DataFrame(items, columns=tuple([self.imColumn] + self.classes))
+
+                self._create_dataframe = _cr
+                return cls
+        clazz_col_vals = self.data[clazz_column].values
+        clz, sep = classes_from_vals_with_sep(clazz_col_vals, multi_dataset=True)
+        self.sep = sep
         return clz
-        
-    
-    def _encode_class(self,o,treshold):
-        o=o>treshold
-        res=[]
+
+    def _encode_class(self, o, treshold):
+        o = o > treshold
+        res = []
         for i in range(len(o)):
-            if o[i]==True:
+            if o[i] == True:
                 res.append(self.num2Class[i])
         if self.sep is None:
-            if len(res)==0:
+            if len(res) == 0:
                 return ""
-            return res[0]        
-        return self.sep.join(res)            
-    
-    def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
-        super().__init__(imagePath,csvPath,imColumn,clazzColumn)                
-            
-    def get_target(self,item):    
-        clazz = self.data[self.clazzColumn].values[item]        
-        result=np.zeros((1),dtype=np.bool)                   
-            
+            return res[0]
+        return self.sep.join(res)
+
+    def __init__(self, imagePath, csvPath, imColumn, clazzColumn):
+        super().__init__(imagePath, csvPath, imColumn, clazzColumn)
+
+    def get_target(self, item):
+        clazz = self.data[self.clazzColumn].values[item]
+        result=np.zeros((len(self.classes)),dtype=np.bool)
+
         if isinstance(clazz, numbers.Number):
             if math.isnan(clazz):
                 return result
         else:
-            clazz=clazz.strip()    
-            if len(clazz)==0:
+            clazz = clazz.strip()
+            if len(clazz) == 0:
                 return result
         if self.sep is not None:
             for w in clazz.split(self.sep):
-                result[self.class2Num[w]]=1
+                result[self.class2Num[w]] = 1
         else:
-            result[self.class2Num[clazz]]=1        
-                        
+            result[self.class2Num[clazz]] = 1
+
         return result
+
 
 class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet):
 
-    def __init__(self,imagePath,csvPath,imColumn,clazzColumns):
-        super().__init__(imagePath,csvPath,imColumn,clazzColumns[0])
-        self.classes=[]
-        self.class2Num=[]
-        self.num2Class=[]
-        self.clazzColumns=clazzColumns
+    def __init__(self, imagePath, csvPath, imColumn, clazzColumns):
+        super().__init__(imagePath, csvPath, imColumn, clazzColumns[0])
+        self.classes = []
+        self.class2Num = []
+        self.num2Class = []
+        self.clazzColumns = clazzColumns
         for clazzColumn in clazzColumns:
-            cls=self.initClasses(clazzColumn)
+            cls = self.initClasses(clazzColumn)
             self.classes.append(cls)
-            class2Num={}
-            num2Class={}
-            num=0
+            class2Num = {}
+            num2Class = {}
+            num = 0
             for c in cls:
-                class2Num[str(c)]=num
-                num2Class[num]=str(c)
-                num=num+1
+                class2Num[str(c)] = num
+                num2Class[num] = str(c)
+                num = num + 1
             self.class2Num.append(class2Num)
             self.num2Class.append(num2Class)
 
-    def get_target(self,item):
-        imageId=self.imageIds[item]
-        num=0
-        results=[]
+    def get_target(self, item):
+        imageId = self.imageIds[item]
+        num = 0
+        results = []
         for clazzColumn in self.clazzColumns:
-            result=np.zeros((len(self.classes[num])),dtype=np.bool)
+            result = np.zeros((len(self.classes[num])), dtype=np.bool)
             clazz = str(self.data[clazzColumn].values[item])
             if len(clazz.strip()) == 0:
                 results.append(result)
@@ -1307,15 +1310,15 @@ class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet):
             else:
                 result[self.class2Num[num][clazz.strip()]] = 1
             results.append(result)
-            num=num+1
+            num = num + 1
         return results
 
-    def _encode_item(self, item:PredictionItem, encode_y=False, treshold=0.5):
-        imageId=self._encode_x(item)
+    def _encode_item(self, item: PredictionItem, encode_y=False, treshold=0.5):
+        imageId = self._encode_x(item)
         if encode_y:
-            o=item.y
+            o = item.y
         else:
-            o=item.prediction
+            o = item.prediction
         result = {self.imColumn: imageId}
         for i in range(len(o)):
             oo = o[i]
@@ -1328,9 +1331,10 @@ class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet):
         return ind
 
     def _create_dataframe(self, items):
-        return pd.DataFrame(items,columns=[self.imColumn] + self.clazzColumns)
+        return pd.DataFrame(items, columns=[self.imColumn] + self.clazzColumns)
 
-def getBB(mask,reverse=False):
+
+def getBB(mask, reverse=False):
     a = np.where(mask != 0)
     bbox = np.min(a[0]), np.max(a[0]), np.min(a[1]), np.max(a[1])
     minX = max(0, bbox[0] - 10)
