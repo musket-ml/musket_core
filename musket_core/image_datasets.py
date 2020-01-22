@@ -1056,8 +1056,8 @@ class BinaryClassificationDataSet(CSVReferencedDataSet):
             return [""]+list(ss)
         return sorted(list(ss))
 
-    def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
-        super().__init__(imagePath,csvPath,imColumn)
+    def __init__(self,imagePath,csvPath,imColumn,clazzColumn,len=-1):
+        super().__init__(imagePath,csvPath,imColumn,len)
         self.classes=self.initClasses(clazzColumn)
         self.class2Num={}
         self.num2Class={}
@@ -1245,8 +1245,8 @@ class MultiClassClassificationDataSet(BinaryClassificationDataSet):
             return res[0]        
         return self.sep.join(res)            
     
-    def __init__(self,imagePath,csvPath,imColumn,clazzColumn):   
-        super().__init__(imagePath,csvPath,imColumn,clazzColumn)                
+    def __init__(self,imagePath,csvPath,imColumn,clazzColumn,len=-1):
+        super().__init__(imagePath,csvPath,imColumn,clazzColumn,len)
             
     def get_target(self,item):    
         clazz = self.data[self.clazzColumn].values[item]        
@@ -1269,8 +1269,8 @@ class MultiClassClassificationDataSet(BinaryClassificationDataSet):
 
 class MultiOutputClassClassificationDataSet(MultiClassClassificationDataSet):
 
-    def __init__(self,imagePath,csvPath,imColumn,clazzColumns):
-        super().__init__(imagePath,csvPath,imColumn,clazzColumns[0])
+    def __init__(self,imagePath,csvPath,imColumn,clazzColumns,len=-1):
+        super().__init__(imagePath,csvPath,imColumn,clazzColumns[0],len)
         self.classes=[]
         self.class2Num=[]
         self.num2Class=[]

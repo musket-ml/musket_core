@@ -408,6 +408,12 @@ loaded={}
 def yaml_load(f):
     return yaml.load(f, Loader=yaml.Loader)
 
+def loadMetric(name:str):
+    fnc = load("layers").catalog[name]
+    if hasattr(fnc, "func"):
+        fnc = fnc.func
+    return fnc
+
 def load(name: str)  -> Module:
     if name in loaded:
         return loaded[name]
