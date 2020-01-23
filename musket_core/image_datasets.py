@@ -838,7 +838,7 @@ class MultiClassSegmentationDataSet(BinarySegmentationDataSet):
             self.num2class[num] = c
             num = num + 1
 
-    def encode(self, item: PredictionItem, encode_y=False, treshold=0.5):
+    def encode(self, item, encode_y=False, treshold=0.5):
         if isinstance(item, PredictionItem):
             raise NotImplementedError("Multiclass segmentation is only capable to encode datasets")
         if isinstance(item, DataSet):

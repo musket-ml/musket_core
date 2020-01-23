@@ -110,7 +110,12 @@ def safe_unzip(zip_file, dest):
         for member in zf.infolist():
             abspath = os.path.abspath(os.path.join(dest, member.filename))
             use_subfolder = use_subfolder or os.path.exists(abspath)
-        extractpath = dest if not use_subfolder else os.path.join(dest, zf.filename[0: zf.filename.rindex(".")]) 
+        if not use_subfolder:
+            extractpath = dest  
+        else:
+            extractpath = os.path.join(dest, zf.filename[0: zf.filename.rindex(".")])
+            while os.path.exists(extractpath):
+                extractpath = extractpath + "1"
         zf.extractall(extractpath)
 
 def parse_url(url):
@@ -242,9 +247,11 @@ def download(root, force_all=False):
 
 
 def main(*args):       
-    idx = args[0].index('--project')
+    idx = args[0].index('--project') if '--project' in args[0] else -1
     if idx >= 0 and idx < len(args[0]) - 1:
         root = args[0][idx + 1]
+    elif len(args[0]) > 1 and os.path.exists(args[0][1]):
+        root = args[0][1]
     else:
         root = os.getcwd()
 
