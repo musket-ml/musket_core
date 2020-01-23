@@ -1138,6 +1138,18 @@ class BufferedWriteableDS(WriteableDataSet):
         return len(self.parent)
     
     def _inner_blend(self,ds,w=0.5):
+        if isinstance(self.predictions, list):
+            q=[]
+            for i in tqdm.tqdm(range(len(self.predictions))):
+                nm=self.predictions[i];
+                if isinstance(nm, list):
+                    nm1=ds.predictions[i];
+                    ress=[]
+                    for j in range(len(nm)):
+                        ress.append(nm[j]*w+nm1[j]*(1-w))
+                    q.append(ress)    
+                else: q.append(self.predictions[i]*w+ds.predictions*(1-w))                
+            return BufferedWriteableDS(self.parent,self.name,None,q)    
         pr=self.predictions*w+ds.predictions*(1-w)
         return BufferedWriteableDS(self.parent,self.name,None,pr)
 
