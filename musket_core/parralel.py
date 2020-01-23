@@ -5,6 +5,7 @@ import tensorflow as tf
 import typing
 import sys
 import traceback
+from musket_core import utils
 
 class Error:
     def __init__(self):
@@ -111,14 +112,7 @@ class Worker(threading.Thread):
                 self.respond.put(exp)
 
     def create_session(self,gpus):
-
-        config = tf.ConfigProto(
-            gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
-        )
-        config.gpu_options.allow_growth = True
-        sess = tf.Session(config=config)
-        #K.set_session(sess)
-        return sess
+        return utils.create_session(gpus)
 
 
 

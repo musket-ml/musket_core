@@ -1062,7 +1062,10 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             return self._projectDir
         v=self.path
         while v is not None and len(v)>0:
+            prev = v
             v=os.path.dirname(v)
+            if v == prev:
+                break
             if os.path.exists(os.path.join(v,"modules")):
                 self._projectDir=v
                 return v
@@ -1404,12 +1407,7 @@ class FinalMetricsOnValidationCallback(keras.callbacks.Callback):
             print(f'val_{m}: {val}')
 
     def create_session(self):
-        config = tf.ConfigProto(
-            gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
-        )
-        config.gpu_options.allow_growth = True
-        sess = tf.Session(config=config)
-        return sess
+        return utils.create_session()
 
 class Stage:
 
@@ -1490,13 +1488,19 @@ class Stage:
 
         if 'unfreeze_encoder' in self.dict and not self.dict['unfreeze_encoder']:
             self.freeze(model)
-        if callbacks is None:
-            if self.cfg.callbacks is not None:
-                cb = [] + self.cfg.callbacks
-            else:
-                cb = []    
-        else:
-            cb=callbacks
+
+        cb = []
+        final_metrics_for_validation = self.cfg.get_final_metrics_for_validation()
+        finalMetricsCallBack = None
+        if len(final_metrics_for_validation) > 0:
+            finalMetricsCallBack = FinalMetricsOnValidationCallback(self.cfg, final_metrics_for_validation, ec)
+            cb.append(finalMetricsCallBack)
+
+        if callbacks is not None:
+            cb += callbacks
+        elif self.cfg.callbacks is not None:
+            cb += self.cfg.callbacks
+
         if self.cfg._reporter is not None:
             if self.cfg._reporter.isCanceled():
                 return
@@ -1529,11 +1533,7 @@ class Stage:
             cb=cb+[AllLogger(ec.metricsPath()+"all.csv")]
         cb.append(KFoldCallback(kf))
 
-        final_metrics_for_validation = self.cfg.get_final_metrics_for_validation()
-        finalMetricsCallBack = None
-        if len(final_metrics_for_validation) > 0:
-            finalMetricsCallBack = FinalMetricsOnValidationCallback(self.cfg, final_metrics_for_validation, ec)
-            cb.append(finalMetricsCallBack)
+
 
         kepoch = self._addLogger(model, ec, cb, kepoch)
         md = self.cfg.primary_metric_mode

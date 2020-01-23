@@ -5,7 +5,18 @@ import os
 import shutil
 
 from threading import Lock
+import pkg_resources
+import tensorflow as tf
 
+try:
+    tfVer = pkg_resources.get_distribution("tensorflow").version
+except:
+    tfVer = pkg_resources.get_distribution("tensorflow-gpu").version
+
+if tfVer.startswith('1'):
+    tf_compat = tf
+else:
+    tf_compat = tf.compat.v1
 
 _l=Lock()
 
@@ -184,3 +195,13 @@ def collect_project(src, dst, disable_data=True, config_only=True, experiments=N
             dst_path = os.path.join(project_dst, "experiments", item)
 
             copy_tree(src_path, dst_path)
+
+ConfigProto = None
+
+def create_session(gpus=None):
+    config = tf_compat.ConfigProto(
+        gpu_options=tf_compat.GPUOptions(per_process_gpu_memory_fraction=0.8)
+    )
+    config.gpu_options.allow_growth = True
+    sess = tf_compat.Session(config=config)
+    return sess

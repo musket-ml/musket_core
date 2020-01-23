@@ -10,7 +10,7 @@ import keras
 from musket_core import configloader,metrics
 from musket_core.model import IGenericTaskConfig,FoldsAndStages
 from tqdm import tqdm
-import tensorflow as tf
+from musket_core import utils
 
 import keras.backend as K
 class Prediction:
@@ -75,12 +75,7 @@ class Prediction:
             value=self.cfg.predict_all_to_dataset(ds,self.fold,self.stage,-1,None,False,path)
         return value
     def create_session(self):
-        config = tf.ConfigProto(
-            gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
-        )
-        config.gpu_options.allow_growth = True
-        sess = tf.Session(config=config)
-        return sess
+        return utils.create_session()
 
 def get_validation_prediction(cfg,fold:int,stage=None)->DataSet:
     if stage is None:

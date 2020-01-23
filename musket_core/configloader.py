@@ -414,6 +414,9 @@ def loadMetric(name:str):
         fnc = fnc.func
     return fnc
 
+def registerMetric(name:str, func):
+    load("layers").catalog[name] = func
+
 def load(name: str)  -> Module:
     if name in loaded:
         return loaded[name]
