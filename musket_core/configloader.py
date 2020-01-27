@@ -436,11 +436,11 @@ def load(name: str)  -> Module:
     return result
 
 alllowReplace=["declarations","callbacks","datasets","tasks"]
-def parse(name:str,p,extra=None):
+def parse(name:str,cfg,extra=None, overrides:dict=None):
     m=load(name)
-
-    if type(p)==str:
-        with open(p,"r") as f:
+    map = cfg
+    if type(cfg)==str:
+        with open(cfg,"r") as f:
             first_line = f.readline()
             first_line=first_line.strip()
             if first_line.startswith("#%Musket "):
@@ -448,24 +448,25 @@ def parse(name:str,p,extra=None):
                 dialect=first_line[:first_line.index(' ')].strip()
                 m=load(dialect.lower())
                 #dialect=
-        with open(p, "r") as f:
-            base=yaml_load(f)
+        with open(cfg, "r") as f:
+            map=yaml_load(f)
 
             if extra is not None:
                 extrad=utils.load_yaml(extra)
                 for v in extrad:
-                    if v not in base:
-                        base[v]=extrad[v]
+                    if v not in map:
+                        map[v]=extrad[v]
                     else:
                         if v in alllowReplace:
                             for q in extrad[v]:
-                                mn=base[v]
+                                mn=map[v]
                                 if mn is not None:
                                     if q not in mn:
                                         mn[q]=extrad[v][q]
                                 else:
-                                    base[v]=extrad[v]
+                                    map[v]=extrad[v]
                                     break        
 
-            return m.instantiate(base)
-    return m.instantiate(p)
+    if overrides is not None:
+        map = {**map,**overrides}
+    return m.instantiate(map)

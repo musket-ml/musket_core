@@ -398,9 +398,15 @@ class GenericTaskConfig(model.IGenericTaskConfig):
         self.canceled_by_timer = False
 
         for v in atrs:
-            val = atrs[v]
-            val = self._update_from_config(v, val)
-            setattr(self, v, val)
+            try:
+                val = atrs[v]
+                val = self._update_from_config(v, val)
+                setattr(self, v, val)
+            except:
+                print ("Exception when paring attribute: " + v)
+                print ('-'*60)
+                traceback.print_exc()
+                print ('-'*60)
         pass
         if isinstance(self.metrics,str):
             self.metrics=[self.metrics]

@@ -447,19 +447,19 @@ class AnalizeAugmentations(yaml.YAMLObject):
 
     def perform(self, server, reporter: ProgressMonitor):
         ms=ModelSpec(**self.spec)
-        exp:Experiment=server.experiment(self.experimentPath)
-        cf=exp.parse_config()
-
-        ds = _cache.get_dataset(exp, self.datasetName)
-        wrappedModel = ms.wrap(cf, exp)
-
-        targets=_cache.get_targets(exp,self.datasetName)       
         settings = yaml.load(self.augmentationConfig)  
         augmenters_lst = configloader.parse("augmenters", settings)
         
         if len(augmenters_lst) > 0:
             augmenter = iaa.Sequential(augmenters_lst)
+            exp:Experiment=server.experiment(self.experimentPath)
+            cf=exp.parse_config({"augmentation": settings})
     
+            ds = _cache.get_dataset(exp, self.datasetName)
+            wrappedModel = ms.wrap(cf, exp)
+    
+            targets=_cache.get_targets(exp,self.datasetName)       
+        
             def augmented_image_visializer(predictionItem:PredictionItem):
                 cache_path=visualization_ctx().path
                 path = cache_path + str(predictionItem.id) + ".png"
