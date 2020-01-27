@@ -23,7 +23,7 @@ def macro_f1(y_true, y_pred):
     r = tp / (tp + fn + K.epsilon())
 
     f1 = 2 * p * r / (p + r + K.epsilon())
-    f1 = tf.where(tf.is_nan(f1), tf.zeros_like(f1), f1)
+    f1 = tf.where(tf.math.is_nan(f1), tf.zeros_like(f1), f1)
     return K.mean(f1)
 
 def matthews_correlation(y_true, y_pred):
@@ -376,6 +376,7 @@ def lovasz_loss(y_true, y_pred):
 # SOFTWARE
 import tensorflow as tf
 from keras import backend as K
+
 '''
 Compatible with tensorflow backend
 '''
