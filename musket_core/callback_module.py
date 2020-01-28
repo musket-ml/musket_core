@@ -159,8 +159,8 @@ class CallbackModule(Callback):
 
 class ModelCheckpointTF2(ModelCheckpoint):
     def __init__(self, path, **kwargs):
-        super(ModelCheckpoint, self).__init__(path, **kwargs)
-    
+        super().__init__(path, **kwargs)
+
     def _save_model(self, epoch, logs):
         """Saves the model.
 
