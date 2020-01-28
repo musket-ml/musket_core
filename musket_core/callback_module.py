@@ -157,7 +157,7 @@ class CallbackModule(Callback):
         self.step = self.epochSize * self.epoch + self.batch
         self.cyclicStep = self.step if self.period is None else self.step % self.period
 
-class ModelCheckpointTF2(keras.callbacks.ModelCheckpoint):
+class ModelCheckpointTF2(ModelCheckpoint):
     def __init__(self, **args):
         super(CallbackModule, self).__init__(args)
 
