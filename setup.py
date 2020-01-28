@@ -49,8 +49,8 @@ setup(name='musket_core',
             "h5py>=2.9.0,<=2.10.0",
             "opencv-python>=3.4.5.20,<=4.1.1.26",
             "Cython>=0.29.2,<=0.29.13",
-            "segmentation-models>=0.2.0,<=0.2.1",
-            "image-classifiers>=0.2.0,<=0.2.1",
+            "segmentation-models",
+            "image-classifiers",
             "kaggle>=1.5.6"
       ],
       zip_safe=False)

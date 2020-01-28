@@ -14,9 +14,9 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from keras.callbacks import ModelCheckpoint
+from musket_core.callback_module import ModelCheckpointTF2
 
-
-class AltModelCheckpoint(ModelCheckpoint):
+class AltModelCheckpoint(ModelCheckpointTF2):
     def __init__(self, filepath, alternate_model, **kwargs):
         """
         Additional keyword args are passed to ModelCheckpoint; see those docs for information on what args are accepted.

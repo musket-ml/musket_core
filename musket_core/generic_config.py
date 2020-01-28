@@ -49,6 +49,9 @@ keras.utils.get_custom_objects()["dice"]= musket_core.losses.dice
 keras.utils.get_custom_objects()["jaccard_loss"]= musket_core.losses.jaccard_distance_loss
 keras.utils.get_custom_objects()["focal_loss"]= musket_core.losses.focal_loss
 keras.utils.get_custom_objects()["l2_loss"]= musket_core.losses.l2_loss
+
+from musket_core.callback_module import ModelCheckpointTF2
+
 from musket_core.parralel import  Task
 keras.utils.get_custom_objects().update({'matthews_correlation': musket_core.losses.matthews_correlation})
 keras.utils.get_custom_objects().update({'log_loss': musket_core.losses.log_loss})
@@ -1454,7 +1457,7 @@ class Stage:
 
         if self.cfg.gpus==1:
 
-            mcp = keras.callbacks.ModelCheckpoint(ec.weightsPath(), save_best_only=True,
+            mcp = ModelCheckpointTF2(ec.weightsPath(), save_best_only=True,
                                                          monitor=self.cfg.primary_metric, mode=md, verbose=1)
             if prevInfo != None:
                 mcp.best = prevInfo.best
