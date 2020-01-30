@@ -134,6 +134,20 @@ def transform_add(layers, declarations, config, outputs, linputs, pName, withArg
 
     return buildPreprocessor
 
+def transform_substract(layers, declarations, config, outputs, linputs, pName, withArgs):
+    m = [Layers([v], declarations, {}, outputs, linputs, withArgs) for v in config]
+
+    def buildPreprocessor(inputArg):
+        if isinstance(inputArg, dict):
+            inputArg = [inputArg[x] for x in inputArg]
+        rs = []
+        for i in range(len(m)):
+            rs.append(m[i].build(inputArg[i]))
+
+        return keras.layers.subtract(rs)
+
+    return buildPreprocessor
+
 def transform_mult(layers, declarations, config, outputs, linputs, pName, withArgs):
     m = [Layers([v], declarations, {}, outputs, linputs, withArgs) for v in config]
 
@@ -236,6 +250,7 @@ builtins={
     "transform-concat": transform_concat,
     "transform": transform,
     "transform-add": transform_add,
+    "transform-substract": transform_substract,    
     "transform-mult": transform_mult,
     "transform-dot": transform_dot,
 }
