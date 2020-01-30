@@ -1394,7 +1394,10 @@ class FinalMetricsOnValidationCallback(keras.callbacks.Callback):
         isInCfg = hasattr(self.cfg,'mdl')
         oldMdl = self.cfg.mdl if isInCfg else None
 
-        self.cfg.mdl = mdl
+        mdl1 = keras.models.clone_model(mdl)
+        mdl1.set_weights(mdl.get_weights())
+
+        self.cfg.mdl = mdl1
 
         ds = self.cfg.validation(None, fold)
         predDir = predictions.constructPredictionsDirPath(self.cfg.directory())
