@@ -23,6 +23,7 @@ class GenericCSVDataSet(datasets.DataSet):
     def _encode_dataset(self,ds,encode_y=False,treshold=0.5):
         if len(self.output_groups)>0:
             raise NotImplementedError("Output groups support is not implemented yet")
+        self.input_values = self.data.values
         return super()._encode_dataset(ds, encode_y, treshold);
     
     def _create_dataframe(self,items):    
@@ -30,7 +31,7 @@ class GenericCSVDataSet(datasets.DataSet):
             
     def _encode_item(self,item:PredictionItem,encode_y=False,treshold=0.5):
         res={}        
-        data=self.data.values[item.id]
+        data=self.input_values[item.id]
         pr=item.prediction
         if len(self.outputs)==1:
             pr=[pr]
