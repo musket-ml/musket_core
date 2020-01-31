@@ -2,11 +2,13 @@ from collections.abc import Hashable
 from musket_core import configloader
 from musket_core.utils import load_yaml,save,load
 import keras
+from keras import backend as K
 import musket_core.templating as tp
 from musket_core.caches import *
 from musket_core import datasets
 from musket_core import crf
 from builtins import isinstance
+from keras.layers.core import Lambda
 layers=configloader.load("layers")
 from  musket_core.preprocessing import SplitPreproccessor,SplitConcatPreprocessor, Augmentation,take_nth
 import musket_core.builtin_datasets
@@ -134,6 +136,20 @@ def transform_add(layers, declarations, config, outputs, linputs, pName, withArg
 
     return buildPreprocessor
 
+def transform_subtract(layers, declarations, config, outputs, linputs, pName, withArgs):
+    m = [Layers([v], declarations, {}, outputs, linputs, withArgs) for v in config]
+
+    def buildPreprocessor(inputArg):
+        if isinstance(inputArg, dict):
+            inputArg = [inputArg[x] for x in inputArg]
+        rs = []
+        for i in range(len(m)):
+            rs.append(m[i].build(inputArg[i]))
+
+        return keras.layers.subtract(rs)
+
+    return buildPreprocessor
+
 def transform_mult(layers, declarations, config, outputs, linputs, pName, withArgs):
     m = [Layers([v], declarations, {}, outputs, linputs, withArgs) for v in config]
 
@@ -162,11 +178,34 @@ def transform_dot(layers, declarations, config, outputs, linputs, pName, withArg
 
     return buildPreprocessor
 
+def euclidean_dist(layers, declarations, config, outputs, linputs, pName, withArgs):
+    m = [Layers([v], declarations, {}, outputs, linputs, withArgs) for v in config]
+    
+    def eucl_dist_output_shape(shapes):
+        shape1, shape2 = shapes
+        return (shape1[0], 1)
+    
+    def euclidean_distance(x):
+        sum_square = K.sum(K.square(x[0] - x[1]), axis=1, keepdims=True)
+        return K.sqrt(K.maximum(sum_square, K.epsilon()))
+
+    def buildPreprocessor(inputArg):
+        if isinstance(inputArg, dict):
+            inputArg = [inputArg[x] for x in inputArg]
+        rs = []
+        for i in range(len(m)):
+            rs.append(m[i].build(inputArg[i]))        
+        return Lambda(euclidean_distance,
+           output_shape=eucl_dist_output_shape)([rs[0], rs[1]])
+
+    return buildPreprocessor
+
+
 def split_add(layers,declarations,config,outputs,linputs,pName,withArgs):
     m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
     return m,keras.layers.Add()
 
-def split_substract(layers,declarations,config,outputs,linputs,pName,withArgs):
+def split_subtract(layers,declarations,config,outputs,linputs,pName,withArgs):
     m=[Layers([v], declarations, {}, outputs, linputs,withArgs) for v in config]
     return m,keras.layers.Subtract()
 
@@ -217,7 +256,7 @@ builtins={
     "split-concat": split_concat,
     "split-concatenate": split_concat,
     "split-add": split_add,
-    "split-substract": split_substract,
+    "split-subtract": split_subtract,
     "split-mult": split_mult,
     "split-min": split_min,
     "split-max": split_max,
@@ -236,8 +275,10 @@ builtins={
     "transform-concat": transform_concat,
     "transform": transform,
     "transform-add": transform_add,
+    "transform-subtract": transform_subtract,    
     "transform-mult": transform_mult,
     "transform-dot": transform_dot,
+    "euclidean-dist": euclidean_dist,
 }
 for i in range(20):
     builtins["repeat("+str(i)+")"]=repeat(i)
