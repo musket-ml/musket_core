@@ -1379,6 +1379,7 @@ class FinalMetricsOnValidationCallback(keras.callbacks.Callback):
         self.metrics = metrics
         self.ec = ec
         self.alternate_model = None
+        self.runtimeModel = None
 
     def setAlternateModel(self, model):
         self.alternate_model = model
@@ -1394,10 +1395,11 @@ class FinalMetricsOnValidationCallback(keras.callbacks.Callback):
         isInCfg = hasattr(self.cfg,'mdl')
         oldMdl = self.cfg.mdl if isInCfg else None
 
-        mdl1 = keras.models.clone_model(mdl)
-        mdl1.set_weights(mdl.get_weights())
+        if self.runtimeModel is None:
+            self.runtimeModel =  keras.models.clone_model(mdl)
 
-        self.cfg.mdl = mdl1
+        self.runtimeModel.set_weights(mdl.get_weights())
+        self.cfg.mdl = self.runtimeModel
 
         ds = self.cfg.validation(None, fold)
         predDir = predictions.constructPredictionsDirPath(self.cfg.directory())
