@@ -260,8 +260,8 @@ def log_loss(y_true, y_pred):
     y = K.maximum(K.minimum(y_pred,ub),lb)
     logs = K.log(y)
     components = y_true * logs
-    sum = K.sum(components)
-    result = sum * -1.
+    total = K.sum(components)
+    result = total * -1.
     result /= K.cast(K.shape(y_true)[0], "float")
     return result
 

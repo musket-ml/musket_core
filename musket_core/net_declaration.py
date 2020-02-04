@@ -9,11 +9,13 @@ from musket_core import datasets
 from musket_core import crf
 from builtins import isinstance
 from keras.layers.core import Lambda
-layers=configloader.load("layers")
+import collections
 from  musket_core.preprocessing import SplitPreproccessor,SplitConcatPreprocessor, Augmentation,take_nth
 import musket_core.builtin_datasets
 import musket_core.builtin_trainables
 import importlib
+
+layers=configloader.load("layers")
 layers.register_module(crf)
 
 def take_input(layers,declarations,config,outputs,linputs,pName,withArgs):
@@ -293,7 +295,7 @@ class Layers:
         self.layerInputs:{str:[str]} = {}
         self.layerArguments:{str:{str}}={}
         self.layerSequence:[keras.layers.Layer]=[]
-        self.name="l"+str(gnum)
+        self.name="layer_"+str(gnum)
         self.parameters=parameters
         gnum=gnum+1
         nums={}
@@ -507,9 +509,7 @@ class Declaration:
     def instantiate(self, dMap, parameters=None):
         if self.shared:
             if self.layers is not None:
-                def am(args):
-                    return self.layers(args)
-                return am
+                return self.layers
         if parameters is None:
             parameters={}
         if isinstance(parameters,dict):    
@@ -520,10 +520,10 @@ class Declaration:
             for p in range(len(self.parameters)):
                 pMap[self.parameters[p]]=parameters[p]
             parameters=pMap
-        l=Layers(self.body,dMap,parameters,self.outputs,self.inputs,self.withArgs)
+        created=Layers(self.body,dMap,parameters,self.outputs,self.inputs,self.withArgs)
         if self.shared:
-            self.layers=l
-        return l
+            self.layers=created
+        return created
 
 
 class Declarations:
@@ -561,16 +561,24 @@ class Declarations:
         return v.build(inputs)
 
     def model(self,name,inputs):
-        m=self.instantiate(name,inputs)
+        inst=self.instantiate(name,inputs)
 
-        if hasattr(m, "output_meta"):
-            return m.model
+        if hasattr(inst, "output_meta"):
+            return inst.model
 
-        return keras.Model(inputs,m)
+        return keras.Model(_flatten_inputs(inputs),inst)
 
     def preprocess(self,name,inputs):
         return self.instantiate(name,inputs)
 
+def _flatten_inputs(inputs): 
+    res = []
+    for inp in inputs:
+        if isinstance(inp, (list, tuple)):
+            res.extend(_flatten_inputs(inp))
+        else:
+            res.append(inp)
+    return res    
 
 def create_model(path,inputs,name="net")->keras.Model:
     n=load_yaml(path)

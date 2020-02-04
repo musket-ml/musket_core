@@ -10,6 +10,7 @@ import musket_core.quasymodels as qm
 import os
 import tqdm
 import sys
+from prompt_toolkit.input.defaults import create_input
 
 
 
@@ -19,10 +20,14 @@ def model_function(func):
 
 def _shape(x):
     if isinstance(x,tuple):
-        return [i.shape for i in x]
+        return [_shape(i) for i in x]
     if isinstance(x,list):
-        return [i.shape for i in x]
-    return x.shape
+        return [_shape(i) for i in x]
+    if hasattr(x, 'shape'):
+        return x.shape
+    return None
+
+
 
 class GenericPipeline(generic.GenericTaskConfig):
 
@@ -43,14 +48,14 @@ class GenericPipeline(generic.GenericTaskConfig):
             contributions=None    
         if isinstance(inp,list):
             
-            inputs=[keras.Input(x) for x in inp]
+            inputs=[self.create_input(x) for x in inp]
             if contributions is not None:
                 if isinstance(contributions, list):
                     for i in range(len(inputs)):
-                        inputs[i].contribution=contributions[i]
+                        self.set_contribution(inputs[i], contributions[i])
                 else:                   
                     for i in range(len(inputs)):
-                        inputs[i].contribution=contributions
+                        self.set_contribution(inputs[i], contributions)
         else:
             i=keras.Input(inp);
             i.contribution=contributions
@@ -62,6 +67,20 @@ class GenericPipeline(generic.GenericTaskConfig):
         context.context.net_cx=[]
         
         return m
+    
+    def create_input(self, inp):
+        if isinstance(inp,list):            
+            return tuple([self.create_input(x) for x in inp])
+        else:
+            return keras.Input(inp);
+        
+    def set_contribution(self, input_descr, contribution):
+        if isinstance(input_descr, tuple):
+            for cur_input in input_descr:
+                self.set_contribution(cur_input, contribution);
+        else:
+            input_descr.contribution = contribution  
+        pass    
 
     def load_writeable_dataset(self, ds, path):
         if self.isMultiOutput():
