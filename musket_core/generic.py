@@ -10,9 +10,6 @@ import musket_core.quasymodels as qm
 import os
 import tqdm
 import sys
-from prompt_toolkit.input.defaults import create_input
-
-
 
 def model_function(func):
     func.model=True
@@ -26,8 +23,6 @@ def _shape(x):
     if hasattr(x, 'shape'):
         return x.shape
     return None
-
-
 
 class GenericPipeline(generic.GenericTaskConfig):
 
@@ -184,8 +179,6 @@ class GenericPipeline(generic.GenericTaskConfig):
                     cb(id,b.results[i],data)
                 pbar.update(batch_size)
 
-
-
     def predict_all_to_array_with_ids(self, dataset, fold, stage, limit=-1, batch_size=32, ttflips=False):
         res=[]
         ids=[]
@@ -220,7 +213,6 @@ class GenericPipeline(generic.GenericTaskConfig):
             utils.save(self.path+ ".contribution",getattr(dataset, "contributions"))
         utils.save_yaml(self.path + ".shapes", (_shape(predItem.x), _shape(predItem.y)))
         return dataset
-
 
 def parse(path,extra=None) -> GenericPipeline:
     extraImports=[]
