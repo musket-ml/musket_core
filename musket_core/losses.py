@@ -253,17 +253,8 @@ def log_loss(y_true, y_pred):
     '''
     expects probability-like input, e.g. softmax output
     '''
-    y_pred = y_pred / K.expand_dims(K.sum(y_pred, axis=1))
-    epsilon = 10.**(-15)
-    ub = 1.0 - epsilon
-    lb = epsilon
-    y = K.maximum(K.minimum(y_pred,ub),lb)
-    logs = K.log(y)
-    components = y_true * logs
-    total = K.sum(components)
-    result = total * -1.
-    result /= K.cast(K.shape(y_true)[0], "float")
-    return result
+    return keras.losses.binary_crossentropy(y_true, y_pred)
+
 
 log_loss.need_threshold = False
 
