@@ -27,13 +27,13 @@ def to_dataset(src, experiments, name, data=False):
 
     utils.ensure(dest)
     
-    visit_tree(src, lambda path: utils.throw("zip files not allowed!") if path.lower().endswith(".zip") else ())
+    utils.visit_tree(src, lambda path: utils.throw("zip files not allowed!") if path.lower().endswith(".zip") else ())
 
     if data:
         src = os.path.join(src, "data")
         dest = os.path.join(dest, "data")
 
-        shutil.copytree(src, dst)
+        shutil.copytree(src, dest)
     else:
         utils.collect_project(src, dest, True, False, experiments)
 
