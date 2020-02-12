@@ -580,31 +580,34 @@ class GenericDataSetSequence(keras.utils.Sequence):
         xd, yd=self.dim()
         if xd == 1 and yd==1:
             return self.__simple_batch(idx)
-
-        batch_x = [[] for i in range(xd)]
-        batch_y = [[] for i in range(yd)]
         hasSample=False
         if hasattr(self.ds.root(),"sample_weight"):
             hasSample=True
             S=[]
+        batch_x = None        
+        batch_y = [[] for i in range(yd)]
         for i in range(idx * self.batchSize,(idx + 1) * self.batchSize):
             if i>=l:
                 i=i%l
                 if not self.inifinite:
                     break
             r=self.ds.get_train_item(self.indexes[i]) if self.isTrain else self.ds[self.indexes[i]]
-            for j in range(xd):
-                r_x = r.x
-                if not isinstance(r_x, list) and not isinstance(r_x, tuple):
-                    r_x = [ r_x ]
+            
+            r_x = self._flatten_inputs(r.x)
+            if batch_x is None:
+                batch_x = [[] for i in range(len(r_x))]
+            if not isinstance(r_x, list) and not isinstance(r_x, tuple):
+                r_x = [ r_x ]
+            for j in range(len(r_x)):
                 batch_x[j].append(r_x[j])
+                
+            r_y = r.y
+            if not isinstance(r_y, list) and not isinstance(r_y, tuple):
+                r_y = [ r_y ]
             for j in range(yd):
-                r_y = r.y
-                if not isinstance(r_y, list) and not isinstance(r_y, tuple):
-                    r_y = [ r_y ]
                 batch_y[j].append(r_y[j])
             if hasSample:
-                S.append(self.ds.root().sample_weight(self.indexes[i]))    
+                S.append(self.ds.root().sample_weight(self.indexes[i]))                
         batch_x=[np.array(x) for x in batch_x]
         batch_y = np.array(batch_y[0]) if yd == 1 else [np.array(y) for y in batch_y]
         if hasSample:
@@ -615,6 +618,17 @@ class GenericDataSetSequence(keras.utils.Sequence):
             return batch_x,batch_y,np.array(S)
         
         return batch_x,batch_y
+    
+    def _flatten_inputs(self, inputs):
+        if not isinstance(inputs, (list, tuple)):
+            return inputs
+        res = []
+        for inp in inputs:
+            if isinstance(inp, (list, tuple)):
+                res.extend(self._flatten_inputs(inp))
+            else:
+                res.append(inp)
+        return res
 
 class SimplePNGMaskDataSet:
     def __init__(self, path, mask, detect_exts=False, in_ext="jpg", out_ext="png", generate=False,list=None):
