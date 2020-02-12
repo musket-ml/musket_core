@@ -509,7 +509,9 @@ class Declaration:
     def instantiate(self, dMap, parameters=None):
         if self.shared:
             if self.layers is not None:
-                return self.layers
+                def inst_callback(args):
+                    return self.layers(args)
+                return inst_callback
         if parameters is None:
             parameters={}
         if isinstance(parameters,dict):    
