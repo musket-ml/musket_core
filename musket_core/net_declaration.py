@@ -458,21 +458,21 @@ class Layers:
             if n=="$input":
                 return inputArgs
             return None
-        for l in self.layerSequence:
-            inputs=self.layerInputs[l.name]
+        for cur_layer in self.layerSequence:
+            inputs=self.layerInputs[cur_layer.name]
             if isinstance(inputs,str):
-               inp=findInput(l.name,inputs)
+               inp=findInput(cur_layer.name,inputs)
                pass
             else:
-               inp=[findInput(l.name,i) for i in inputs]
+               inp=[findInput(cur_layer.name,i) for i in inputs]
             if isinstance(inp,tuple) or isinstance(inp,list):
                 if len(inp)==1:
                     inp=inp[0]
             if isinstance(inp,dict):
                 if "$input" in inp and len(inp)==1:
                     inp=inp["$input"]
-            res=l(inp)
-            tensorMap[l.name]=res
+            res=cur_layer(inp)
+            tensorMap[cur_layer.name]=res
             last=res
         if isinstance(self.output,str):
             return tensorMap[self.output]
@@ -571,7 +571,9 @@ class Declarations:
     def preprocess(self,name,inputs):
         return self.instantiate(name,inputs)
 
-def _flatten_inputs(inputs): 
+def _flatten_inputs(inputs):
+    if not isinstance(inputs, (list, tuple)):
+        return inputs
     res = []
     for inp in inputs:
         if isinstance(inp, (list, tuple)):
