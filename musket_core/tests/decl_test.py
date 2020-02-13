@@ -42,6 +42,5 @@ class TestStringMethods(unittest.TestCase):
         print(m4.summary())
         m5=net_declaration.create_model(os.path.join(fl,"../examples/simple.yaml"),[keras.layers.Input((200,200)),keras.layers.Input((200,200))])
         print(m5.summary())
-        m6 = net_declaration.create_model(os.path.join(fl,"../examples/bidirectional.yaml"),
-                                          [keras.layers.Input((200, 200))])
+        m6 = net_declaration.create_model(os.path.join(fl,"../examples/bidirectional.yaml"),[keras.layers.Input((200, 200))])
         print(m6.summary())
