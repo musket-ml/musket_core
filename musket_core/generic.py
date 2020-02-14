@@ -218,14 +218,20 @@ def parse(path,extra=None) -> GenericPipeline:
     extraImports=[]
     if isinstance(path, str):
         if not os.path.exists(path) or os.path.isdir(path):
-            pth=context.get_current_project_path()
-            if os.path.exists(pth+"/experiments/"+path+"/config.yaml"):
-                path=pth+"/experiments/"+path+"/config.yaml"
-            if os.path.exists(pth+"/common.yaml") and extra is None:
-                extra=pth+"/common.yaml"
-            if os.path.exists(pth+"/modules"):
-                for m in os.listdir(pth+"/modules"):
-                    sys.path.insert(0, pth+"/modules")
+            cur_project_pth=context.get_current_project_path()
+            config_path = os.path.join(path,"config.yaml")
+            if os.path.exists(config_path):
+                path=config_path
+            else:
+                config_path = os.path.join(cur_project_pth,"experiments",path,"config.yaml")
+                if os.path.exists(config_path):
+                    path=config_path            
+            if os.path.exists(cur_project_pth+"/common.yaml") and extra is None:
+                extra=cur_project_pth+"/common.yaml"
+            modules_path = os.path.join(cur_project_pth,'modules')
+            if os.path.exists(modules_path):
+                for m in os.listdir(modules_path):
+                    sys.path.insert(0, modules_path)
                     if ".py" in m:
                         extraImports.append(m[0:m.index(".py")])   
     cfg = configloader.parse("generic", path,extra)

@@ -362,3 +362,6 @@ class Experiment:
 
     def getPredictionsDirPath(self):
         return constructPredictionsDirPath(self.path)
+    
+    def __str__(self):
+        return self.name()
