@@ -101,7 +101,10 @@ class LRVariator(CallbackModule):
                     self.core = lambda x: math.pow(x, pow)
 
             def lrComputerBody(x):
-                point = (x - self.startStep) / (self.ownSteps - 1)
+                if self.ownSteps > 1:
+                    point = (x - self.startStep) / (self.ownSteps - 1)
+                else:
+                    point = 0
                 ratio = self.core(point)
                 dif = self.toVal - self.fromVal
                 result = self.fromVal + ratio * dif

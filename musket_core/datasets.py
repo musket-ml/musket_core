@@ -852,6 +852,8 @@ class DefaultKFoldedDataSet:
             iterations = len(train_indexes) // (round(subsample * self.batchSize))
             if self.maxEpochSize is not None:
                 iterations = min(iterations, self.maxEpochSize)
+            if iterations < 1:
+                raise ValueError('Got 0 iterations - Looks like given dataset is smaller than the batch size, check your config')
             model.fit_generator(train_g(), iterations,
                                 epochs=numEpochs,
                                 validation_data=test_g(),
