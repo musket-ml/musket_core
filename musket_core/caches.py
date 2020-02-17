@@ -64,10 +64,14 @@ class DiskCache(DataSet):
             return result
         else:
             isList = isinstance(self.items[0],list)
-            if isList:
-                return CachedPredictionItem(item,list(map(lambda x: x[item], self.items[0])),self.items[1][item],self.parent)
+            if self.items[1] is not None:
+                result_y = self.items[1][item]
             else:
-                return CachedPredictionItem(item,self.items[0][item],self.items[1][item],self.parent)
+                result_y = None
+            if isList:
+                return CachedPredictionItem(item,list(map(lambda x: x[item], self.items[0])),result_y,self.parent)
+            else:
+                return CachedPredictionItem(item,self.items[0][item],result_y,self.parent)
 
     def __len__(self):
         return len(self.parent)
@@ -394,9 +398,18 @@ def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
             
             yIsList = isinstance(i0y,list)    
             if not yIsList:
-                shapeY = np.concatenate(([l], i0y.shape))
+                if hasattr(i0y, 'shape'):
+                    shapeY = np.concatenate(([l], i0y.shape))
+                else:
+                    shapeY = None                
             else:
-                shapeY = list(map(lambda x: np.concatenate(([l], x.shape)), i0y))    
+                shapeY = list(map(lambda x: np.concatenate(([l], x.shape)), i0y))
+            
+            if not shapeY is None:
+                y_container = np.zeros(shapeY, i0y.dtype)
+            else:
+                y_container = None;                
+                
             data = None
             ext = "dscache"
             if os.path.exists(name):
@@ -405,24 +418,25 @@ def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
                     data = load(name)
                 elif os.path.exists(f"{name}/x_0.{ext}"):
                     if not xIsList:
-                        data = (np.zeros(shapeX, i0x.dtype), np.zeros(shapeY, i0y.dtype))
+                        data = (np.zeros(shapeX, i0x.dtype), y_container)
                     else:
-                        data = (list(map(lambda x: np.zeros(x, i0x[0].dtype), shapeX)), np.zeros(shapeY, i0y.dtype))
+                        data = (list(map(lambda x: np.zeros(x, i0x[0].dtype), shapeX)), y_container)
                     try:
                         readArray(data[0], f"{name}/x_", ext, "Loading X cache...", l)
                     except ValueError:
                         raise ValueError(f"Stored X has unexpected size for dataset '{name}'. Path: " + name)
-
-                    try:
-                        readArray(data[1], f"{name}/y_", ext, "Loading Y cache...", l)
-                    except ValueError:
-                        raise ValueError(f"Stored Y has unexpected size for dataset '{name}'. Path: " + name)
+                    
+                    if y_container is not None:
+                        try:
+                            readArray(data[1], f"{name}/y_", ext, "Loading Y cache...", l)
+                        except ValueError:
+                            raise ValueError(f"Stored Y has unexpected size for dataset '{name}'. Path: " + name)
 
             if data is None:
                 if not xIsList:
-                    data = (np.zeros(shapeX, i0x.dtype), np.zeros(shapeY, i0y.dtype))
+                    data = (np.zeros(shapeX, i0x.dtype), y_container)
                 else:
-                    data = (list(map(lambda x: np.zeros(x,i0x[0].dtype), shapeX)), np.zeros(shapeY, i0y.dtype))
+                    data = (list(map(lambda x: np.zeros(x,i0x[0].dtype), shapeX)), y_container)
 
                 # if not xIsList:
                 #     def func(i):
@@ -444,12 +458,14 @@ def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
                     else:
                         for j in range(len(shapeX)):
                             data[0][j][i] = input[i].x[j]
-                    data[1][i] = input[i].y
+                    if not data[1] is None:
+                        data[1][i] = input[i].y
 
                 if not os.path.isdir(name):
                     os.mkdir(name)
                 dumpArray(data[0], f"{name}/x_", ext, "Saving X cache...")
-                dumpArray(data[1], f"{name}/y_", ext, "Saving Y cache...")
+                if not data[1] is None:
+                    dumpArray(data[1], f"{name}/y_", ext, "Saving Y cache...")
 
             result = DiskCache(input, data)
 
