@@ -1,5 +1,5 @@
 import inspect
-from  typing import List,Optional
+from typing import List,Optional
 import numpy as np
 
 from musket_core.datasets import PredictionItem,DataSet,get_id,get_stages,get_stage,inherit_dataset_params, CompositeDataSet
