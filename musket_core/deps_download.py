@@ -8,6 +8,7 @@ import zipfile
 import urllib
 
 from musket_core import utils, download_callbacks
+from pathlib import Path
 
 from urllib.parse import urlparse
 import importlib
@@ -44,11 +45,8 @@ def download_url(url, dest):
 
         if zipfile.is_zipfile(path):
             new_dir = path[0: path.rindex(".")]
-
-            with zipfile.ZipFile(path) as zip_file:
-                zip_file.extractall(new_dir)
-
-                print("removing: " + path)
+            safe_unzip(path, new_dir)
+            print("removing: " + path)
 
             os.remove(path)
 
@@ -118,13 +116,9 @@ def safe_unzip(zip_file, dest):
                 extractpath = extractpath + "1"
         folders = [x for x in zf.infolist() if x.filename.find('/') == len(x.filename) - 1]
         # If archive has a single folder with the similar name inside - extract without extra folder to avoid folder duplication
-        if len(folders) == 1 and folders[0].filename[:-1] == os.path.splitext(os.path.basename(zip_file))[0]:
-            for elem in zf.namelist():
-                current = elem[len(folders[0].filename):]
-                if (len(current) > 0):
-                    zf.extract(elem, extractpath)
-        else :
-            zf.extractall(extractpath)
+        if len(folders) == 1 and folders[0].filename[:-1] == os.path.splitext(os.path.basename(extractpath))[0]:
+            extractpath = Path(extractpath).parent
+        zf.extractall(extractpath)
 
 def parse_url(url):
     if HTTP in url and url.index(HTTP) == 0:
