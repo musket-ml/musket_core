@@ -5,7 +5,7 @@ import yaml
 
 import zipfile
 
-import urllib
+import urllib.request
 
 from musket_core import utils, download_callbacks
 from pathlib import Path
@@ -38,7 +38,9 @@ def load_yaml(path):
 def download_url(url, dest):
     file_dest = os.path.join(dest, url[url.rindex("/") + 1:])
 
-    urllib.request.urlretrieve(url, file_dest)
+    opener = urllib.request.URLopener()
+    opener.addheader('User-Agent', 'My User Agent 1.0')
+    opener.retrieve(url, file_dest)
 
     for item in os.listdir(dest):
         path = os.path.join(dest, item)
