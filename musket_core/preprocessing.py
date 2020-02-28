@@ -126,15 +126,21 @@ def take_nth(num,parent):
 
 def dataset_preprocessor(func):
     expectsItem = False
-    
-        
     params = inspect.signature(func).parameters
     inputParam=None
     if 'input' in params:
         inputParam = params['input']
     if 'inp' in params:
         inputParam = params['inp']
-    if inputParam is not None:    
+    if inputParam is None:
+        for cur_param_name in params:
+            cur_param = params[cur_param_name]
+            if hasattr(cur_param, 'annotation'):
+                pType = cur_param.annotation
+                if hasattr(pType, "__name__") and pType.__name__ == "PredictionItem":
+                    inputParam = cur_param
+                    expectsItem = True
+    else:    
         if hasattr(inputParam, 'annotation'):
                 pType = inputParam.annotation
                 if hasattr(pType, "__module__") and hasattr(pType, "__name__"):
@@ -163,7 +169,6 @@ def dataset_preprocessor(func):
     wrapper.original=func
     wrapper.__name__=func.__name__
     return wrapper
-
 
 _num_splits=0
 
