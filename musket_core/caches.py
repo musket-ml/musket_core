@@ -8,6 +8,7 @@ import tqdm
 import numpy as np
 import threading
 from musket_core import utils
+import re
 
 __lock__ = threading.Lock()
 storage = {}
@@ -119,35 +120,36 @@ def get_cache_dir():
     utils.ensure(d)
     return d
 
+def clean_name(name:str):
+    name = name.replace("{", "_").replace("[", "_").replace("/", "_").replace("\\", "_").replace("]", "_").replace("}", "_").replace(" ", "_").replace(",", "_").replace("\'", "_").replace(":", "_")
+    name = re.sub("_+","_", name)
+    if name.startswith("_"):
+        name = name[1:]
+    if name.endswith("_"):
+        name = name[:-1]
+    return name
+
 def cache_name(input:DataSet):
     name = "data"
     id = "dataset"
     if hasattr(input, "name"):
         id = getattr(input, "name")
-        name = id.replace("{", "").replace("[", "").replace("/", "").replace("\\", "").replace("]", "").replace("}", "").replace(" ", "").replace(",", "").replace("\'", "").replace(":", "")
+        name = clean_name(id)
     return name
 
 def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
     def ccc(input):
-
         __lock__.acquire()
         try:
             return ccc1(input)
         finally:
             __lock__.release()
-
-
-
-
     def ccc1(input):
-        
-
         try:
             name = cache_name(input)
             name=get_cache_dir()+name
             if name in storage:
                 return storage[name]
-
             if isinstance(input, CompositeDataSet):
                 components = list(map(lambda x:ccc1(x), input.components))
                 compositeDS = CompositeDataSet(components)
@@ -155,7 +157,6 @@ def diskcache_new(layers,declarations,config,outputs,linputs,pName,withArgs):
                 if hasattr(input, "name"):
                     compositeDS.origName = input.name
                 return compositeDS
-
             data = None
             xStructPath = f"{name}/x.struct"
             yStructPath = f"{name}/y.struct"
@@ -370,9 +371,7 @@ def diskcache_old(layers,declarations,config,outputs,linputs,pName,withArgs):
 
             if hasattr(input, "name"):
                 id = getattr(input, "name")
-                name = id.replace("{", "").replace("[", "").replace("/", "").replace("\\", "").replace("]", "").replace(
-                    "}", "").replace(" ", "").replace(",", "").replace("\'", "").replace(":", "")
-
+                name = clean_name(id)
             name=get_cache_dir()+name
             if name in storage:
                 r= storage[name]
