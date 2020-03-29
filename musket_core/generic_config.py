@@ -1083,15 +1083,18 @@ class GenericTaskConfig(model.IGenericTaskConfig):
     def parse_dataset(self,datasetName=None):
         #try:
             context.projectPath=self.get_project_path()
-            fw = self.dataset
+            if datasetName is None:
+                resulting_name = self.dataset
             if self.datasets_path is not None:
                 os.chdir(self.get_default_dataset_folder())  # TODO review
-            if datasetName is not None:
-                fw = self.datasets[datasetName]
-            if isinstance(fw, str):
-                fw = self.datasets[datasetName]
-            if self.dataset is not None:
-                dataset = net.create_dataset_from_config(self.declarations, fw, self.imports)
+            if datasetName is not None and self.datasets is not None:
+                resulting_name = self.datasets[datasetName]
+            if isinstance(resulting_name, str)  and self.datasets is not None:
+                resulting_name = self.datasets[resulting_name]
+            if resulting_name is None:
+                resulting_name = datasetName
+            if resulting_name is not None:
+                dataset = net.create_dataset_from_config(self.declarations, resulting_name, self.imports)
                 
                 if self.preprocessing is not None and self.preprocessing != "":
                     dataset.cfg=self

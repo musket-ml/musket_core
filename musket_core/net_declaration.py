@@ -617,16 +617,16 @@ def create_preprocessor_from_config(n,inputs,name="net",imports=[]):
     return out
 
 DEFAULT_DATASET_DIR=None
-def create_dataset_from_config(n,name="net",imports=[]):
+def create_dataset_from_config(net_declaration,name="net",imports=[]):
 
     compositeDS = None
     layers.register_module(musket_core.builtin_datasets)
     layers.register_module(musket_core.builtin_trainables)
 
     if isinstance(name,dict):
-        holdout = extract_datasets(n, imports, name, 'holdout')
-        train = extract_datasets(n, imports, name, 'train')
-        validation = extract_datasets(n, imports, name, 'validation')
+        holdout = extract_datasets(net_declaration, imports, name, 'holdout')
+        train = extract_datasets(net_declaration, imports, name, 'train')
+        validation = extract_datasets(net_declaration, imports, name, 'validation')
 
         valDSCount = len(validation)
         trainDSCount = len(train)
@@ -669,7 +669,7 @@ def create_dataset_from_config(n,name="net",imports=[]):
 
     if DEFAULT_DATASET_DIR is not None:
         os.chdir(str(DEFAULT_DATASET_DIR))
-    d=Declarations(n)
+    d=Declarations(net_declaration)
     for x in imports: layers.register(x)
 
     out=d.preprocess(name, None)

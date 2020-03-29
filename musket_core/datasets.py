@@ -450,7 +450,7 @@ class CompositeDataSet(DataSet):
         return self.len
 
 
-def dataset_provider(origin=None,kind=None): 
+def dataset_provider(name=None,origin=None,kind=None): 
     def inner(func): 
         func.dataset=True
         return func        
