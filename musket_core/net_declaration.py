@@ -669,10 +669,14 @@ def create_dataset_from_config(net_declaration,name="net",imports=[]):
 
     if DEFAULT_DATASET_DIR is not None:
         os.chdir(str(DEFAULT_DATASET_DIR))
-    d=Declarations(net_declaration)
+    declarations=Declarations(net_declaration)
     for x in imports: layers.register(x)
 
-    out=d.preprocess(name, None)
+    provider = datasets.get_registered_provider(name)
+    if callable(provider):
+        out = provider() 
+    else:
+        out=declarations.preprocess(name, None)
     out.name=str(name)
     return out
 

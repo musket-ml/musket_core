@@ -20,6 +20,8 @@ from musket_core import utils
 AUGMENTER_QUEUE_LIMIT=10
 USE_MULTIPROCESSING=False
 
+dataset_providers = {}
+
 class PredictionItem:
     def __init__(self, path, x, y, prediction = None):
         self.x=x
@@ -453,8 +455,15 @@ class CompositeDataSet(DataSet):
 def dataset_provider(name=None,origin=None,kind=None): 
     def inner(func): 
         func.dataset=True
+        id = name if name is not None else func.__name__
+        dataset_providers[id] = func
         return func        
     return inner #this is the fun_obj mentioned in the above content 
+
+def get_registered_provider(provider_id:str):
+    if not provider_id in dataset_providers.keys():
+        return None
+    return dataset_providers[provider_id]
 
 class DirectoryDataSet(DataSet):
 

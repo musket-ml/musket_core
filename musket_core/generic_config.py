@@ -1330,7 +1330,7 @@ class GenericImageTaskConfig(GenericTaskConfig):
                         vvv[0:sh-1] = val
                         vvv[sh-1] = (val[0] + val[1] + val[2]) / 3
                     else:
-                       vvv[sh-1] = (val[0] + val[1] + val[2]) / 3    
+                        vvv[sh-1] = (val[0] + val[1] + val[2]) / 3    
                     uw.append(vvv)
                 model.layers[i].set_weights(uw)
 
@@ -1637,7 +1637,7 @@ class MultiSplitStage(Stage):
             model.save_weights(ec.weightsPath()+"."+"def."+str(stage)+".weights", True)    
             bestRes=100000
             bestIndex=-1
-            list=[]
+            result_list=[]
             for i in range(len(coef)):
                 model.load_weights(ec.weightsPath()+"."+"def."+str(stage)+".weights", True)
                 
@@ -1651,12 +1651,9 @@ class MultiSplitStage(Stage):
                     bestRes=res
                     bestIndex=i
                     model.save_weights(ec.weightsPath()+"."+str(stage)+"."+str(i)+".weights", True)
-                list.append([self.cfg.lr*coef[i],res])
-                print(list)    
+                result_list.append([self.cfg.lr*coef[i],res])
+                print(result_list)    
                 
-            
-            
-            
     def _addLogger(self, model, ec, cb, kepoch):
         return 0        
             
