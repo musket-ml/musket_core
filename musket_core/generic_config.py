@@ -1634,8 +1634,6 @@ class MultiSplitStage(Stage):
             if bestIndex!=-1:
                 print("Loading from :",bestIndex)
                 model.load_weights(ec.weightsPath()+"."+str(stage-1)+"."+str(bestIndex)+".weights",True)
-            else:
-                model.load_weights("D:/jigsaw/experiments/e9/weights/best.weights")
             model.save_weights(ec.weightsPath()+"."+"def."+str(stage)+".weights", True)    
             bestRes=100000
             bestIndex=-1
