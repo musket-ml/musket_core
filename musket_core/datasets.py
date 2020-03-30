@@ -461,7 +461,7 @@ def dataset_provider(name=None,origin=None,kind=None):
     return inner #this is the fun_obj mentioned in the above content 
 
 def get_registered_provider(provider_id:str):
-    if not provider_id in dataset_providers.keys():
+    if not isinstance(id, str) or (not id in dataset_providers.keys()):
         return None
     return dataset_providers[provider_id]
 
