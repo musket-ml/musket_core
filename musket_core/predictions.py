@@ -36,7 +36,7 @@ class Prediction:
                 if ds is None:
                     ds = datasets.get_registered_provider(self.name)
         else:
-            nm = ds.name()
+            nm = ds.get_name()
 
         if ds is None:
             raise ValueError("No dataset has been specified for prediction")

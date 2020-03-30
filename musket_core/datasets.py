@@ -126,7 +126,7 @@ class DataSet:
         res=self.root().encode(self,treshold=treshold,encode_y=encode_y)
         res.to_csv(path,index=False)
     
-    def name(self):
+    def get_name(self):
         if hasattr(self,"name"):
             return self.name
         return type(self).__name__

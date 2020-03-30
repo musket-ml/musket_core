@@ -50,11 +50,11 @@ class GradientBoosting(generic.GenericTaskConfig):
     def load_writeable_dataset(self, ds, path):
         if self.isMultiOutput():
             rr = utils.load(path)
-            resName = ds.name() + "_predictions"
+            resName = ds.get_name() + "_predictions"
             result = datasets.BufferedWriteableDS(ds, resName, path, rr)
         else:
             rr = np.load(path)
-            resName = ds.name() + "_predictions"
+            resName = ds.get_name() + "_predictions"
             result = datasets.BufferedWriteableDS(ds, resName, path, rr)
         return result
 
@@ -62,7 +62,7 @@ class GradientBoosting(generic.GenericTaskConfig):
 
     def create_writeable_dataset(self, dataset:datasets.DataSet, dsPath:str)->datasets.WriteableDataSet:
         inp,output=utils.load_yaml(self.path + ".shapes")
-        resName = dataset.name() + "_predictions"
+        resName = dataset.get_name() + "_predictions"
         result = datasets.BufferedWriteableDS(dataset, resName, dsPath,pickle=self.isMultiOutput())
         return result
 

@@ -590,12 +590,12 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             rr = utils.load(path)
         else:
             rr = np.load(path)
-        resName = ds.name() + "_predictions"
+        resName = ds.get_name() + "_predictions"
         result = BufferedWriteableDS(ds, resName, path, rr, allowPickle)
         return result
 
     def create_writeable_dataset(self, dataset:DataSet, dsPath:str)->WriteableDataSet:
-        resName = dataset.name() + "_predictions"
+        resName = dataset.get_name() + "_predictions"
         result = BufferedWriteableDS(dataset, resName, dsPath, pickle=self.isMultiOutput())
         return result
     
