@@ -124,7 +124,12 @@ class DataSet:
 
     def dump(self,path,treshold=0.5,encode_y=False):
         res=self.root().encode(self,treshold=treshold,encode_y=encode_y)
-        res.to_csv(path,index=False) 
+        res.to_csv(path,index=False)
+    
+    def name(self):
+        if hasattr(self,"name"):
+            return self.name
+        return type(self).__name__
 
 class WriteableDataSet(DataSet):
 

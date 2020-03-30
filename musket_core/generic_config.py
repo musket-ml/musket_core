@@ -590,12 +590,12 @@ class GenericTaskConfig(model.IGenericTaskConfig):
             rr = utils.load(path)
         else:
             rr = np.load(path)
-        resName = (ds.name if hasattr(ds, "name") else "") + "_predictions"
+        resName = ds.name() + "_predictions"
         result = BufferedWriteableDS(ds, resName, path, rr, allowPickle)
         return result
 
     def create_writeable_dataset(self, dataset:DataSet, dsPath:str)->WriteableDataSet:
-        resName = (dataset.name if hasattr(dataset, "name") else "") + "_predictions"
+        resName = dataset.name() + "_predictions"
         result = BufferedWriteableDS(dataset, resName, dsPath, pickle=self.isMultiOutput())
         return result
     
@@ -1083,6 +1083,7 @@ class GenericTaskConfig(model.IGenericTaskConfig):
     def parse_dataset(self,datasetName=None):
         #try:
             context.projectPath=self.get_project_path()
+            resulting_name = None
             if datasetName is None:
                 resulting_name = self.dataset
             if self.datasets_path is not None:

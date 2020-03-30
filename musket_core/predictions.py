@@ -1,4 +1,4 @@
-from musket_core import generic_config
+from musket_core import generic_config, datasets
 from musket_core.utils import ensure
 import os
 import numpy as np
@@ -33,11 +33,18 @@ class Prediction:
                     ds=self.cfg.validation(None,self.fold)
                 else:
                     ds = self.cfg.get_dataset(self.name)
+                if ds is None:
+                    ds = datasets.get_registered_provider(self.name)
         else:
-            nm = ds.name
+            nm = ds.name()
 
         if ds is None:
             raise ValueError("No dataset has been specified for prediction")
+        
+        root_dataset = ds.root()
+        
+        if not hasattr(root_dataset, 'cfg'):
+            root_dataset.cfg = self.cfg
 
         ensure(constructPredictionsDirPath(self.cfg.directory()))
         path = f"{constructPredictionsDirPath(self.cfg.directory())}/{nm}{str(self.stage)}{str(self.fold)}.npy"
