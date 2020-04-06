@@ -228,7 +228,7 @@ def threshold_search(predsDS:DataSet, func, batch_size:int = -1):
         def func1(y_true, y_proba):
             return func(y_true.astype(np.float64), (y_proba > threshold))
 
-        score = applyFunctionToDS(predsDS, func1, batch_size)
+        score = FFunctionToDS(predsDS, func1, batch_size)
         if np.mean(score) > np.mean(best_score):
             best_threshold = threshold
             best_score = score
@@ -272,6 +272,7 @@ def applyFunctionToDS(dsWithPredictions, func, batch_size:int):
 
     resultArr = []
     resultScalarArr = []
+    singleMode=False
     for ind in tqdm.tqdm(range(0, l, batch_size)):
         end = min(ind + batch_size, l)
         items = dsWithPredictions[ind:end]
@@ -282,7 +283,12 @@ def applyFunctionToDS(dsWithPredictions, func, batch_size:int):
             y_true = y_true.astype(np.float32)
         if y_proba.dtype == np.bool:
             y_proba = y_proba.astype(np.float32)
-        batch_value = func(y_true, y_proba)
+        if y_true.dtype==np.object or singleMode:
+            singleMode=True
+            batch_value=np.mean([func(y_true[i], y_proba[i]) for i in range(len(y_true))])
+            
+        else: 
+            batch_value = func(y_true, y_proba)
         if isinstance(batch_value, np.ndarray):
             resultArr.append(batch_value.mean())
         else:
